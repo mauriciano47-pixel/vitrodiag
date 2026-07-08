@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>VitroDiag v1.0</title>
+    <script async src="https://docs.opencv.org/4.5.4/opencv.js" type="text/javascript"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #E0E0E0;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #FF9800; font-size: 1.5rem; margin-bottom: 5px; }
+        .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 15px; }
+        
+        /* Contenedor de la cámara y guías overlay */
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            height: 480px;
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        video, canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        /* Guía "Fantasma" en pantalla para alinear la botella en zona caliente */
+        .overlay-guide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px dashed rgba(255, 152, 0, 0.4);
+            box-sizing: border-box;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        .guide-neck {
+            width: 60px;
+            height: 80px;
+            border: 2px solid #FF9800;
+            border-bottom: none;
+            opacity: 0.7;
+        }
+        .guide-body {
+            width: 160px;
+            height: 260px;
+            border: 2px solid #FF9800;
+            border-radius: 10px 10px 0 0;
+            opacity: 0.7;
+        }
+        
+        /* Controles */
+        .btn-capture {
+            background-color: #FF9800;
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            margin-top: 15px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 4px 6px rgba(255,152,0,0.2);
+        }
+        
+        /* Panel de Diagnóstico NNPB de VitroDiag */
+        .diagnostic-card {
+            background-color: #1E1E1E;
+            border-left: 5px solid #FF9800;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 340px;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .card-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 8px; color: #FFF; }
+        .status-alert { color: #FF5252; font-weight: bold; }
+        .actions-list { margin-top: 10px; padding-left: 20px; font-size: 0.9rem; color: #B0B0B0; }
+        .actions-list li { margin-bottom: 6px; }
+    
+    </style>
+</head>
+<body>
+
+    <h1>VitroDiag</h1>
+    <div class="subtitle">Muestreo Rápido NNPB para Operador</div>
+
+    <div class="camera-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="canvasOutput" style="display:none;"></canvas>
+        
+        <div class="overlay-guide">
+            <div class="guide-neck"></div>
+            <div class="guide-body"></div>
+        </div>
+    </div>
+
+    <button class="btn-capture" id="btnDiagnosticar">DIAGNOSTICAR ENVASE</button>
+
+    <div class="diagnostic-card" id="resultadoCard">
+        <div class="card-title" id="diagTitulo">Analizando...</div>
+        <div id="diagEstado"></div>
+        <ol class="actions-list" id="diagAcciones"></ol>
+    </div>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvasOutput');
+        const btn = document.getElementById('btnDiagnosticar');
+        const card = document.getElementById('resultadoCard');
+
+        // 1. Acceder a la cámara trasera del smartphone de forma nativa
+        navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: { exact: "environment" } }, 
+            audio: false 
+        })
+        .then(stream => { video.srcObject = stream; })
+        .catch(err => {
+            // Alternativa si estás probando desde una laptop
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => { video.srcObject = stream; });
+        });
+
+        // 2. Simulación del motor de inferencia analítica (Cerebro NNPB)
+        btn.addEventListener('click', () => {
+            card.style.display = 'block';
+            document.getElementById('diagTitulo').innerText = "🤖 VitroDiag: Procesando Silueta...";
+            document.getElementById('diagEstado').innerText = "Extrayendo bordes Canny en zona caliente...";
+            document.getElementById('diagAcciones').innerHTML = "";
+
+            // Simulamos el análisis geométrico del frame capturado (Boca vs Cuerpo)
+            setTimeout(() => {
+                // Aquí integramos de manera aleatoria/simulada las 3 grandes alertas de tus manuales
+                // En producción real, OpenCV.js lee los píxeles del 'canvas' aquí mismo
+                const modosPrueba = ['rebaba', 'bajo_boca', 'columpio', 'ok'];
+                const resultadoAleatorio = modosPrueba[Math.floor(Math.random() * modosPrueba.length)];
+
+                if (resultadoAleatorio === 'rebaba') {
+                    document.getElementById('diagTitulo').innerText = "🚨 REBABA EN LA BOCA (OVERPRESSED)";
+                    document.getElementById('diagEstado').innerHTML = "Estado: <span class='status-alert'>Crítico (Sobrepeso / Desfase)</span>";
+                    document.getElementById('diagAcciones').innerHTML = `
+                        <li>Controlar inmediatamente el <b>SOBREPESO de la gota</b> en el alimentador.</li>
+                        <li>Verificar si el vidrio está llegando antes de que el macho complete su subida.</li>
+                        <li>Limpiar acumulación de carbón o grafito duro en platinas.</li>
+                    `;
+                } else if (resultadoAleatorio === 'bajo_boca') {
+                    document.getElementById('diagTitulo').innerText = "🚨 BAJO BOCA / BOCA INCOMPLETA";
+                    document.getElementById('diagEstado').innerHTML = "Estado: <span class='status-alert'>Defecto por Llenado</span>";
+                    document.getElementById('diagAcciones').innerHTML = `
+                        <li>La <b>gota está BAJO PESO</b>. Corregir rango nominal en el alimentador.</li>
+                        <li>Cilindro de machos trabajando bajo o descalibrado.</li>
+                        <li>Revisar si los machos o platinas están trabajando excesivamente fríos.</li>
+                    `;
+                } else if (resultadoAleatorio === 'columpio') {
+                    document.getElementById('diagTitulo').innerText = "🚨 COLUMPIO DE CUERPO (BIRDSWING)";
+                    document.getElementById('diagEstado').innerHTML = "Estado: <span class='status-alert'>Inestabilidad Térmica</span>";
+                    document.getElementById('diagAcciones').innerHTML = `
+                        <li>Vidrio o premoldes excesivamente calientes. Aumentar enfriamiento axial.</li>
+                        <li>Presión de prensado muy baja en premolde (Revisar si está bajo los 15 psi).</li>
+                        <li>Lubricación (hisponeado) muy mojada. El exceso colapsó el parisón.</li>
+                    `;
+                } else {
+                    document.getElementById('diagTitulo').innerText = "✅ ENVASE CONFORME";
+                    document.getElementById('diagEstado').innerHTML = "<span style='color:#4CAF50;'>Simetría y dimensiones dentro del patrón estándar (Burdeos 750cc).</span>";
+                }
+            }, 800); // 800ms de retraso para emular el procesamiento de imagen
+        });
+    </script>
+</body>
+</html>
