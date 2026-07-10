@@ -998,8 +998,29 @@
             <div class="calibration-title">📊 Calculadora SOP (Temporización de Máquina)</div>
             
             <div class="form-group">
-                <label for="calcCpm">Velocidad de la Máquina (CPM - Ciclos Por Minuto)</label>
-                <input type="number" id="calcCpm" class="input-number" min="30" max="250" value="100">
+                <label for="calcBpm">Velocidad de Producción (BPM - Botellas Por Minuto)</label>
+                <input type="number" id="calcBpm" class="input-number" min="30" max="1000" value="240">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="calcSections">Secciones Máquina</label>
+                    <select id="calcSections" class="select-input">
+                        <option value="6">6 Secciones</option>
+                        <option value="8">8 Secciones</option>
+                        <option value="10" selected>10 Secciones</option>
+                        <option value="12">12 Secciones</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="calcCavities">Tipo de Gota (Cavidad)</label>
+                    <select id="calcCavities" class="select-input">
+                        <option value="1">Simple Gota (DG)</option>
+                        <option value="2" selected>Doble Gota (DDG)</option>
+                        <option value="3">Triple Gota (DTG)</option>
+                        <option value="4">Cuádruple Gota</option>
+                    </select>
+                </div>
             </div>
             
             <div class="form-group">
@@ -3352,17 +3373,24 @@
             }
         };
 
-        // --- CALCULADORA SOP ---
-        const calcCpm = document.getElementById('calcCpm');
+        // --- CALCULADORA SOP CONFIGURADA PARA CRISTAL CHILE (BPM a CPM) ---
+        const calcBpm = document.getElementById('calcBpm');
+        const calcSections = document.getElementById('calcSections');
+        const calcCavities = document.getElementById('calcCavities');
         const calcStart = document.getElementById('calcStart');
         const calcEnd = document.getElementById('calcEnd');
         const calcMsResult = document.getElementById('calcMsResult');
         const calcDegreesDiff = document.getElementById('calcDegreesDiff');
 
         function calculateSopMs() {
-            const cpm = parseFloat(calcCpm.value) || 100;
+            const bpm = parseFloat(calcBpm.value) || 240;
+            const sections = parseInt(calcSections.value) || 10;
+            const cavity = parseInt(calcCavities.value) || 2;
             const start = parseFloat(calcStart.value) || 0;
             const end = parseFloat(calcEnd.value) || 0;
+
+            // FÓRMULA DE RELACIÓN: CPM = BPM / (Secciones * Cavidades)
+            const cpm = bpm / (sections * cavity);
 
             // Calcular diferencia de grados
             let degDiff = 0;
@@ -3372,17 +3400,19 @@
                 degDiff = (360 - start) + end;
             }
 
-            // Tiempo de un ciclo completo en milisegundos
+            // Tiempo de un ciclo completo de la sección en milisegundos
             const cycleMs = (60 / cpm) * 1000;
             
             // Duración del evento en milisegundos
             const eventMs = (degDiff / 360) * cycleMs;
 
             calcMsResult.innerText = eventMs.toFixed(1) + " ms";
-            calcDegreesDiff.innerText = `Intervalo: ${degDiff.toFixed(0)}° de ciclo | Ciclo total: ${cycleMs.toFixed(0)} ms`;
+            calcDegreesDiff.innerText = `Sección: ${cpm.toFixed(1)} CPM | Intervalo: ${degDiff.toFixed(0)}° | Ciclo total: ${cycleMs.toFixed(0)} ms`;
         }
 
-        calcCpm.addEventListener('input', calculateSopMs);
+        calcBpm.addEventListener('input', calculateSopMs);
+        calcSections.addEventListener('change', calculateSopMs);
+        calcCavities.addEventListener('change', calculateSopMs);
         calcStart.addEventListener('input', calculateSopMs);
         calcEnd.addEventListener('input', calculateSopMs);
 
