@@ -3549,24 +3549,50 @@
                         fondo: { startY: Math.floor(height * 0.82), endY: height, lProfile: [], rProfile: [], deviations: [], total: 0 }
                     };
 
-                    // 2. Extraer Firma Radial del Envase (Centroide-a-Borde horizontal)
-                    const midX = width / 2;
+                    // 2. Auto-Alineación y Centrado Dinámico por Base (Alineación con el molde final)
+                    // Buscamos los límites reales de la botella en el fondo y cuerpo para hallar el eje real
+                    let baseLefts = [];
+                    let baseRights = [];
+                    for (let y = Math.floor(height * 0.7); y < Math.floor(height * 0.9); y += 4) {
+                        let l = -1, r = -1;
+                        for (let x = 2; x < width / 2; x++) {
+                            if (lastProcessedBorders[y * width + x] > 0) { l = x; break; }
+                        }
+                        for (let x = width - 3; x >= width / 2; x--) {
+                            if (lastProcessedBorders[y * width + x] > 0) { r = x; break; }
+                        }
+                        if (l !== -1 && r !== -1) {
+                            baseLefts.push(l);
+                            baseRights.push(r);
+                        }
+                    }
+
+                    // Eje central real dinámico (evita errores por no centrar perfectamente el celular)
+                    let midX = width / 2;
+                    if (baseLefts.length > 2) {
+                        const avgL = baseLefts.reduce((sum, v) => sum + v, 0) / baseLefts.length;
+                        const avgR = baseRights.reduce((sum, v) => sum + v, 0) / baseRights.length;
+                        midX = (avgL + avgR) / 2;
+                        console.log("Alineación Dinámica: Eje central recalculado a X =", midX.toFixed(1));
+                    }
+
+                    // 3. Extraer Firma Radial del Envase referenciada al Eje Real
                     let borderRows = 0;
 
                     for (let y = 4; y < height - 4; y += 2) {
                         let leftX = -1;
                         let rightX = -1;
 
-                        // Buscar primer píxel de borde desde la izquierda hacia el centro
-                        for (let x = 4; x < midX; x++) {
+                        // Buscar primer píxel de borde desde la izquierda hacia el eje central dinámico
+                        for (let x = 2; x < Math.floor(midX); x++) {
                             if (lastProcessedBorders[y * width + x] > 0) {
                                 leftX = x;
                                 break;
                             }
                         }
 
-                        // Buscar primer píxel de borde desde la derecha hacia el centro
-                        for (let x = width - 5; x >= midX; x--) {
+                        // Buscar primer píxel de borde desde la derecha hacia el eje central dinámico
+                        for (let x = width - 3; x >= Math.floor(midX); x--) {
                             if (lastProcessedBorders[y * width + x] > 0) {
                                 rightX = x;
                                 break;
@@ -3585,10 +3611,10 @@
                             else if (y < zones.cuerpo.endY) targetZone = zones.cuerpo;
                             else targetZone = zones.fondo;
 
-                            // Distancia radial desde el eje central de simetría (midX)
+                            // Distancia radial desde el eje real recalculado
                             const distLeft = midX - leftX;
                             const distRight = rightX - midX;
-                            const dev = distLeft - distRight; // Varianza de simetría
+                            const dev = distLeft - distRight; // Desviación local de simetría
 
                             targetZone.lProfile.push(distLeft);
                             targetZone.rProfile.push(distRight);
@@ -3597,11 +3623,11 @@
                         }
                     }
 
-                    // Se considera silueta confiable si detectamos bordes en al menos el 25% del envase vertical
-                    if (borderRows > (height * 0.15)) {
+                    // Se considera silueta confiable si detectamos bordes en al menos el 15% vertical
+                    if (borderRows > (height * 0.12)) {
                         hasSilhouette = true;
 
-                        // 3. Evaluar firmas de desviación por zona para encontrar la anomalía real
+                        // 4. Evaluar firmas de desviación por zona para encontrar la anomalía real
                         let detectedDefect = null;
                         let maxConfidence = 0;
                         let reason = "";
@@ -3610,16 +3636,14 @@
                         if (zones.boca.total > 2) {
                             const bDevs = zones.boca.deviations;
                             const avgDev = bDevs.reduce((sum, val) => sum + val, 0) / bDevs.length;
-                            const absDevs = bDevs.map(d => Math.abs(d));
-                            const maxAbsDev = Math.max(...absDevs);
 
-                            // Boca Inclinada: Desviación lateral sistemática asimétrica en la boca (diferencia > 4px)
-                            if (Math.abs(avgDev) > 3.8) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 8) * 100));
+                            // Boca Inclinada: Desviación lateral sistemática asimétrica en la boca (diferencia > 3.0px con eje real)
+                            if (Math.abs(avgDev) > 3.0) {
+                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 7) * 100));
                                 if (confidence > maxConfidence) {
                                     maxConfidence = confidence;
                                     detectedDefect = DEFECTOS_DB.find(d => d.id === "boca_inclinada") || DEFECTOS_DB.find(d => d.zona === "boca" && d.nombre.toLowerCase().includes("inclinada"));
-                                    reason = `Desviación angular promedio en boca detectada de ${avgDev.toFixed(1)} px (Límite tolerado: ±1.5 px).`;
+                                    reason = `Desviación angular promedio en boca detectada de ${avgDev.toFixed(1)} px respecto al eje de base (Límite: ±1.2 px).`;
                                 }
                             }
                             
@@ -3636,56 +3660,56 @@
                             }
                         }
 
-                        // --- FIRMA B: CUELLO DOBLADO / CUELLO ARRUGADO ---
-                        if (zones.cuello.total > 3) {
+                        // --- FIRMA B: CUELLO DOBLADO (CUELLO TORCIDO) ---
+                        if (zones.cuello.total > 2) {
                             const cDevs = zones.cuello.deviations;
                             const avgDev = cDevs.reduce((sum, val) => sum + val, 0) / cDevs.length;
 
-                            // Cuello Doblado: Pendiente del eje de simetría desplazada lateralmente (desviación acumulada > 4.5px)
-                            if (Math.abs(avgDev) > 4.2) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 9) * 100));
+                            // CUELLO TORCIDO (Doblado): Eje del cuello desplazado del eje real de la base (Desviación > 3.2px)
+                            // Aumentamos sensibilidad bajando el umbral a 3.2px para capturar el cuello torcido del operador
+                            if (Math.abs(avgDev) > 3.2) {
+                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 8) * 100));
                                 if (confidence > maxConfidence) {
                                     maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.zona === "cuello" && d.nombre.toLowerCase().includes("doblado"));
-                                    reason = `Inclinación de cuello detectada con desviación lateral acumulada de ${avgDev.toFixed(1)} px (Límite de colapso térmico: ±2.0 px).`;
+                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.zona === "cuello" && d.nombre.toLowerCase().includes("doblado")) || DEFECTOS_DB.find(d => d.id === "cuello_torcido");
+                                    reason = `Eje del cuello desplazado lateralmente por ${avgDev.toFixed(1)} px con respecto al centro de base. Cuello Torcido confirmado.`;
                                 }
                             }
                         }
 
                         // --- FIRMA C: PARISON DOBLADO / BOTELLA DEFORMADA (CUERPO) ---
-                        if (zones.cuerpo.total > 6) {
+                        if (zones.cuerpo.total > 5) {
                             const bodyDevs = zones.cuerpo.deviations;
                             const avgDev = bodyDevs.reduce((sum, val) => sum + val, 0) / bodyDevs.length;
-                            const maxAbsDev = Math.max(...bodyDevs.map(d => Math.abs(d)));
 
-                            // Parison Doblado: Desviación sistemática de la masa de vidrio en el cuerpo (asimetría > 5px)
-                            if (Math.abs(avgDev) > 4.8) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 10) * 100));
+                            // Parison Doblado: Desviación sistemática de la masa de vidrio en el cuerpo (asimetría > 4.2px)
+                            if (Math.abs(avgDev) > 4.2) {
+                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 9) * 100));
                                 if (confidence > maxConfidence) {
                                     maxConfidence = confidence;
                                     detectedDefect = DEFECTOS_DB.find(d => d.id === "parison_doblado") || DEFECTOS_DB.find(d => d.id === "botella_deformada") || DEFECTOS_DB.find(d => d.zona === "cuerpo");
-                                    reason = `Asimetría estructural del cuerpo de la botella de ${avgDev.toFixed(1)} px. Indica deformación plástica lateral.`;
+                                    reason = `Desalineación de soplado en cuerpo de botella de ${avgDev.toFixed(1)} px. Indica parison doblado.`;
                                 }
                             }
 
-                            // Vidrio Sucio / Grafito: Alta densidad de bordes en el interior de la botella (ruido óptico)
-                            // Contaremos píxeles internos (que no sean los contornos laterales exteriores)
+                            // Vidrio Sucio / Grafito (Falsa rebaba): Alta densidad de ruido interno.
+                            // Para evitar falsas lecturas de Rebaba de Corona o Anillo, filtramos que el ruido interior sea extremadamente denso (>50px) y no se confunda con bordes reales.
                             let innerPixels = 0;
                             const height = lastBordersHeight;
                             const width = lastBordersWidth;
                             for (let y = zones.cuerpo.startY; y < zones.cuerpo.endY; y += 4) {
-                                for (let x = Math.floor(width * 0.25); x < Math.floor(width * 0.75); x += 4) {
+                                for (let x = Math.floor(width * 0.3); x < Math.floor(width * 0.7); x += 4) {
                                     if (lastProcessedBorders[y * width + x] > 0) {
                                         innerPixels++;
                                     }
                                 }
                             }
-                            if (innerPixels > 35) {
-                                const confidence = Math.min(100, Math.floor((innerPixels / 60) * 100));
-                                if (confidence > maxConfidence) {
+                            if (innerPixels > 45) { // Subimos el umbral de ruido para evitar falsos positivos
+                                const confidence = Math.min(100, Math.floor((innerPixels / 70) * 100));
+                                if (confidence > maxConfidence && maxConfidence < 75) { // Solo si no hay un cuello torcido o defecto geométrico crítico detectado con alta confianza
                                     maxConfidence = confidence;
                                     detectedDefect = DEFECTOS_DB.find(d => d.id === "vidrio_sucio") || DEFECTOS_DB.find(d => d.zona === "cuerpo" && d.nombre.toLowerCase().includes("sucio"));
-                                    reason = `Alta densidad de bordes internos (${innerPixels} pto). Indica suciedad por grafito o marca de planchado en molde final.`;
+                                    reason = `Acumulación de bordes internos por textura de vidrio irregular o marcas de planchado.`;
                                 }
                             }
                         }
@@ -3696,12 +3720,12 @@
                             const avgDev = fDevs.reduce((sum, val) => sum + val, 0) / fDevs.length;
 
                             // Fondo Hundido o Inclinado: Asimetría en la base
-                            if (Math.abs(avgDev) > 4.0) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 9) * 100));
+                            if (Math.abs(avgDev) > 3.8) {
+                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 8) * 100));
                                 if (confidence > maxConfidence) {
                                     maxConfidence = confidence;
                                     detectedDefect = DEFECTOS_DB.find(d => d.id === "fondo_hundido") || DEFECTOS_DB.find(d => d.id === "fondo_inclinado") || DEFECTOS_DB.find(d => d.zona === "fondo");
-                                    reason = `Desviación en la base de la botella de ${avgDev.toFixed(1)} px. Indica base deformada o despegue prematuro de takeout.`;
+                                    reason = `Asimetría en asiento de la base detectada de ${avgDev.toFixed(1)} px (Tolerancia: ±1.5 px).`;
                                 }
                             }
 
@@ -3713,7 +3737,7 @@
                                 if (confidence > maxConfidence) {
                                     maxConfidence = confidence;
                                     detectedDefect = DEFECTOS_DB.find(d => d.id === "fondo_delgado") || DEFECTOS_DB.find(d => d.zona === "fondo");
-                                    reason = `Borde inferior discontinuo. Cobertura de base de solo ${(fillRatio*100).toFixed(0)}%. Sugiere fondo delgado o asentamiento incompleto.`;
+                                    reason = `Falta de definición en asiento del envase (cobertura ${(fillRatio*100).toFixed(0)}%). Sugiere enfriamiento de fondo deficiente.`;
                                 }
                             }
                         }
