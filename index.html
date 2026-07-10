@@ -877,6 +877,74 @@
             100% { background-position: 50% 100%; }
         }
     
+
+        /* Estilos de Ilustraciones SVG de Defectos */
+        .defect-grid-layout {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+        }
+        .defect-info-col {
+            flex: 2.8;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .defect-visual-col {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 10px;
+            height: 140px;
+            min-width: 90px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .defect-svg-demo {
+            width: 75px;
+            height: 110px;
+            filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.15));
+        }
+        .defect-visual-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+        .pulse-ring {
+            animation: pulse-ring-anim 2s infinite ease-in-out;
+            transform-origin: center;
+        }
+        @keyframes pulse-ring-anim {
+            0% { transform: scale(0.9); opacity: 0.2; }
+            50% { transform: scale(1.15); opacity: 0.6; }
+            100% { transform: scale(0.9); opacity: 0.2; }
+        }
+        
+        /* Ajuste responsivo para pantallas pequeñas de celular */
+        @media (max-width: 480px) {
+            .defect-grid-layout {
+                flex-direction: column-reverse;
+                gap: 12px;
+            }
+            .defect-visual-col {
+                height: 110px;
+                flex-direction: row;
+                gap: 16px;
+                padding: 6px 14px;
+            }
+            .defect-svg-demo {
+                width: 50px;
+                height: 90px;
+            }
+        }
+    
     </style>
 </head>
 <body>
@@ -2712,6 +2780,91 @@
             }
         ];
 
+                // GENERAR ILUSTRACIÓN VECTORIAL SVG DINÁMICA DE DEFECTO EN CALIENTE
+        function generateDefectIllustration(defect) {
+            const zona = defect.zona.toLowerCase();
+            const nombre = defect.nombre.toLowerCase();
+            
+            // Colores base
+            const colorDefect = "#ef4444"; // Rojo de advertencia para fallas
+            const colorGlass = "rgba(255, 111, 0, 0.4)"; // Naranja simulando vidrio fundido
+            
+            // Silueta geométrica estándar de la botella
+            let bottlePath = "M 42 22 L 42 12 L 58 12 L 58 22 L 68 32 L 68 84 Q 68 88 64 88 L 36 88 Q 32 88 32 84 L 32 32 Z";
+            
+            // Si el defecto implica deformación de silueta (ej: cuello doblado), modificamos los vectores
+            if (nombre.includes("doblado") || nombre.includes("caída") || nombre.includes("caído") || nombre.includes("inclinada") || nombre.includes("inclinado")) {
+                bottlePath = "M 42 22 L 35 12 L 51 9 L 56 22 L 68 32 L 68 84 Q 68 88 64 88 L 36 88 Q 32 88 32 84 L 32 32 Z";
+            }
+            
+            let extraSvg = "";
+            let highlightX = 50;
+            let highlightY = 50;
+            
+            // Determinar coordenadas de la zona del defecto
+            if (zona === 'boca') {
+                highlightX = 50;
+                highlightY = 14;
+            } else if (zona === 'cuello') {
+                highlightX = 50;
+                highlightY = 27;
+            } else if (zona === 'cuerpo') {
+                highlightX = 50;
+                highlightY = 55;
+            } else if (zona === 'fondo') {
+                highlightX = 50;
+                highlightY = 82;
+            }
+
+            // Inyectar detalles vectoriales según el nombre del defecto
+            if (nombre.includes("grieta") || nombre.includes("fisura") || nombre.includes("pelo") || nombre.includes("planchado")) {
+                // Rayo rojo quebradizo para fisura
+                extraSvg += `<path d="M ${highlightX-5} ${highlightY-5} L ${highlightX} ${highlightY} L ${highlightX-3} ${highlightY+5} L ${highlightX+5} ${highlightY+8}" fill="none" stroke="${colorDefect}" stroke-width="2" stroke-linecap="round" />`;
+            } else if (nombre.includes("incompleta") || nombre.includes("incompleto") || nombre.includes("corto")) {
+                // Eliminar esquina en la boca
+                if (zona === 'boca') {
+                    extraSvg += `<path d="M 39 11 L 46 11 L 43 15 Z" fill="#0e1013" stroke="none" />`;
+                }
+            } else if (nombre.includes("sucio") || nombre.includes("marca") || nombre.includes("grafito") || nombre.includes("lubricante") || nombre.includes("carbón")) {
+                // Puntillismo oscuro de lubricación quemada
+                extraSvg += `
+                    <circle cx="${highlightX-4}" cy="${highlightY-3}" r="1.5" fill="#4a5568" />
+                    <circle cx="${highlightX+3}" cy="${highlightY+1}" r="1" fill="#1a202c" />
+                    <circle cx="${highlightX}" cy="${highlightY+4}" r="2" fill="#2d3748" />
+                `;
+            } else if (nombre.includes("burbuja") || nombre.includes("ampolla") || nombre.includes("semilla")) {
+                // Trazados circulares huecos
+                extraSvg += `
+                    <circle cx="${highlightX-3}" cy="${highlightY-2}" r="2.5" fill="none" stroke="${colorDefect}" stroke-width="1" />
+                    <circle cx="${highlightX+4}" cy="${highlightY+3}" r="1.5" fill="none" stroke="${colorDefect}" stroke-width="1" />
+                `;
+            } else if (nombre.includes("delgado") || nombre.includes("espesor")) {
+                // Pared discontinua
+                extraSvg += `
+                    <path d="M 66 35 L 66 80" fill="none" stroke="${colorDefect}" stroke-width="2" stroke-dasharray="3,2" />
+                `;
+            } else {
+                // Advertencia general (Signo de Exclamación en rojo)
+                extraSvg += `
+                    <circle cx="${highlightX}" cy="${highlightY-4}" r="2.5" fill="${colorDefect}" />
+                    <line x1="${highlightX}" y1="${highlightY+1}" x2="${highlightX}" y2="${highlightY+7}" stroke="${colorDefect}" stroke-width="2.5" stroke-linecap="round" />
+                `;
+            }
+
+            return `
+                <svg viewBox="0 0 100 100" class="defect-svg-demo">
+                    <!-- Botella -->
+                    <path d="${bottlePath}" fill="none" stroke="${colorGlass}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    
+                    <!-- Halo de Zona Pulsante -->
+                    <circle cx="${highlightX}" cy="${highlightY}" r="11" fill="none" stroke="${colorDefect}" stroke-width="1" stroke-dasharray="2,2" opacity="0.5" class="pulse-ring" />
+                    
+                    <!-- Trazados de Fallas -->
+                    ${extraSvg}
+                </svg>
+            `;
+        }
+
         // RENDERIZAR DEFECTOS EN EL DIRECTORIO
         function renderDefectsList(defects) {
             const container = document.getElementById('defectsContainer');
@@ -2734,6 +2887,9 @@
                 if (defect.gravedad === "Crítico") gravedadClass = "critico";
                 else if (defect.gravedad === "Mayor") gravedadClass = "mayor";
 
+                // Obtener el HTML del SVG del defecto
+                const svgIllustration = generateDefectIllustration(defect);
+
                 item.innerHTML = `
                     <div class="defect-header" onclick="toggleDefectCard(this)">
                         <div class="defect-header-left">
@@ -2746,18 +2902,27 @@
                         <span class="defect-arrow">▼</span>
                     </div>
                     <div class="defect-body">
-                        <div class="defect-content">
-                            <div class="defect-desc">${defect.descripcion}</div>
+                        <div class="defect-content defect-grid-layout">
+                            <!-- Columna Información -->
+                            <div class="defect-info-col">
+                                <div class="defect-desc">${defect.descripcion}</div>
+                                
+                                <div class="section-title">🔍 Causas Comunes:</div>
+                                <ul class="list-items">
+                                    ${defect.causas.map(c => `<li>${c}</li>`).join('')}
+                                </ul>
+                                
+                                <div class="section-title">🛠️ Corrección en Máquina IS:</div>
+                                <ul class="list-items" style="color: #cbd5e1;">
+                                    ${defect.acciones.map(a => `<li>${a}</li>`).join('')}
+                                </ul>
+                            </div>
                             
-                            <div class="section-title">🔍 Causas Comunes:</div>
-                            <ul class="list-items">
-                                ${defect.causas.map(c => `<li>${c}</li>`).join('')}
-                            </ul>
-                            
-                            <div class="section-title">🛠️ Corrección en Máquina IS:</div>
-                            <ul class="list-items" style="color: #cbd5e1;">
-                                ${defect.acciones.map(a => `<li>${a}</li>`).join('')}
-                            </ul>
+                            <!-- Columna Ilustración Vectorial -->
+                            <div class="defect-visual-col">
+                                ${svgIllustration}
+                                <span class="defect-visual-label">Ubicación</span>
+                            </div>
                         </div>
                     </div>
                 `;
