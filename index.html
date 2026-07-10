@@ -3470,112 +3470,150 @@
                 card.scrollIntoView({ behavior: 'smooth' });
             }, 100);
 
-            // Analizamos el frame real si OpenCV está activo
+            // Analizamos el frame real mediante segmentación de imagen por zonas altitudinales
             setTimeout(() => {
-                let pixelDiff = 0;
                 let totalPixels = 0;
                 let hasSilhouette = false;
 
-                if (lastProcessedBorders) {
-                    // Contamos los píxeles de borde en la mitad izquierda y derecha
-                    let width = lastBordersWidth;
-                    let height = lastBordersHeight;
-                    let leftCount = 0;
-                    let rightCount = 0;
+                if (toggle.checked && lastProcessedBorders) {
+                    const width = lastBordersWidth;
+                    const height = lastBordersHeight;
 
-                    // Escanear la matriz binaria de Canny
-                    for (let y = Math.floor(height * 0.2); y < Math.floor(height * 0.8); y += 4) {
-                        for (let x = Math.floor(width * 0.1); x < Math.floor(width * 0.9); x += 4) {
-                            let pixelVal = lastProcessedBorders[y*width + x];
+                    // 1. Definir bandas horizontales (Boca, Cuello, Cuerpo, Fondo)
+                    const zones = {
+                        boca: { startY: 0, endY: Math.floor(height * 0.18), left: 0, right: 0, total: 0 },
+                        cuello: { startY: Math.floor(height * 0.18), endY: Math.floor(height * 0.38), left: 0, right: 0, total: 0 },
+                        cuerpo: { startY: Math.floor(height * 0.38), endY: Math.floor(height * 0.82), left: 0, right: 0, total: 0 },
+                        fondo: { startY: Math.floor(height * 0.82), endY: height, left: 0, right: 0, total: 0 }
+                    };
+
+                    // Escanear la matriz binaria de Sobel
+                    for (let y = 0; y < height; y += 2) {
+                        for (let x = 0; x < width; x += 2) {
+                            const pixelVal = lastProcessedBorders[y * width + x];
                             if (pixelVal > 0) {
                                 totalPixels++;
+                                
+                                // Clasificar en qué franja horizontal cae el píxel
+                                let targetZone = null;
+                                if (y < zones.boca.endY) targetZone = zones.boca;
+                                else if (y < zones.cuello.endY) targetZone = zones.cuello;
+                                else if (y < zones.cuerpo.endY) targetZone = zones.cuerpo;
+                                else targetZone = zones.fondo;
+
+                                targetZone.total++;
                                 if (x < width / 2) {
-                                    leftCount++;
+                                    targetZone.left++;
                                 } else {
-                                    rightCount++;
+                                    targetZone.right++;
                                 }
                             }
                         }
                     }
 
-                    // Verificar si detectamos una silueta (más de 300 píxeles de bordes)
-                    if (totalPixels > 300) {
+                    // Determinar si hay silueta suficiente
+                    if (totalPixels > 80) {
                         hasSilhouette = true;
-                        // Medimos la asimetría horizontal (desvío porcentual)
-                        pixelDiff = Math.abs(leftCount - rightCount) / (totalPixels || 1);
-                    }
-                }
 
-                // Generar diagnóstico
-                // Si la visión OpenCV está activa pero no detectó silueta (ej: apuntó al techo o piso)
-                if (toggle.checked && !hasSilhouette) {
-                    document.getElementById('diagTitulo').innerText = "⚠️ SILUETA NO DETECTADA";
-                    document.getElementById('diagGravedad').innerText = "Inconcluso";
-                    document.getElementById('diagGravedad').className = "status-alert mayor";
-                    document.getElementById('diagGravedad').style.display = "inline-block";
-                    document.getElementById('diagEstado').innerHTML = "<b>Detalle:</b> El sistema no detecta suficientes bordes para realizar la comparación geométrica.<br><br><i>Por favor, alinea la botella caliente exactamente dentro de la guía naranja en pantalla y asegúrate de contar con luz uniforme en la máquina.</i>";
-                    document.getElementById('diagAcciones').innerHTML = `
-                        <li>Comprobar alineación del smartphone respecto al molde final.</li>
-                        <li>Verificar limpieza del lente protector de la cámara en planta.</li>
-                    `;
-                    return;
-                }
+                        // Analizar asimetría y densidad de cada zona
+                        let worstZone = "";
+                        let maxAsymmetry = 0;
 
-                // Si detectamos una silueta real
-                if (hasSilhouette) {
-                    // Si el desvío es mayor al 15% (0.15), hay un defecto asimétrico
-                    if (pixelDiff > 0.15) {
-                        // Seleccionamos un defecto de asimetría (ej: boca inclinada, cuello doblado, botella deformada, etc.)
-                        const asymDefects = DEFECTOS_DB.filter(d => 
-                            d.id === "boca_inclinada" || d.id === "cuello_doblado" || 
-                            d.id === "botella_deformada" || d.id === "hombro_hundido" || 
-                            d.id === "fondo_inclinado" || d.id === "asiento_desparejo"
-                        );
-                        const defect = asymDefects[Math.floor(Math.random() * asymDefects.length)] || DEFECTOS_DB[0];
-                        
-                        mostrarResultadoDefecto(defect);
-                    } else {
-                        // La silueta es simétrica. Arrojamos conforme (70%) o defecto menor térmico estético (30%)
-                        if (Math.random() < 0.70) {
-                            document.getElementById('diagTitulo').innerText = "✅ ENVASE CONFORME";
-                            document.getElementById('diagGravedad').innerText = "Excelente";
+                        for (const [name, data] of Object.entries(zones)) {
+                            if (data.total > 5) {
+                                const diff = Math.abs(data.left - data.right);
+                                const asymmetryRatio = diff / Math.max(1, data.total);
+                                
+                                if (asymmetryRatio > maxAsymmetry) {
+                                    maxAsymmetry = asymmetryRatio;
+                                    worstZone = name;
+                                }
+                            }
+                        }
+
+                        // Límite de desvío del 16% para asimetría
+                        const ASYMMETRY_THRESHOLD = 0.16;
+                        let targetDefect = null;
+
+                        if (maxAsymmetry > ASYMMETRY_THRESHOLD) {
+                            // Anomalía geométrica por desvío lateral
+                            if (worstZone === 'boca') {
+                                targetDefect = DEFECTOS_DB.find(d => d.id === "boca_inclinada") || DEFECTOS_DB.find(d => d.zona === "boca" && d.nombre.toLowerCase().includes("inclinada"));
+                            } else if (worstZone === 'cuello') {
+                                targetDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.zona === "cuello" && d.nombre.toLowerCase().includes("doblado"));
+                            } else if (worstZone === 'cuerpo') {
+                                targetDefect = DEFECTOS_DB.find(d => d.id === "parison_doblado") || DEFECTOS_DB.find(d => d.id === "botella_deformada") || DEFECTOS_DB.find(d => d.zona === "cuerpo");
+                            } else if (worstZone === 'fondo') {
+                                targetDefect = DEFECTOS_DB.find(d => d.id === "fondo_hundido") || DEFECTOS_DB.find(d => d.id === "fondo_inclinado") || DEFECTOS_DB.find(d => d.zona === "fondo");
+                            }
+                        } else {
+                            // Analizar densidades anormales (si es simétrico pero le falta material o tiene rugosidades)
+                            if (zones.boca.total < 3) {
+                                targetDefect = DEFECTOS_DB.find(d => d.id === "boca_incompleta") || DEFECTOS_DB.find(d => d.zona === "boca");
+                            } else if (zones.fondo.total < 3) {
+                                targetDefect = DEFECTOS_DB.find(d => d.id === "fondo_delgado") || DEFECTOS_DB.find(d => d.zona === "fondo");
+                            } else if (zones.cuerpo.total > (totalPixels * 0.65)) {
+                                // Demasiados bordes internos indican grafito o suciedad
+                                targetDefect = DEFECTOS_DB.find(d => d.id === "vidrio_sucio") || DEFECTOS_DB.find(d => d.zona === "cuerpo" && d.nombre.toLowerCase().includes("sucio"));
+                            }
+                        }
+
+                        // Renderizar resultado del análisis preciso
+                        if (targetDefect) {
+                            mostrarResultadoDefecto(targetDefect);
+                        } else {
+                            // Envase 100% Conforme
+                            document.getElementById('diagTitulo').innerText = "🟢 ENVASE CONFORME";
+                            document.getElementById('diagGravedad').innerText = "Artículo Conforme";
                             document.getElementById('diagGravedad').className = "status-alert menor";
                             document.getElementById('diagGravedad').style.display = "inline-block";
-                            document.getElementById('diagEstado').innerHTML = "La simetría geométrica y la distribución de vidrio coinciden con el perfil patrón para envase estándar (Burdeos 750cc).";
-                            document.getElementById('diagAcciones').innerHTML = `
-                                <li>La botella no presenta desviaciones críticas.</li>
-                                <li>Mantener la lubricación y la temporización nominal actual.</li>
+                            document.getElementById('diagEstado').innerHTML = `
+                                <b>Resultado:</b> La simetría y distribución de vidrio cumplen con el estándar nominal.<br>
+                                <b>Métricas Ópticas:</b> Asimetría máxima de ${(maxAsymmetry * 100).toFixed(1)}% en la zona ${worstZone} (dentro de tolerancia del 16%).
                             `;
-                        } else {
-                            // Defectos térmicos no geométricos (ej: burbujas, ondas frías, manchas de aceite, etc.)
-                            const thermalDefects = DEFECTOS_DB.filter(d => 
-                                d.id === "burbujas" || d.id === "ondas_frias" || 
-                                d.id === "vidrio_sucio" || d.id === "vidrio_escamoso" || 
-                                d.id === "marca_planchado"
-                            );
-                            const defect = thermalDefects[Math.floor(Math.random() * thermalDefects.length)] || DEFECTOS_DB[0];
-                            
-                            mostrarResultadoDefecto(defect);
+                            document.getElementById('diagAcciones').innerHTML = `
+                                <li>El artículo cumple con el perfil geométrico de soplado.</li>
+                                <li>Mantener la velocidad y el enfriamiento actual del molde final.</li>
+                            `;
                         }
-                    }
-                } else {
-                    // Fallback de simulación estática (si OpenCV no está cargado o no se usa la cámara de verdad)
-                    if (Math.random() < 0.25) {
-                        document.getElementById('diagTitulo').innerText = "✅ ENVASE CONFORME";
-                        document.getElementById('diagGravedad').innerText = "Excelente";
-                        document.getElementById('diagGravedad').className = "status-alert menor";
-                        document.getElementById('diagGravedad').style.display = "inline-block";
-                        document.getElementById('diagEstado').innerHTML = "La simetría geométrica y la distribución de vidrio coinciden con el perfil patrón para envase estándar (Burdeos 750cc).";
-                        document.getElementById('diagAcciones').innerHTML = `
-                            <li>La botella no presenta desviaciones críticas.</li>
-                            <li>Mantener la lubricación y la temporización nominal actual.</li>
-                        `;
-                    } else {
-                        const randomDefect = DEFECTOS_DB[Math.floor(Math.random() * DEFECTOS_DB.length)];
-                        mostrarResultadoDefecto(randomDefect);
+                        return;
                     }
                 }
-            }, 850);
+
+                // Fallback si la cámara no está en modo silueta o no detecta bordes (Simulación Contextual)
+                // Se simulará el diagnóstico de forma prioritaria sobre la zona filtrada activamente en el directorio de defectos
+                const activeFilterBtn = document.querySelector('.filter-btn.active');
+                let activeFilter = 'general';
+                if (activeFilterBtn) {
+                    activeFilter = activeFilterBtn.innerText.toLowerCase();
+                    if (activeFilter.includes('generales')) activeFilter = 'general';
+                }
+
+                if (Math.random() < 0.20) {
+                    // Simular conforme
+                    document.getElementById('diagTitulo').innerText = "🟢 ENVASE CONFORME (SIM)";
+                    document.getElementById('diagGravedad').innerText = "Artículo Conforme";
+                    document.getElementById('diagGravedad').className = "status-alert menor";
+                    document.getElementById('diagGravedad').style.display = "inline-block";
+                    document.getElementById('diagEstado').innerHTML = `
+                        <b>Simulación:</b> La silueta cumple con el perfil geométrico de la botella.<br>
+                        <b>Métricas Ópticas:</b> Asimetría máxima del 3.5% (tolerancia permitida hasta 16%).
+                    `;
+                    document.getElementById('diagAcciones').innerHTML = `
+                        <li>La botella no presenta desviaciones críticas.</li>
+                        <li>Mantener la lubricación y la temporización nominal actual.</li>
+                    `;
+                } else {
+                    // Filtrar por la zona que el operador está inspeccionando para que sea coherente
+                    const potentialDefects = DEFECTOS_DB.filter(d => d.zona === activeFilter || activeFilter === 'general');
+                    const selectedDefect = potentialDefects[Math.floor(Math.random() * potentialDefects.length)] || DEFECTOS_DB[0];
+                    
+                    // Añadir prefijo de Simulado para honestidad de calibración
+                    mostrarResultadoDefecto(selectedDefect);
+                    document.getElementById('diagTitulo').innerText = `🚨 ${selectedDefect.nombre.toUpperCase()} (SIM)`;
+                    document.getElementById('diagEstado').innerHTML = `<b>Simulación de Zona ${selectedDefect.zona.toUpperCase()}</b><br>${document.getElementById('diagEstado').innerHTML}`;
+                }
+            }, 800);
         });
 
         function mostrarResultadoDefecto(defect) {
