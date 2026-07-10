@@ -747,6 +747,136 @@
             box-shadow: 0 0 10px rgba(255, 111, 0, 0.25);
         }
     
+
+        /* Panel explicativo y demos visuales de filtros de vision */
+        .vision-demo-panel {
+            background: rgba(14, 16, 19, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .demo-description {
+            flex: 3;
+            font-size: 0.75rem;
+            line-height: 1.35;
+            color: var(--text-muted);
+        }
+        .demo-description b {
+            color: #fff;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+        }
+        .demo-preview-container {
+            flex: 1.2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Botella Simulada en CSS */
+        .bottle-demo-svg {
+            width: 32px;
+            height: 60px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        /* Animaciones CSS por Modo de Visión */
+        
+        /* MODO FINE (Silueta Fina) */
+        .bottle-demo-svg.mode-fine {
+            border: 1px solid var(--primary);
+            border-radius: 6px 6px 12px 12px;
+            box-shadow: 0 0 8px rgba(255, 111, 0, 0.4);
+            background: transparent;
+        }
+        .bottle-demo-svg.mode-fine::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 8px;
+            width: 14px;
+            height: 6px;
+            border: 1px solid var(--primary);
+            border-bottom: none;
+            border-radius: 3px 3px 0 0;
+            box-shadow: 0 -2px 5px rgba(255, 111, 0, 0.3);
+        }
+
+        /* MODO SOBEL (Costuras y Bordes Gruesos) */
+        .bottle-demo-svg.mode-sobel {
+            border: 3px solid var(--primary);
+            border-radius: 6px 6px 12px 12px;
+            box-shadow: 0 0 12px rgba(255, 111, 0, 0.6);
+            background: rgba(255, 111, 0, 0.05);
+            animation: flicker-sobel 1.5s infinite alternate;
+        }
+        .bottle-demo-svg.mode-sobel::before {
+            content: '';
+            position: absolute;
+            top: -7px;
+            left: 6px;
+            width: 14px;
+            height: 6px;
+            border: 3px solid var(--primary);
+            border-bottom: none;
+            border-radius: 3px 3px 0 0;
+        }
+        /* Costura central de junta en Sobel */
+        .bottle-demo-svg.mode-sobel::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            width: 2px;
+            height: 80%;
+            background: var(--primary);
+            transform: translateX(-50%);
+            box-shadow: 0 0 6px var(--primary);
+        }
+        @keyframes flicker-sobel {
+            0% { opacity: 0.85; box-shadow: 0 0 8px rgba(255, 111, 0, 0.4); }
+            100% { opacity: 1; box-shadow: 0 0 16px rgba(255, 111, 0, 0.8); }
+        }
+
+        /* MODO THERMAL (Mapa de Calor Térmico) */
+        .bottle-demo-svg.mode-thermal {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px 6px 12px 12px;
+            background: linear-gradient(180deg, #ff0000, #ffcc00, #33cc33, #0000ff);
+            background-size: 100% 200%;
+            animation: flow-heat 3s infinite linear;
+        }
+        .bottle-demo-svg.mode-thermal::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 8px;
+            width: 14px;
+            height: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: none;
+            border-radius: 3px 3px 0 0;
+            background: #ff0000;
+        }
+        @keyframes flow-heat {
+            0% { background-position: 50% 0%; }
+            100% { background-position: 50% 100%; }
+        }
+    
     </style>
 </head>
 <body>
@@ -833,6 +963,17 @@
                         <input type="radio" name="visionMode" value="thermal" style="display: none;">
                         <span class="vision-mode-tab" id="tabModeThermal" onclick="setVisionMode('thermal')">Térmico</span>
                     </label>
+                </div>
+            </div>
+
+            <!-- PANEL INTERACTIVO DE EXPLICACIÓN Y DEMOSTRACIÓN -->
+            <div class="vision-demo-panel" id="visionDemoPanel">
+                <div id="demoText" class="demo-description">
+                    <b>Silueta Fina (Contorno Técnico)</b>
+                    Limpia destellos y ruidos de planta. Dibuja contornos de 1 píxel para superponer con la guía verde y detectar cuellos doblados o bocas caídas.
+                </div>
+                <div class="demo-preview-container">
+                    <div id="demoVisual" class="bottle-demo-svg mode-fine"></div>
                 </div>
             </div>
         </div>
@@ -2712,19 +2853,42 @@
             valCanny.innerText = sliderCanny.value;
         });
 
-        // Cambiar el modo de visión y actualizar la interfaz táctil
+        // Cambiar el modo de visión y actualizar la interfaz táctil con texto de ayuda y demo animada
         window.setVisionMode = function(mode) {
             currentVisionMode = mode;
             
-            // Remover active de todas las pestañas de visión
-            document.getElementById('tabModeFine').classList.remove('active');
-            document.getElementById('tabModeSobel').classList.remove('active');
-            document.getElementById('tabModeThermal').classList.remove('active');
+            const tabFine = document.getElementById('tabModeFine');
+            const tabSobel = document.getElementById('tabModeSobel');
+            const tabThermal = document.getElementById('tabModeThermal');
             
-            // Agregar active a la pestaña seleccionada
-            if (mode === 'fine') document.getElementById('tabModeFine').classList.add('active');
-            if (mode === 'sobel') document.getElementById('tabModeSobel').classList.add('active');
-            if (mode === 'thermal') document.getElementById('tabModeThermal').classList.add('active');
+            const demoText = document.getElementById('demoText');
+            const demoVisual = document.getElementById('demoVisual');
+            
+            // Remover active de todas las pestañas de visión
+            tabFine.classList.remove('active');
+            tabSobel.classList.remove('active');
+            tabThermal.classList.remove('active');
+            
+            // Reiniciar clases del visualizador de botella
+            demoVisual.className = "bottle-demo-svg";
+            
+            // Aplicar modo y descripciones de terreno correspondientes
+            if (mode === 'fine') {
+                tabFine.classList.add('active');
+                demoVisual.classList.add('mode-fine');
+                demoText.innerHTML = `<b>Silueta Fina (Contorno Técnico)</b>
+                Aplica supresión de ruido e hila una línea naranja de 1px. Úsala para alinear la botella con la guía verde y detectar cuellos doblados o bocas inclinadas.`;
+            } else if (mode === 'sobel') {
+                tabSobel.classList.add('active');
+                demoVisual.classList.add('mode-sobel');
+                demoText.innerHTML = `<b>Bordes Sobel (Superficie y Costuras)</b>
+                Resalta contornos gruesos y bordes internos. Úsala para inspeccionar fisuras en la boca, costuras de junta abiertas o moldes sucios de grafito.`;
+            } else if (mode === 'thermal') {
+                tabThermal.classList.add('active');
+                demoVisual.classList.add('mode-thermal');
+                demoText.innerHTML = `<b>Simulación Térmica (Masa de Vidrio)</b>
+                Mapea el brillo del envase caliente a colores. Úsala para evaluar de manera visual la distribución uniforme del vidrio y evitar espesores delgados.`;
+            }
             
             console.log("Modo de visión cambiado a:", mode);
         };
