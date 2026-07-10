@@ -946,7 +946,7 @@
         }
     
 
-        /* Estilos de Firma Industrial (Placa de Características de Maquinaria) */
+        /* Estilos de Firma Estilo Cajetín de Plano de Ingeniería CAD */
         .industrial-footer {
             margin: 40px auto 20px auto;
             width: 100%;
@@ -960,38 +960,47 @@
             background: linear-gradient(90deg, transparent, rgba(255, 111, 0, 0.25), transparent);
             margin-bottom: 16px;
         }
-        .nameplate-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
+        .blueprint-cajetin {
             background: rgba(30, 34, 42, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
-            padding: 10px 8px;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+            border: 1.5px solid rgba(255, 111, 0, 0.2);
+            border-radius: 6px;
+            padding: 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            box-sizing: border-box;
             backdrop-filter: blur(4px);
         }
-        .nameplate-item {
+        .cajetin-row {
+            display: flex;
+            width: 100%;
+        }
+        .cajetin-cell {
+            padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: flex-start;
+            border-right: 1.5px solid rgba(255, 111, 0, 0.2);
+            box-sizing: border-box;
         }
-        .nameplate-item:last-child {
+        .cajetin-cell:last-child {
             border-right: none;
         }
-        .nameplate-label {
+        .cajetin-label {
             font-size: 0.52rem;
-            color: var(--text-muted);
+            color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
+            font-weight: bold;
             margin-bottom: 3px;
         }
-        .nameplate-value {
-            font-size: 0.65rem;
+        .cajetin-value {
+            font-size: 0.75rem;
             color: #fff;
             font-weight: bold;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.03em;
         }
         .footer-subtext {
             font-size: 0.52rem;
@@ -1001,23 +1010,13 @@
             margin-top: 8px;
         }
         @media (max-width: 480px) {
-            .nameplate-container {
-                grid-template-columns: 1fr;
-                gap: 10px;
-                padding: 12px;
+            .cajetin-cell {
+                padding: 8px 10px;
             }
-            .nameplate-item {
-                border-right: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                padding-bottom: 6px;
-                width: 100%;
-            }
-            .nameplate-item:last-child {
-                border-bottom: none;
-                padding-bottom: 0;
+            .cajetin-value {
+                font-size: 0.7rem;
             }
         }
-    
     </style>
 </head>
 <body>
@@ -1278,25 +1277,29 @@
 
     <footer class="industrial-footer">
         <div class="footer-line"></div>
-        <div class="nameplate-container">
-            <div class="nameplate-item">
-                <span class="nameplate-label">SISTEMA</span>
-                <span class="nameplate-value">VITRODIAG V6.0</span>
+        <div class="blueprint-cajetin">
+            <div class="cajetin-row">
+                <div class="cajetin-cell" style="flex: 2;">
+                    <span class="cajetin-label">DESARROLLADO POR</span>
+                    <span class="cajetin-value">MAURICIO ASTUDILLO</span>
+                </div>
+                <div class="cajetin-cell" style="flex: 1;">
+                    <span class="cajetin-label">VERSIÓN</span>
+                    <span class="cajetin-value">V6.0</span>
+                </div>
             </div>
-            <div class="nameplate-item">
-                <span class="nameplate-label">ROL PRINCIPAL</span>
-                <span class="nameplate-value">OPERADOR MÁQUINA I.S.</span>
-            </div>
-            <div class="nameplate-item">
-                <span class="nameplate-label">ROL TECNOLÓGICO</span>
-                <span class="nameplate-value" style="font-size: 0.58rem;">DESARROLLADOR INDEPENDIENTE</span>
-            </div>
-            <div class="nameplate-item">
-                <span class="nameplate-label">PLANTA</span>
-                <span class="nameplate-value">CRISTAL CHILE</span>
+            <div class="cajetin-row" style="border-top: 1.5px solid rgba(255, 111, 0, 0.2);">
+                <div class="cajetin-cell" style="flex: 2;">
+                    <span class="cajetin-label">APROBADO / PLANTA</span>
+                    <span class="cajetin-value">CRISTAL CHILE</span>
+                </div>
+                <div class="cajetin-cell" style="flex: 1;">
+                    <span class="cajetin-label">PROCESO</span>
+                    <span class="cajetin-value">SOP / NNPB</span>
+                </div>
             </div>
         </div>
-        <div class="footer-subtext">PROTOTIPO DE INGENIERÍA - CONTROL DE CONFORMADO DE VIDRIO</div>
+        <div class="footer-subtext">PLANO DE CONTROL ÓPTICO - MÁQUINA I.S. CALIENTE</div>
     </footer>
 
     <script>
