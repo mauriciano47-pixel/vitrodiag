@@ -1088,6 +1088,14 @@
                 </div>
                 <input type="range" id="sliderCanny" class="range-input" min="20" max="150" step="5" value="50">
             </div>
+
+            <div class="slider-group">
+                <div class="slider-header">
+                    <span>Tolerancia de Asimetría (Sensibilidad)</span>
+                    <span class="slider-value" id="valTolerance">8%</span>
+                </div>
+                <input type="range" id="sliderTolerance" class="range-input" min="2" max="15" step="1" value="8">
+            </div>
             <div class="slider-group" style="margin-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
                 <div class="slider-header" style="margin-bottom: 6px;">
                     <span>Modo de Visión Artificial</span>
@@ -3114,6 +3122,8 @@
         const sliderContrast = document.getElementById('sliderContrast');
         const sliderBrightness = document.getElementById('sliderBrightness');
         const sliderCanny = document.getElementById('sliderCanny');
+        const sliderTolerance = document.getElementById('sliderTolerance');
+        const valTolerance = document.getElementById('valTolerance');
         
         const valContrast = document.getElementById('valContrast');
         const valBrightness = document.getElementById('valBrightness');
@@ -3141,6 +3151,9 @@
         });
         sliderCanny.addEventListener('input', () => {
             valCanny.innerText = sliderCanny.value;
+        });
+        sliderTolerance.addEventListener('input', () => {
+            valTolerance.innerText = sliderTolerance.value + "%";
         });
 
         // Cambiar el modo de visión y actualizar la interfaz táctil con texto de ayuda y demo animada
@@ -3660,19 +3673,70 @@
                             }
                         }
 
-                        // --- FIRMA B: CUELLO DOBLADO (CUELLO TORCIDO) ---
-                        if (zones.cuello.total > 2) {
-                            const cDevs = zones.cuello.deviations;
-                            const avgDev = cDevs.reduce((sum, val) => sum + val, 0) / cDevs.length;
+                        // --- FIRMA B: CUELLO DOBLADO / CUELLO TORCIDO (ANÁLISIS ANGULAR PENDIENTE DEL EJE) ---
+                        // Leemos el control de tolerancia táctil. Si es 8%, la tolerancia angular es 8 * 0.35 = 2.8 grados.
+                        const tolerancePct = parseFloat(sliderTolerance.value) || 8;
+                        const angleThreshold = tolerancePct * 0.35; // Umbral de inclinación en grados
 
-                            // CUELLO TORCIDO (Doblado): Eje del cuello desplazado del eje real de la base (Desviación > 3.2px)
-                            // Aumentamos sensibilidad bajando el umbral a 3.2px para capturar el cuello torcido del operador
-                            if (Math.abs(avgDev) > 3.2) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 8) * 100));
-                                if (confidence > maxConfidence) {
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.zona === "cuello" && d.nombre.toLowerCase().includes("doblado")) || DEFECTOS_DB.find(d => d.id === "cuello_torcido");
-                                    reason = `Eje del cuello desplazado lateralmente por ${avgDev.toFixed(1)} px con respecto al centro de base. Cuello Torcido confirmado.`;
+                        if (zones.cuello.total > 2 && zones.cuerpo.total > 3) {
+                            // Hallar el centro medio del cuello en X (promedio de los puntos centrales del canal)
+                            // Y el centro medio del cuerpo en X (promedio de los puntos centrales del cuerpo)
+                            const neckXPoints = [];
+                            const bodyXPoints = [];
+                            
+                            const height = lastBordersHeight;
+                            const width = lastBordersWidth;
+                            
+                            // Escanear para tener coordenadas Y y X promedio de cuello y cuerpo
+                            let neckYSum = 0, neckYCount = 0;
+                            let bodyYSum = 0, bodyYCount = 0;
+
+                            for (let y = 4; y < height - 4; y += 2) {
+                                let l = -1, r = -1;
+                                for (let x = 2; x < width / 2; x++) {
+                                    if (lastProcessedBorders[y * width + x] > 0) { l = x; break; }
+                                }
+                                for (let x = width - 3; x >= width / 2; x--) {
+                                    if (lastProcessedBorders[y * width + x] > 0) { r = x; break; }
+                                }
+                                if (l !== -1 && r !== -1) {
+                                    const centerX = (l + r) / 2;
+                                    if (y >= zones.cuello.startY && y < zones.cuello.endY) {
+                                        neckXPoints.push(centerX);
+                                        neckYSum += y;
+                                        neckYCount++;
+                                    } else if (y >= zones.cuerpo.startY && y < zones.cuerpo.endY) {
+                                        bodyXPoints.push(centerX);
+                                        bodyYSum += y;
+                                        bodyYCount++;
+                                    }
+                                }
+                            }
+
+                            if (neckXPoints.length > 2 && bodyXPoints.length > 3) {
+                                const avgNeckX = neckXPoints.reduce((sum, v) => sum + v, 0) / neckXPoints.length;
+                                const avgBodyX = bodyXPoints.reduce((sum, v) => sum + v, 0) / bodyXPoints.length;
+                                
+                                const avgNeckY = neckYSum / neckYCount;
+                                const avgBodyY = bodyYSum / bodyYCount;
+
+                                // Calcular delta X (desvío lateral) y delta Y (altura vertical)
+                                const deltaX = avgNeckX - avgBodyX;
+                                const deltaY = avgBodyY - avgNeckY; // La base está más abajo en la imagen (Y mayor)
+
+                                // Ángulo de inclinación del cuello con respecto a la vertical
+                                const angleDev = Math.atan2(Math.abs(deltaX), deltaY) * (180 / Math.PI);
+                                
+                                console.log("Análisis Angular de Cuello: Inclinación =", angleDev.toFixed(2), "grados | Límite =", angleThreshold.toFixed(2), "grados");
+
+                                if (angleDev > angleThreshold) {
+                                    // Confianza del diagnóstico basada en qué tan inclinada está la botella
+                                    const confidence = Math.min(100, Math.floor((angleDev / angleThreshold) * 78));
+                                    if (confidence > maxConfidence) {
+                                        maxConfidence = confidence;
+                                        detectedDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.zona === "cuello" && d.nombre.toLowerCase().includes("doblado")) || DEFECTOS_DB.find(d => d.id === "cuello_torcido");
+                                        reason = `Desvío angular del eje del cuello de ${angleDev.toFixed(1)}° con respecto a la base (Límite tolerado: ±${angleThreshold.toFixed(1)}°). Cuello Torcido confirmado.`;
+                                    }
                                 }
                             }
                         }
