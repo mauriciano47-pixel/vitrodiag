@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vitrodiag-cache-v7';
+const CACHE_NAME = 'vitrodiag-cache-v8';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -62,4 +62,13 @@ self.addEventListener('fetch', event => {
           });
       })
   );
+});
+
+
+// Escuchar el mensaje para forzar la activación de la versión nueva de inmediato
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[Service Worker] Activando versión nueva inmediatamente...');
+    self.skipWaiting();
+  }
 });

@@ -3598,12 +3598,44 @@
             });
         });
 
-        // Registrar Service Worker para PWA Offline
+        // Registrar Service Worker para PWA Offline con autodetección y recarga automática
         if ('serviceWorker' in navigator) {
+            let refreshing = false;
+            
+            // Detectar si el controlador cambia para recargar la ventana de inmediato
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    console.log("[PWA] Nuevo Service Worker tomó el control. Recargando app...");
+                    window.location.reload();
+                }
+            });
+
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker de VitroDiag activo.', reg))
-                .catch(err => console.error('Error de registro de Service Worker: ', err));
+                .then(reg => {
+                    console.log('Service Worker de VitroDiag registrado con éxito.', reg);
+                    
+                    // Comprobar si hay una actualización pendiente de activar
+                    if (reg.waiting) {
+                        console.log("[PWA] Nueva actualización en espera de activación.");
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                    
+                    // Escuchar por nuevas actualizaciones en segundo plano
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log("[PWA] Nueva actualización instalada en caché. Activando...");
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            }
+                        });
+                    });
+                })
+                .catch(err => console.error('Error al registrar Service Worker: ', err));
             });
         }
 
