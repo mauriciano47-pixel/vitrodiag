@@ -1,8 +1,7 @@
-const CACHE_NAME = 'vitrodiag-cache-v2';
+const CACHE_NAME = 'vitrodiag-cache-v3';
 const ASSETS = [
   './index.html',
   './manifest.json',
-  'https://docs.opencv.org/4.5.4/opencv.js',
   'https://img.icons8.com/neon/96/glass-bottle.png',
   'https://img.icons8.com/neon/192/glass-bottle.png',
   'https://img.icons8.com/neon/512/glass-bottle.png'
