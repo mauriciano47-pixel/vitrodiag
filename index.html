@@ -6,8 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>VitroDiag v1.5 - Operador IS</title>
-    <!-- Carga de OpenCV.js local (Soporte Offline Completo en Planta) -->
-    <script async src="./opencv.js" type="text/javascript"></script>
+
     <style>
         /* Sistema de diseño industrial y moderno (Tema de vidrio fundido y grafito) */
         :root {
@@ -2633,6 +2632,7 @@
         // --- CÁMERA Y DIAGNÓSTICO EN VIVO ---
         const video = document.getElementById('webcam');
         const canvas = document.getElementById('canvasOutput');
+        const ctx = canvas.getContext('2d');
         const btn = document.getElementById('btnDiagnosticar');
         const card = document.getElementById('resultadoCard');
         const toggle = document.getElementById('silhouetteToggle');
@@ -2648,34 +2648,14 @@
         const valBrightness = document.getElementById('valBrightness');
         const valCanny = document.getElementById('valCanny');
 
-        let cvReady = false;
         let streamActive = false;
-        let cap = null;
-        let src = null;
-        let dst = null;
-        let adjusted = null;
+        let animationFrameId = null;
+        let offscreenCanvas = document.createElement('canvas');
+        let offscreenCtx = offscreenCanvas.getContext('2d');
 
-        let cvLoadSeconds = 0;
-        // Detector periódico del runtime de OpenCV.js con contador de segundos para planta
-        function checkOpenCv() {
-            cvLoadSeconds++;
-            if (typeof cv !== 'undefined' && cv.runtimeInitialized) {
-                cvReady = true;
-                status.innerText = "OpenCV: Activo";
-                status.style.color = "#10b981"; // success (verde brillante)
-                console.log("OpenCV.js cargado correctamente.");
-            } else {
-                if (cvLoadSeconds > 24) { // Más de 12 segundos esperando
-                    status.innerText = "OpenCV: Red lenta (Espera o acércate al Wi-Fi)";
-                    status.style.color = "#f59e0b"; // warning (naranja/amarillo)
-                } else {
-                    status.innerText = `OpenCV: Cargando (${Math.floor(cvLoadSeconds/2)}s)...`;
-                    status.style.color = "#ef4444"; // peligro/espera (rojo)
-                }
-                setTimeout(checkOpenCv, 500);
-            }
-        }
-        checkOpenCv();
+        // Motor de visión nativo en JS (Cero dependencias, carga instantánea y optimizado para moldería)
+        status.innerText = "Motor Visión: Activo (Nativo)";
+        status.style.color = "#10b981"; // success (verde brillante)
 
         // Escuchar sliders para actualizar valores en pantalla
         sliderContrast.addEventListener('input', () => {
@@ -2702,24 +2682,18 @@
         navigator.mediaDevices.getUserMedia(cameraConstraints)
         .then(stream => { video.srcObject = stream; })
         .catch(err => {
-            // Fallback si falla la cámara trasera o HD
             navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => { video.srcObject = stream; })
             .catch(error => {
                 console.log("No se pudo iniciar la cámara: ", error);
-                status.innerText = "OpenCV: Sin cámara";
+                status.innerText = "Visión: Sin cámara";
                 status.style.color = "#ef4444";
             });
         });
 
-        // Manejar el toggle de silueta (Visión Artificial OpenCV)
+        // Manejar el toggle de silueta (Visión Artificial Nativa)
         toggle.addEventListener('change', () => {
             if (toggle.checked) {
-                if (!cvReady) {
-                    alert("El motor OpenCV.js aún está cargando. Por favor, espera un momento...");
-                    toggle.checked = false;
-                    return;
-                }
                 canvas.style.display = 'block';
                 video.style.display = 'none';
                 calibrationPanel.style.display = 'flex'; // Mostrar controles de planta
@@ -2733,74 +2707,116 @@
         });
 
         function startProcessing() {
-            if (!cvReady || streamActive) return;
             streamActive = true;
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            offscreenCanvas.width = 320; // 320x240 resolución interna para fluidez de 60 FPS
+            offscreenCanvas.height = 240;
             
-            // Inicializar las matrices con las dimensiones del video
-            src = new cv.Mat(video.videoHeight || 480, video.videoWidth || 640, cv.CV_8UC4);
-            dst = new cv.Mat();
-            adjusted = new cv.Mat();
-            cap = new cv.VideoCapture(video);
-            
-            requestAnimationFrame(processFrame);
+            animationFrameId = requestAnimationFrame(processFrame);
         }
 
         function stopProcessing() {
             streamActive = false;
-            if (src) { src.delete(); src = null; }
-            if (dst) { dst.delete(); dst = null; }
-            if (adjusted) { adjusted.delete(); adjusted = null; }
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
         }
+
+        // Buffer global de píxeles procesados para el diagnóstico
+        let lastProcessedBorders = null;
+        let lastBordersWidth = 0;
+        let lastBordersHeight = 0;
 
         function processFrame() {
             if (!streamActive) return;
             
             try {
-                // Leer frame actual del video
-                cap.read(src);
-                
+                // 1. Pintar el frame de video en canvas oculto de baja resolución
+                offscreenCtx.drawImage(video, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+                const imgData = offscreenCtx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+                const data = imgData.data;
+                const width = imgData.width;
+                const height = imgData.height;
+
                 // OBTENER VALORES DE LOS DESLIZADORES DE CALIBRACIÓN EN CALIENTE
                 const alpha = parseFloat(sliderContrast.value);      // Contraste (1.0 - 3.0)
                 const beta = parseInt(sliderBrightness.value);       // Brillo (-50 - 50)
-                const cannyThresh = parseInt(sliderCanny.value);     // Umbral inferior de Canny
-                
-                // 1. Preprocesamiento: Ajuste de Contraste y Brillo para contrarrestar luces de planta
-                // dst = alpha * src + beta
-                src.convertTo(adjusted, -1, alpha, beta);
-                
-                // 2. Convertir a escala de grises
-                cv.cvtColor(adjusted, dst, cv.COLOR_RGBA2GRAY);
-                
-                // 3. Filtro Bilateral en lugar de Gaussian Blur para preservar bordes cortantes de la silueta
-                // y suavizar los reflejos especulares de las luces de la planta
-                let blurred = new cv.Mat();
-                cv.bilateralFilter(dst, blurred, 5, 75, 75);
-                
-                // 4. Detección de bordes Canny usando el umbral dinámico de calibración
-                cv.Canny(blurred, dst, cannyThresh, cannyThresh * 2);
-                blurred.delete();
-                
-                // 5. Teñir los bordes de color naranja neón (estética del vidrio fundido)
-                let colorDst = new cv.Mat();
-                cv.cvtColor(dst, colorDst, cv.COLOR_GRAY2RGBA);
-                
-                let data = colorDst.data;
+                const threshold = parseInt(sliderCanny.value);       // Umbral de detección
+
+                // Crear escala de grises preprocesada
+                const gray = new Uint8ClampedArray(width * height);
                 for (let i = 0; i < data.length; i += 4) {
-                    if (data[i] > 0) { // Si hay borde (píxel blanco en Canny)
-                        data[i] = 255;     // R
-                        data[i+1] = 111;   // G
-                        data[i+2] = 0;     // B
+                    let r = data[i];
+                    let g = data[i+1];
+                    let b = data[i+2];
+
+                    // Ajuste de contraste y brillo
+                    r = Math.min(255, Math.max(0, alpha * r + beta));
+                    g = Math.min(255, Math.max(0, alpha * g + beta));
+                    b = Math.min(255, Math.max(0, alpha * b + beta));
+
+                    gray[i / 4] = 0.299 * r + 0.587 * g + 0.114 * b;
+                }
+
+                const borders = new Uint8ClampedArray(width * height);
+                const outputImgData = ctx.createImageData(canvas.width, canvas.height);
+                const outData = outputImgData.data;
+                
+                const scaleX = canvas.width / width;
+                const scaleY = canvas.height / height;
+
+                // 2. Filtro Sobel optimizado de detección de bordes
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        // Gradiente horizontal (Gx)
+                        const gx = 
+                            -1 * gray[(y-1)*width + (x-1)] + 1 * gray[(y-1)*width + (x+1)] +
+                            -2 * gray[ y   *width + (x-1)] + 2 * gray[ y   *width + (x+1)] +
+                            -1 * gray[(y+1)*width + (x-1)] + 1 * gray[(y+1)*width + (x+1)];
+
+                        // Gradiente vertical (Gy)
+                        const gy = 
+                            -1 * gray[(y-1)*width + (x-1)] - 2 * gray[(y-1)*width + x] - 1 * gray[(y-1)*width + (x+1)] +
+                             1 * gray[(y+1)*width + (x-1)] + 2 * gray[(y+1)*width + x] + 1 * gray[(y+1)*width + (x+1)];
+
+                        const magnitude = Math.abs(gx) + Math.abs(gy);
+
+                        // Si supera el umbral del slider, pintar de naranja incandescente
+                        if (magnitude > threshold) {
+                            borders[y*width + x] = 255;
+
+                            const targetX = Math.floor(x * scaleX);
+                            const targetY = Math.floor(y * scaleY);
+                            
+                            // Dibujar un bloque grueso de píxeles
+                            for (let dy = 0; dy < 2; dy++) {
+                                for (let dx = 0; dx < 2; dx++) {
+                                    const px = targetX + dx;
+                                    const py = targetY + dy;
+                                    if (px < canvas.width && py < canvas.height) {
+                                        const idx = (py * canvas.width + px) * 4;
+                                        outData[idx] = 255;     // R
+                                        outData[idx+1] = 111;   // G
+                                        outData[idx+2] = 0;     // B
+                                        outData[idx+3] = 255;   // A
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
-                
-                // Mostrar en el canvasOutput
-                cv.imshow('canvasOutput', colorDst);
-                colorDst.delete();
-                
-                requestAnimationFrame(processFrame);
+
+                lastProcessedBorders = borders;
+                lastBordersWidth = width;
+                lastBordersHeight = height;
+
+                ctx.putImageData(outputImgData, 0, 0);
+                animationFrameId = requestAnimationFrame(processFrame);
             } catch (err) {
-                console.error("Error en procesamiento de frame: ", err);
-                requestAnimationFrame(processFrame);
+                console.error("Error en frame de vision nativa: ", err);
+                animationFrameId = requestAnimationFrame(processFrame);
             }
         }
 
@@ -2823,17 +2839,17 @@
                 let totalPixels = 0;
                 let hasSilhouette = false;
 
-                if (cvReady && dst && !dst.empty()) {
+                if (lastProcessedBorders) {
                     // Contamos los píxeles de borde en la mitad izquierda y derecha
-                    let width = dst.cols;
-                    let height = dst.rows;
+                    let width = lastBordersWidth;
+                    let height = lastBordersHeight;
                     let leftCount = 0;
                     let rightCount = 0;
 
                     // Escanear la matriz binaria de Canny
                     for (let y = Math.floor(height * 0.2); y < Math.floor(height * 0.8); y += 4) {
                         for (let x = Math.floor(width * 0.1); x < Math.floor(width * 0.9); x += 4) {
-                            let pixelVal = dst.ucharAt(y, x);
+                            let pixelVal = lastProcessedBorders[y*width + x];
                             if (pixelVal > 0) {
                                 totalPixels++;
                                 if (x < width / 2) {
