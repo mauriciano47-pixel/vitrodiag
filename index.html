@@ -6,8 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>VitroDiag v1.5 - Operador IS</title>
-    <!-- Carga de OpenCV.js para procesamiento de siluetas (CDNjs Cloudflare optimizada) -->
-    <script async src="https://cdnjs.cloudflare.com/ajax/libs/opencv.js/4.5.4/opencv.js" type="text/javascript"></script>
+    <!-- Carga de OpenCV.js para procesamiento de siluetas (URL oficial de OpenCV) -->
+    <script async src="https://docs.opencv.org/4.5.4/opencv.js" type="text/javascript"></script>
     <style>
         /* Sistema de diseño industrial y moderno (Tema de vidrio fundido y grafito) */
         :root {
@@ -2655,14 +2655,23 @@
         let dst = null;
         let adjusted = null;
 
-        // Detector periódico del runtime de OpenCV.js
+        let cvLoadSeconds = 0;
+        // Detector periódico del runtime de OpenCV.js con contador de segundos para planta
         function checkOpenCv() {
+            cvLoadSeconds++;
             if (typeof cv !== 'undefined' && cv.runtimeInitialized) {
                 cvReady = true;
                 status.innerText = "OpenCV: Activo";
                 status.style.color = "#10b981"; // success (verde brillante)
                 console.log("OpenCV.js cargado correctamente.");
             } else {
+                if (cvLoadSeconds > 24) { // Más de 12 segundos esperando
+                    status.innerText = "OpenCV: Red lenta (Espera o acércate al Wi-Fi)";
+                    status.style.color = "#f59e0b"; // warning (naranja/amarillo)
+                } else {
+                    status.innerText = `OpenCV: Cargando (${Math.floor(cvLoadSeconds/2)}s)...`;
+                    status.style.color = "#ef4444"; // peligro/espera (rojo)
+                }
                 setTimeout(checkOpenCv, 500);
             }
         }
