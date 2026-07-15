@@ -5044,10 +5044,21 @@
                 activeViewId = viewName + 'View';
             }
 
+            // Gestión y liberación cruzada de hardware de cámaras para evitar congelamiento
             if (viewName === 'live') {
+                window.stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
                 if (toggle.checked) startProcessing();
+            } else if (viewName === 'scanner') {
+                stopProcessing(); // Detener cámara de diagnóstico al entrar a Escáner
+                // Encender la cámara del escáner si está en modo cámara activo
+                const btnCam = document.getElementById('btnScannerUseCam');
+                if (btnCam && btnCam.classList.contains('active')) {
+                    startScannerCamera();
+                }
             } else {
+                // Detener ambas cámaras para ahorrar CPU y RAM en el móvil
                 stopProcessing();
+                window.stopScannerCamera();
             }
 
             // Al cambiar a directorio, renderizar la lista completa
@@ -5825,7 +5836,12 @@
             runOcrBtn.setAttribute('disabled', 'true');
             statusMsg.innerText = "Inicializando motor OCR local...";
 
-            try {
+            // Timeout de 15 segundos para evitar que la UI quede congelada de forma indefinida
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error("Timeout de inicialización de OCR (15 segundos superado)")), 15000);
+            });
+
+            const ocrPromise = (async () => {
                 const worker = await Tesseract.createWorker('spa');
                 statusMsg.innerText = "Analizando caracteres e interpretando texto...";
                 
@@ -5835,6 +5851,12 @@
                 
                 statusMsg.innerText = "Liberando recursos de memoria local...";
                 await worker.terminate();
+                return text;
+            })();
+
+            try {
+                // Competencia entre el OCR y el Timeout
+                const text = await Promise.race([ocrPromise, timeoutPromise]);
 
                 statusMsg.innerText = "Interpretando datos de grados de la consola BDF...";
                 parseScannerOcrText(text);
@@ -5842,10 +5864,15 @@
                 loader.style.display = 'none';
                 runOcrBtn.removeAttribute('disabled');
             } catch (err) {
-                console.error("Error en motor OCR Tesseract.js:", err);
+                console.error("Error o timeout en motor OCR Tesseract.js:", err);
                 loader.style.display = 'none';
                 runOcrBtn.removeAttribute('disabled');
-                showToast("Error al digitalizar imagen. Asegúrate que tenga buena luz.", "danger");
+                
+                let errorMsg = "Error al digitalizar imagen. Intenta con mejor enfoque o luz.";
+                if (err.message && err.message.includes("Timeout")) {
+                    errorMsg = "Tiempo de espera agotado. Verifica tu conexión de red para la primera carga de OCR o re-intenta.";
+                }
+                showToast(errorMsg, "danger");
             }
         };
 
