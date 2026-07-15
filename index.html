@@ -1116,6 +1116,38 @@
             padding: 0;
             line-height: 1;
         }
+        /* Estilos de las alertas de validación de BDF */
+        .validation-alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            line-height: 1.35;
+            border: 1px solid transparent;
+            text-align: left;
+        }
+        .validation-alert.success {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+        .validation-alert.warning {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+        .validation-alert.danger {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+        .validation-alert-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+            line-height: 1;
+        }
 
         /* Estilos de la barra de artículo activo */
         .active-article-bar {
@@ -1387,6 +1419,14 @@
             </label>
         </div>
 
+        <div class="toggle-container" style="margin-top: 10px; margin-bottom: 15px;">
+            <span class="toggle-label">Optimizar para Pantalla de Luz (Backlight)</span>
+            <label class="switch">
+                <input type="checkbox" id="backlightToggle" title="Optimizar para pantalla de luz" aria-label="Optimizar para pantalla de luz">
+                <span class="slider round"></span>
+            </label>
+        </div>
+
         <!-- PANEL DE CALIBRACIÓN ÓPTICA PARA LA PLANTA -->
         <div class="calibration-panel" id="calibrationPanel">
             <div class="calibration-title">⚙️ Calibración Óptica (Anti-Reflejos de Planta)</div>
@@ -1474,57 +1514,91 @@
     <!-- PESTAÑA 1.5: CALCULADORA DE TEMPORIZACIÓN SOP -->
     <div id="sopView" class="view-content">
         <div class="sop-calculator">
-            <div class="calibration-title">📊 Calculadora SOP (Temporización de Máquina)</div>
-            
-            <div class="form-group">
-                <label for="calcBpm">Velocidad de Producción (BPM - Botellas Por Minuto)</label>
-                <input type="number" id="calcBpm" class="input-number" min="30" max="1000" value="240">
-            </div>
+            <div class="calibration-title">📊 Calculadora de Sincronización BDF Industries</div>
             
             <div class="form-row">
-                <div class="form-group form-group-half">
-                    <label for="calcSections">Secciones Máquina</label>
-                    <select id="calcSections" class="select-input">
-                        <option value="6">6 Secciones</option>
-                        <option value="8">8 Secciones</option>
-                        <option value="10" selected>10 Secciones</option>
-                        <option value="12">12 Secciones</option>
-                    </select>
+                <div class="form-group">
+                    <label for="calcBpm">Velocidad (BPM)</label>
+                    <input type="number" id="calcBpm" class="input-number" min="30" max="1000" value="396" oninput="validateBdfTiming()">
                 </div>
-                <div class="form-group form-group-half">
-                    <label for="calcCavities">Tipo de Gota (Cavidad)</label>
-                    <select id="calcCavities" class="select-input">
-                        <option value="1">Simple Gota (DG)</option>
-                        <option value="2" selected>Doble Gota (DDG)</option>
-                        <option value="3">Triple Gota (DTG)</option>
-                        <option value="4">Cuádruple Gota</option>
-                    </select>
+                <div class="form-group">
+                    <label for="calcSections">Secciones</label>
+                    <input type="number" id="calcSections" class="input-number" min="4" max="20" value="11" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="calcCavities">Gota (Cavidad)</label>
+                    <input type="number" id="calcCavities" class="input-number" min="1" max="4" value="3" readonly>
                 </div>
             </div>
-            
-            <div class="form-group">
-                <label for="calcStart">Grado de Inicio del Evento (0° - 360°)</label>
-                <input type="number" id="calcStart" class="input-number" min="0" max="360" value="30">
+
+            <!-- Panel de Entrada de Grados del Ciclo (360°) -->
+            <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                <div style="font-weight: bold; font-size: 0.85rem; color: var(--primary); margin-bottom: 12px; text-align: left;">Programación del Ciclo (0° - 360°):</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="valPlungerUp">Macho Arriba (Plunger Up)</label>
+                        <input type="number" id="valPlungerUp" class="input-number" min="0" max="360" value="80" oninput="validateBdfTiming()">
+                    </div>
+                    <div class="form-group">
+                        <label for="valPlungerDown">Macho Abajo (Plunger Down)</label>
+                        <input type="number" id="valPlungerDown" class="input-number" min="0" max="360" value="150" oninput="validateBdfTiming()">
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label for="valBlankOpen">Apertura Preforma (Blank Open)</label>
+                        <input type="number" id="valBlankOpen" class="input-number" min="0" max="360" value="190" oninput="validateBdfTiming()">
+                    </div>
+                    <div class="form-group">
+                        <label for="valInvertStart">Inicio Inversión (Invert Start)</label>
+                        <input type="number" id="valInvertStart" class="input-number" min="0" max="360" value="195" oninput="validateBdfTiming()">
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label for="valBlowClose">Cierre Molde Final (Blow Close)</label>
+                        <input type="number" id="valBlowClose" class="input-number" min="0" max="360" value="240" oninput="validateBdfTiming()">
+                    </div>
+                    <div class="form-group">
+                        <label for="valNeckOpen">Apertura Anillo (Neck Ring Open)</label>
+                        <input type="number" id="valNeckOpen" class="input-number" min="0" max="360" value="245" oninput="validateBdfTiming()">
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label for="valBlowOn">Soplado Final ON (Blow ON)</label>
+                        <input type="number" id="valBlowOn" class="input-number" min="0" max="360" value="270" oninput="validateBdfTiming()">
+                    </div>
+                    <div class="form-group">
+                        <label for="valBlowOff">Soplado Final OFF (Blow OFF)</label>
+                        <input type="number" id="valBlowOff" class="input-number" min="0" max="360" value="325" oninput="validateBdfTiming()">
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="calcEnd">Grado de Término del Evento (0° - 360°)</label>
-                <input type="number" id="calcEnd" class="input-number" min="0" max="360" value="75">
+            <!-- Panel de Alertas de Colisión y Temporización -->
+            <div class="calc-result" style="margin-top: 20px; text-align: left; padding: 15px; border-radius: 12px; background: rgba(14, 16, 19, 0.9);">
+                <div class="calc-result-title" style="color: #fff; font-size: 0.85rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                    <span>Diagnóstico de Temporizaciones BDF</span>
+                    <span id="cycleTimeDisplay" style="font-size: 0.75rem; color: var(--text-muted);">Ciclo total: 5000 ms</span>
+                </div>
+                
+                <div id="bdfValidationResults" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Se poblará dinámicamente -->
+                </div>
             </div>
 
-            <div class="calc-result">
-                <div class="calc-result-title">Duración Física del Evento</div>
-                <div class="calc-result-val" id="calcMsResult">75.0 ms</div>
-                <div class="calc-diff" id="calcDegreesDiff">Intervalo: 45° de ciclo</div>
-            </div>
-
-            <!-- Ajustes rápidos estándar de moldería -->
-            <div class="preset-block">
-                <div class="calibration-title preset-btn">Presets Rápidos SOP:</div>
+            <!-- Presets rápidos para carga de configuraciones seguras e inseguras -->
+            <div class="preset-block" style="margin-top: 20px;">
+                <div class="calibration-title preset-btn">Simular Escenarios BDF en Caliente:</div>
                 <div class="preset-buttons">
-                    <button class="filter-btn preset-btn" onclick="loadPresetSop(30, 75)">Settle Blow (45°)</button>
-                    <button class="filter-btn preset-btn" onclick="loadPresetSop(180, 350)">Soplado Final (170°)</button>
-                    <button class="filter-btn preset-btn" onclick="loadPresetSop(240, 290)">Apertura Molde (50°)</button>
+                    <button class="filter-btn preset-btn" style="background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: #34d399;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 325)">SOP Nominal Seguro (TG)</button>
+                    <button class="filter-btn preset-btn" style="background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: #f87171;" onclick="loadBdfPreset(80, 190, 190, 185, 240, 230, 250, 325)">Peligro Colisión Macho/Inversión</button>
+                    <button class="filter-btn preset-btn" style="background: rgba(245, 158, 11, 0.1); border-color: var(--warning); color: #fbbf24;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 290)">Soplado Insuficiente (<800ms)</button>
                 </div>
             </div>
         </div>
@@ -3947,23 +4021,90 @@
                 } else {
                     // --- MODOS DE CONTORNO (FINE O SOBEL) ---
 
-                    // 1. Si es modo 'fine' (Silueta Fina), aplicamos primero un desenfoque de caja 3x3 para quitar ruido
+                    // 1. Si es modo 'backlight' (Mesa de Luz), aplicamos binarización adaptativa y compensación morfológica
                     const blurred = new Uint8ClampedArray(width * height);
-                    if (currentVisionMode === 'fine') {
-                        for (let y = 1; y < height - 1; y++) {
-                            for (let x = 1; x < width - 1; x++) {
-                                let sum = 0;
-                                for (let ky = -1; ky <= 1; ky++) {
-                                    for (let kx = -1; kx <= 1; kx++) {
-                                        sum += gray[(y + ky) * width + (x + kx)];
-                                    }
-                                }
-                                blurred[y * width + x] = Math.floor(sum / 9);
+                    const isBacklight = document.getElementById('backlightToggle') && document.getElementById('backlightToggle').checked;
+                    
+                    if (isBacklight) {
+                        // A. Detección Dinámica de Fondo (Esquinas)
+                        let cornerSum = 0;
+                        let cornerCount = 0;
+                        const dSize = 8;
+                        // Esquina superior izquierda
+                        for (let y = 0; y < dSize; y++) {
+                            for (let x = 0; x < dSize; x++) {
+                                cornerSum += gray[y * width + x];
+                                cornerCount++;
                             }
                         }
+                        // Esquina superior derecha
+                        for (let y = 0; y < dSize; y++) {
+                            for (let x = width - dSize; x < width; x++) {
+                                cornerSum += gray[y * width + x];
+                                cornerCount++;
+                            }
+                        }
+                        // Esquina inferior izquierda
+                        for (let y = height - dSize; y < height; y++) {
+                            for (let x = 0; x < dSize; x++) {
+                                cornerSum += gray[y * width + x];
+                                cornerCount++;
+                            }
+                        }
+                        // Esquina inferior derecha
+                        for (let y = height - dSize; y < height; y++) {
+                            for (let x = width - dSize; x < width; x++) {
+                                cornerSum += gray[y * width + x];
+                                cornerCount++;
+                            }
+                        }
+                        const backlightLevel = cornerCount > 0 ? (cornerSum / cornerCount) : 240;
+                        
+                        // B. Binarización Adaptativa (Filtro Contraluz)
+                        const bThreshold = Math.max(120, backlightLevel - 50);
+                        const binary = new Uint8ClampedArray(width * height);
+                        for (let i = 0; i < width * height; i++) {
+                            binary[i] = gray[i] < bThreshold ? 255 : 0;
+                        }
+                        
+                        // C. Filtro Morfológico de Dilatación (Compensación de Silueta ante sobreexposición)
+                        const dilated = new Uint8ClampedArray(width * height);
+                        dilated.set(binary);
+                        if (backlightLevel > 230) {
+                            for (let y = 1; y < height - 1; y++) {
+                                for (let x = 1; x < width - 1; x++) {
+                                    if (binary[y * width + x] === 0) {
+                                        if (binary[(y-1)*width + x] === 255 || 
+                                            binary[(y+1)*width + x] === 255 || 
+                                            binary[y*width + (x-1)] === 255 || 
+                                            binary[y*width + (x+1)] === 255) {
+                                            dilated[y * width + x] = 255;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Alimentar la silueta binarizada limpia a la detección de bordes
+                        blurred.set(dilated);
                     } else {
-                        // En modo Sobel normal, no desenfocamos para mantener la costura cruda
-                        blurred.set(gray);
+                        // Flujo normal sin modo Backlight
+                        if (currentVisionMode === 'fine') {
+                            for (let y = 1; y < height - 1; y++) {
+                                for (let x = 1; x < width - 1; x++) {
+                                    let sum = 0;
+                                    for (let ky = -1; ky <= 1; ky++) {
+                                        for (let kx = -1; kx <= 1; kx++) {
+                                            sum += gray[(y + ky) * width + (x + kx)];
+                                        }
+                                    }
+                                    blurred[y * width + x] = Math.floor(sum / 9);
+                                }
+                            }
+                        } else {
+                            // En modo Sobel normal, no desenfocamos para mantener la costura cruda
+                            blurred.set(gray);
+                        }
                     }
 
                     // Buffers de gradiente
@@ -4536,54 +4677,174 @@
             }
         };
 
-        // --- CALCULADORA SOP CONFIGURADA PARA CRISTAL CHILE (BPM a CPM) ---
+        // --- CALCULADORA Y VALIDADOR DE TEMPORIZACIÓN BDF INDUSTRIES (MS Y COLISIONES) ---
         const calcBpm = document.getElementById('calcBpm');
         const calcSections = document.getElementById('calcSections');
         const calcCavities = document.getElementById('calcCavities');
-        const calcStart = document.getElementById('calcStart');
-        const calcEnd = document.getElementById('calcEnd');
-        const calcMsResult = document.getElementById('calcMsResult');
-        const calcDegreesDiff = document.getElementById('calcDegreesDiff');
 
         function calculateSopMs() {
-            const bpmInput = calcBpm.value.trim();
-            const bpm = bpmInput === "" ? 0 : (parseFloat(bpmInput) || 0);
-            const sections = parseInt(calcSections.value) || 10;
-            const cavity = parseInt(calcCavities.value) || 2;
-            const start = parseFloat(calcStart.value) || 0;
-            const end = parseFloat(calcEnd.value) || 0;
-
-            // FÓRMULA DE RELACIÓN: CPM = BPM / (Secciones * Cavidades)
-            const cpm = (bpm > 0) ? (bpm / (sections * cavity)) : 0;
-
-            // Calcular diferencia de grados
-            let degDiff = 0;
-            if (end >= start) {
-                degDiff = end - start;
-            } else {
-                degDiff = (360 - start) + end;
-            }
-
-            // Tiempo de un ciclo completo de la sección en milisegundos
-            const cycleMs = (cpm > 0) ? ((60 / cpm) * 1000) : 0;
-            
-            // Duración del evento en milisegundos
-            const eventMs = (cycleMs > 0) ? ((degDiff / 360) * cycleMs) : 0;
-
-            calcMsResult.innerText = eventMs.toFixed(1) + " ms";
-            calcDegreesDiff.innerText = `Sección: ${cpm.toFixed(1)} CPM | Intervalo: ${degDiff.toFixed(0)}° | Ciclo total: ${cycleMs.toFixed(0)} ms`;
+            // Adaptador para mantener compatibilidad con otras llamadas externas
+            validateBdfTiming();
         }
 
-        calcBpm.addEventListener('input', calculateSopMs);
-        calcSections.addEventListener('change', calculateSopMs);
-        calcCavities.addEventListener('change', calculateSopMs);
-        calcStart.addEventListener('input', calculateSopMs);
-        calcEnd.addEventListener('input', calculateSopMs);
+        function validateBdfTiming() {
+            const bpm = parseFloat(calcBpm.value) || 396;
+            const sections = parseInt(calcSections.value) || 11;
+            const cavity = parseInt(calcCavities.value) || 3;
 
-        window.loadPresetSop = function(start, end) {
-            calcStart.value = start;
-            calcEnd.value = end;
-            calculateSopMs();
+            // FÓRMULA DE RELACIÓN: CPM de sección = BPM / (Secciones * Cavidades)
+            const cpmSec = (bpm > 0) ? (bpm / (sections * cavity)) : 0;
+            // CPM de cizalla = BPM / Cavidades
+            const cpmShear = (bpm > 0) ? (bpm / cavity) : 0;
+
+            // Duración del ciclo completo de 360° en milisegundos
+            const cycleMs = (cpmSec > 0) ? ((60 / cpmSec) * 1000) : 0;
+            const msPerDeg = cycleMs / 360;
+
+            // Actualizar información superior del ciclo
+            const cycleDisplay = document.getElementById('cycleTimeDisplay');
+            if (cycleDisplay) {
+                cycleDisplay.innerText = `Ciclo: ${cycleMs.toFixed(0)} ms | Cizalla: ${cpmShear.toFixed(0)} CPM`;
+            }
+
+            // Capturar entradas de grados
+            const plungerUp = parseFloat(document.getElementById('valPlungerUp').value) || 0;
+            const plungerDown = parseFloat(document.getElementById('valPlungerDown').value) || 0;
+            const blankOpen = parseFloat(document.getElementById('valBlankOpen').value) || 0;
+            const invertStart = parseFloat(document.getElementById('valInvertStart').value) || 0;
+            const blowClose = parseFloat(document.getElementById('valBlowClose').value) || 0;
+            const neckOpen = parseFloat(document.getElementById('valNeckOpen').value) || 0;
+            const blowOn = parseFloat(document.getElementById('valBlowOn').value) || 0;
+            const blowOff = parseFloat(document.getElementById('valBlowOff').value) || 0;
+
+            const resultsContainer = document.getElementById('bdfValidationResults');
+            if (!resultsContainer) return;
+
+            let html = "";
+
+            // Auxiliar para diferencia de grados con wrap-around de 360°
+            function getDegDiff(start, end) {
+                if (end >= start) return end - start;
+                return (360 - start) + end;
+            }
+
+            // 1. Duración del Prensado del Macho (Plunger Dwell)
+            const plungerDwellDeg = getDegDiff(plungerUp, plungerDown);
+            const plungerDwellMs = plungerDwellDeg * msPerDeg;
+            let plungerClass = "success";
+            let plungerIcon = "🟢";
+            let plungerMsg = `Prensado Macho (Dwell): ${plungerDwellDeg.toFixed(0)}° (${plungerDwellMs.toFixed(0)} ms). Correcto.`;
+
+            if (plungerDwellMs < 300) {
+                plungerClass = "warning";
+                plungerIcon = "⚠️";
+                plungerMsg = `Prensado Macho (Dwell) muy corto: ${plungerDwellMs.toFixed(0)} ms. Recomendado >= 300 ms en NNPB para evitar bajo boca.`;
+            }
+            html += `
+                <div class="validation-alert ${plungerClass}">
+                    <span class="validation-alert-icon">${plungerIcon}</span>
+                    <span>${plungerMsg}</span>
+                </div>
+            `;
+
+            // 2. Duración del Soplado Final
+            const blowDwellDeg = getDegDiff(blowOn, blowOff);
+            const blowDwellMs = blowDwellDeg * msPerDeg;
+            let blowClass = "success";
+            let blowIcon = "🟢";
+            let blowMsg = `Soplado Final: ${blowDwellDeg.toFixed(0)}° (${blowDwellMs.toFixed(0)} ms). Suficiente enfriamiento.`;
+
+            if (blowDwellMs < 800) {
+                blowClass = "warning";
+                blowIcon = "⚠️";
+                blowMsg = `Soplado Final corto: ${blowDwellMs.toFixed(0)} ms. Recomendado >= 800 ms para evitar deformación por calor en el deadplate.`;
+            }
+            html += `
+                <div class="validation-alert ${blowClass}">
+                    <span class="validation-alert-icon">${blowIcon}</span>
+                    <span>${blowMsg}</span>
+                </div>
+            `;
+
+            // 3. Colisión Crítica: Macho vs Inversión
+            // Comprobar si Invert Start está programado mientras el macho está arriba
+            let colisionPlunger = false;
+            if (plungerDown > plungerUp) {
+                if (invertStart >= plungerUp && invertStart < plungerDown) colisionPlunger = true;
+            } else { // Caso de wrap-around del plunger
+                if (invertStart >= plungerUp || invertStart < plungerDown) colisionPlunger = true;
+            }
+
+            const plungerToInvertDeg = getDegDiff(plungerDown, invertStart);
+
+            if (colisionPlunger || plungerToInvertDeg < 10) {
+                html += `
+                    <div class="validation-alert danger">
+                        <span class="validation-alert-icon">🚨</span>
+                        <span><b>PELIGRO DE COLISIÓN CRÍTICA</b>: La inversión inicia en ${invertStart}° y el macho baja en ${plungerDown}°. El macho no alcanzará a salir, destruyendo el molde de boca y anillo. Aumentar Plunger Down o retrasar Invert.</span>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="validation-alert success">
+                        <span class="validation-alert-icon">🟢</span>
+                        <span>Retiro de Macho e Inversión: Margen seguro de ${plungerToInvertDeg.toFixed(0)}° (${(plungerToInvertDeg * msPerDeg).toFixed(0)} ms).</span>
+                    </div>
+                `;
+            }
+
+            // 4. Caída anticipada: Anillo de Boca vs Molde Final
+            // El anillo abre a neckOpen y el molde final cierra a blowClose. El molde final debe estar cerrado antes.
+            let colisionNeck = false;
+            if (neckOpen < blowClose) {
+                colisionNeck = true;
+            }
+            const blowToNeckDeg = getDegDiff(blowClose, neckOpen);
+
+            if (colisionNeck) {
+                html += `
+                    <div class="validation-alert danger">
+                        <span class="validation-alert-icon">🚨</span>
+                        <span><b>GRAVE: Apertura de Anillo Anticipada</b>. El Anillo abre a los ${neckOpen}° y el Molde Final cierra a los ${blowClose}°. La preforma caerá en caliente sin soporte físico.</span>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="validation-alert success">
+                        <span class="validation-alert-icon">🟢</span>
+                        <span>Soporte de Molde Final: El molde cierra antes de abrir el anillo (Margen: ${blowToNeckDeg.toFixed(0)}°).</span>
+                    </div>
+                `;
+            }
+
+            // 5. Soplado final anticipado (Blow Head vs Blow Mold Close)
+            if (blowOn < blowClose) {
+                html += `
+                    <div class="validation-alert warning">
+                        <span class="validation-alert-icon">⚠️</span>
+                        <span><b>Soplado final anticipado</b>: Iniciando a los ${blowOn}° antes del cierre de molde final (${blowClose}°). Pérdida de presión de soplado y enfriamiento irregular.</span>
+                    </div>
+                `;
+            }
+
+            resultsContainer.innerHTML = html;
+        }
+
+        // Registrar eventos de cambio en la calculadora
+        setTimeout(() => {
+            validateBdfTiming();
+        }, 100);
+
+        window.loadBdfPreset = function(pUp, pDown, bOpen, iStart, bClose, nOpen, bOn, bOff) {
+            document.getElementById('valPlungerUp').value = pUp;
+            document.getElementById('valPlungerDown').value = pDown;
+            document.getElementById('valBlankOpen').value = bOpen;
+            document.getElementById('valInvertStart').value = iStart;
+            document.getElementById('valBlowClose').value = bClose;
+            document.getElementById('valNeckOpen').value = nOpen;
+            document.getElementById('valBlowOn').value = bOn;
+            document.getElementById('valBlowOff').value = bOff;
+            validateBdfTiming();
         };
 
         // --- TEMPORIZADOR DE SWABBING (AUDIO SINTETIZADO E INTERFAZ) ---
