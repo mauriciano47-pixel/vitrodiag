@@ -1,8 +1,9 @@
-const CACHE_NAME = 'vitrodiag-cache-v35';
+const CACHE_NAME = 'vitrodiag-cache-v36';
 const ASSETS = [
   './index.html',
   './manifest.json',
   'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js',
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js',
   'https://img.icons8.com/neon/96/glass-bottle.png',
   'https://img.icons8.com/neon/192/glass-bottle.png',
   'https://img.icons8.com/neon/512/glass-bottle.png'

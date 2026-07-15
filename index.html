@@ -4199,17 +4199,42 @@
             audio: false 
         };
 
-        navigator.mediaDevices.getUserMedia(cameraConstraints)
-        .then(stream => { video.srcObject = stream; })
-        .catch(err => {
-            navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => { video.srcObject = stream; })
-            .catch(error => {
-                console.log("No se pudo iniciar la cámara: ", error);
-                status.innerText = "Visión: Sin cámara";
-                status.style.color = "#ef4444";
-            });
-        });
+        let diagnosticStream = null;
+
+        async function startDiagnosticCamera() {
+            if (diagnosticStream) return;
+            
+            status.innerText = "Iniciando cámara...";
+            status.style.color = "rgba(255, 111, 0, 0.7)";
+            
+            try {
+                diagnosticStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
+                video.srcObject = diagnosticStream;
+                status.innerText = "Motor Visión: Activo (Nativo)";
+                status.style.color = "#10b981";
+            } catch (err) {
+                console.warn("Fallo al cargar constraints recomendados de cámara. Probando fallback...", err);
+                try {
+                    diagnosticStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    video.srcObject = diagnosticStream;
+                    status.innerText = "Motor Visión: Activo (Nativo)";
+                    status.style.color = "#10b981";
+                } catch (fallbackErr) {
+                    console.error("No se pudo iniciar la cámara: ", fallbackErr);
+                    status.innerText = "Visión: Sin cámara";
+                    status.style.color = "#ef4444";
+                    showToast("No se pudo acceder a la cámara trasera. Otorga los permisos en tu navegador.", "warning");
+                }
+            }
+        }
+
+        function stopDiagnosticCamera() {
+            if (diagnosticStream) {
+                diagnosticStream.getTracks().forEach(track => track.stop());
+                diagnosticStream = null;
+            }
+            video.srcObject = null;
+        }
 
         // Manejar el toggle de silueta (Visión Artificial Nativa)
         toggle.addEventListener('change', () => {
@@ -5047,9 +5072,11 @@
             // Gestión y liberación cruzada de hardware de cámaras para evitar congelamiento
             if (viewName === 'live') {
                 window.stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
+                startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
                 if (toggle.checked) startProcessing();
             } else if (viewName === 'scanner') {
-                stopProcessing(); // Detener cámara de diagnóstico al entrar a Escáner
+                stopProcessing(); 
+                stopDiagnosticCamera(); // Apagar cámara de diagnóstico al entrar a Escáner
                 // Encender la cámara del escáner si está en modo cámara activo
                 const btnCam = document.getElementById('btnScannerUseCam');
                 if (btnCam && btnCam.classList.contains('active')) {
@@ -5058,6 +5085,7 @@
             } else {
                 // Detener ambas cámaras para ahorrar CPU y RAM en el móvil
                 stopProcessing();
+                stopDiagnosticCamera();
                 window.stopScannerCamera();
             }
 
@@ -6112,6 +6140,8 @@
         initArticles();
         // Poblar dinámicamente el selector de defectos de la calculadora
         populateDefectSelector();
+        // Encender la cámara de diagnóstico en vivo en la carga inicial (pestaña live activa por defecto)
+        startDiagnosticCamera();
     </script>
 </body>
 </html>
