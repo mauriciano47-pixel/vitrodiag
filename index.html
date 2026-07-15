@@ -1116,6 +1116,135 @@
             padding: 0;
             line-height: 1;
         }
+
+        /* Estilos de la barra de artículo activo */
+        .active-article-bar {
+            background: rgba(30, 34, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .article-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-grow: 1;
+        }
+        .pulse-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse-art 2s infinite;
+        }
+        @keyframes pulse-art {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        .article-select {
+            background: rgba(14, 16, 19, 0.8);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            flex-grow: 1;
+            max-width: 250px;
+            transition: all 0.3s ease;
+        }
+        .article-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 5px var(--primary-glow);
+        }
+        .btn-manage-articles {
+            background: rgba(255, 111, 0, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .btn-manage-articles:hover {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+        
+        /* Modal de Fichas Técnicas */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #151922;
+            border: 1px solid rgba(255, 111, 0, 0.3);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h2 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--primary);
+        }
+        .modal-close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
@@ -1132,6 +1261,103 @@
         <h1>VitroDiag</h1>
         <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
     </header>
+
+    <!-- BARRA DE ARTÍCULO EN PRODUCCIÓN -->
+    <div class="active-article-bar">
+        <div class="article-info">
+            <span class="pulse-indicator"></span>
+            <span style="font-weight: 500; font-size: 0.85rem; color: var(--text-muted);">Artículo en Máquina:</span>
+            <select id="activeArticleSelect" class="article-select" onchange="changeActiveArticle(this.value)">
+                <!-- Se cargará dinámicamente -->
+            </select>
+        </div>
+        <button class="btn-manage-articles" onclick="openArticlesModal()">
+            ⚙️ Fichas Técnicas
+        </button>
+    </div>
+
+    <!-- MODAL DE GESTIÓN DE ARTÍCULOS (FICHAS TÉCNICAS) -->
+    <div id="articlesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Fichas Técnicas de Producción</h2>
+                <button class="modal-close" onclick="closeArticlesModal()">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="modalSelectArticle" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Seleccionar Artículo para Editar/Ver</label>
+                <select id="modalSelectArticle" class="select-input" onchange="loadArticleInModal(this.value)">
+                    <!-- Se cargará dinámicamente -->
+                </select>
+            </div>
+
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 15px;">
+                <h3 style="font-size: 0.95rem; color: #fff; margin-top: 0; margin-bottom: 12px;" id="modalFormTitle">Editar Ficha Técnica</h3>
+                
+                <input type="hidden" id="artId">
+                
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label for="artNombre">Nombre del Artículo</label>
+                    <input type="text" id="artNombre" class="input-number" style="text-align: left; padding: 8px;" placeholder="Ej: Botella Cerveza 330ml">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="artBpm">Velocidad (BPM)</label>
+                        <input type="number" id="artBpm" class="input-number" min="1" max="600">
+                    </div>
+                    <div class="form-group">
+                        <label for="artSecciones">Secciones IS</label>
+                        <input type="number" id="artSecciones" class="input-number" min="2" max="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="artCavidades">Cavidades</label>
+                        <select id="artCavidades" class="select-input">
+                            <option value="1">1 (Sencilla)</option>
+                            <option value="2">2 (Doble)</option>
+                            <option value="3">3 (Triple)</option>
+                            <option value="4">4 (Cuádruple)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label for="artSwab">Swabbing (min)</label>
+                        <input type="number" id="artSwab" class="input-number" min="5" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="artProceso">Proceso</label>
+                        <select id="artProceso" class="select-input">
+                            <option value="NNPB">NNPB (Prensado)</option>
+                            <option value="Blow-Blow">Soplo-Soplo</option>
+                            <option value="Press-Blow">Prensado-Soplo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 10px;">
+                    <div class="form-group">
+                        <label for="artAltura">Altura (mm)</label>
+                        <input type="number" id="artAltura" class="input-number" min="20" max="600">
+                    </div>
+                    <div class="form-group">
+                        <label for="artCuerpo">Ø Cuerpo (mm)</label>
+                        <input type="number" id="artCuerpo" class="input-number" min="10" max="300">
+                    </div>
+                    <div class="form-group">
+                        <label for="artBoca">Ø Boca (mm)</label>
+                        <input type="number" id="artBoca" class="input-number" min="5" max="150">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="filter-btn" style="flex: 2; padding: 10px; background: var(--primary); border-color: var(--primary); color: #fff;" onclick="saveActiveArticleForm()">Guardar Cambios</button>
+                    <button class="filter-btn" style="flex: 1; padding: 10px; background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger);" onclick="resetArticlesDefault()">Restaurar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchView('live')">Diagnóstico</button>
@@ -1416,6 +1642,213 @@
     </footer>
 
     <script>
+        // --- BASE DE DATOS DE ARTÍCULOS ESTÁNDAR Y PERSONALIZADOS ---
+        const ARTICULOS_DEFAULT = [
+            {
+                id: "cerveza_330",
+                nombre: "Botella Cerveza 330ml (NNPB)",
+                bpm: 260,
+                secciones: 10,
+                cavidades: 2,
+                swabInterval: 20,
+                altura: 215,
+                diametroCuerpo: 60,
+                diametroBoca: 26,
+                proceso: "NNPB"
+            },
+            {
+                id: "vino_750",
+                nombre: "Botella Vino Bordelesa 750ml (Blow-Blow)",
+                bpm: 110,
+                secciones: 8,
+                cavidades: 2,
+                swabInterval: 15,
+                altura: 300,
+                diametroCuerpo: 75,
+                diametroBoca: 29,
+                proceso: "Blow-Blow"
+            },
+            {
+                id: "pote_conserva_250",
+                nombre: "Pote Conserva 250cc (Press-Blow)",
+                bpm: 180,
+                secciones: 8,
+                cavidades: 2,
+                swabInterval: 30,
+                altura: 100,
+                diametroCuerpo: 68,
+                diametroBoca: 58,
+                proceso: "Press-Blow"
+            }
+        ];
+
+        let articulosList = [];
+        let activeArticle = null;
+
+        // Inicializar artículos en la base de datos local
+        function initArticles() {
+            const saved = localStorage.getItem('vitrodiag_articulos');
+            if (saved) {
+                articulosList = JSON.parse(saved);
+            } else {
+                articulosList = JSON.parse(JSON.stringify(ARTICULOS_DEFAULT));
+                localStorage.setItem('vitrodiag_articulos', JSON.stringify(articulosList));
+            }
+            
+            // Cargar artículo activo
+            const savedActiveId = localStorage.getItem('vitrodiag_active_article_id');
+            activeArticle = articulosList.find(a => a.id === savedActiveId) || articulosList[0];
+            localStorage.setItem('vitrodiag_active_article_id', activeArticle.id);
+
+            populateArticleSelects();
+            applyActiveArticleParams();
+        }
+
+        function populateArticleSelects() {
+            const selectActive = document.getElementById('activeArticleSelect');
+            const selectModal = document.getElementById('modalSelectArticle');
+            
+            if (selectActive) {
+                selectActive.innerHTML = articulosList.map(a => 
+                    `<option value="${a.id}" ${a.id === activeArticle.id ? 'selected' : ''}>${a.nombre} (${a.proceso})</option>`
+                ).join('');
+            }
+            if (selectModal) {
+                selectModal.innerHTML = articulosList.map(a => 
+                    `<option value="${a.id}">${a.nombre}</option>`
+                ).join('');
+            }
+        }
+
+        // Aplicar parámetros del artículo activo en la Calculadora SOP, temporizador de Swabbing e Interfaz
+        function applyActiveArticleParams() {
+            if (!activeArticle) return;
+
+            // 1. Calculadora SOP: Cargar BPM, Secciones y Cavidades
+            const calcBpm = document.getElementById('calcBpm');
+            const calcSections = document.getElementById('calcSections');
+            const calcCavities = document.getElementById('calcCavities');
+            if (calcBpm) calcBpm.value = activeArticle.bpm;
+            if (calcSections) calcSections.value = activeArticle.secciones;
+            if (calcCavities) calcCavities.value = activeArticle.cavidades;
+            if (typeof calculateSopMs === 'function') calculateSopMs();
+
+            // 2. Temporizador Swabbing: Cargar intervalo
+            const swabInterval = document.getElementById('swabInterval');
+            if (swabInterval) swabInterval.value = activeArticle.swabInterval;
+
+            // 3. Guías de la Cámara: Ajustar ancho y alto en píxeles basado en las cotas reales
+            const guideNeck = document.querySelector('.guide-neck');
+            const guideBody = document.querySelector('.guide-body');
+            
+            if (guideNeck && guideBody) {
+                // Escala calibrada: 1mm físico = 1.1px en pantalla
+                const scale = 1.1; 
+                
+                // Cálculo proporcional
+                const neckWidthPx = activeArticle.diametroBoca * scale * 2.3;
+                const neckHeightPx = (activeArticle.altura * 0.3) * scale;
+                const bodyWidthPx = activeArticle.diametroCuerpo * scale * 2.1;
+                const bodyHeightPx = (activeArticle.altura * 0.7) * scale;
+                
+                guideNeck.style.width = `${Math.round(neckWidthPx)}px`;
+                guideNeck.style.height = `${Math.round(neckHeightPx)}px`;
+                
+                guideBody.style.width = `${Math.round(bodyWidthPx)}px`;
+                guideBody.style.height = `${Math.round(bodyHeightPx)}px`;
+            }
+        }
+
+        function changeActiveArticle(id) {
+            const article = articulosList.find(a => a.id === id);
+            if (article) {
+                activeArticle = article;
+                localStorage.setItem('vitrodiag_active_article_id', article.id);
+                applyActiveArticleParams();
+                showToast(`Artículo activo cambiado: ${article.nombre}`, 'success');
+            }
+        }
+
+        // Modales de Gestión de Artículos
+        function openArticlesModal() {
+            document.getElementById('articlesModal').classList.add('active');
+            const selectModal = document.getElementById('modalSelectArticle');
+            if (selectModal) {
+                // Seleccionar por defecto el artículo activo
+                selectModal.value = activeArticle.id;
+                loadArticleInModal(activeArticle.id);
+            }
+        }
+
+        function closeArticlesModal() {
+            document.getElementById('articlesModal').classList.remove('active');
+        }
+
+        function loadArticleInModal(id) {
+            const article = articulosList.find(a => a.id === id);
+            if (!article) return;
+
+            document.getElementById('artId').value = article.id;
+            document.getElementById('artNombre').value = article.nombre;
+            document.getElementById('artBpm').value = article.bpm;
+            document.getElementById('artSecciones').value = article.secciones;
+            document.getElementById('artCavidades').value = article.cavidades;
+            document.getElementById('artSwab').value = article.swabInterval;
+            document.getElementById('artProceso').value = article.proceso;
+            document.getElementById('artAltura').value = article.altura;
+            document.getElementById('artCuerpo').value = article.diametroCuerpo;
+            document.getElementById('artBoca').value = article.diametroBoca;
+        }
+
+        function saveActiveArticleForm() {
+            const id = document.getElementById('artId').value;
+            const article = articulosList.find(a => a.id === id);
+            
+            if (!article) return;
+
+            article.nombre = document.getElementById('artNombre').value;
+            article.bpm = parseFloat(document.getElementById('artBpm').value) || 120;
+            article.secciones = parseInt(document.getElementById('artSecciones').value) || 8;
+            article.cavidades = parseInt(document.getElementById('artCavidades').value) || 2;
+            article.swabInterval = parseInt(document.getElementById('artSwab').value) || 20;
+            article.proceso = document.getElementById('artProceso').value;
+            article.altura = parseFloat(document.getElementById('artAltura').value) || 200;
+            article.diametroCuerpo = parseFloat(document.getElementById('artCuerpo').value) || 70;
+            article.diametroBoca = parseFloat(document.getElementById('artBoca').value) || 26;
+
+            localStorage.setItem('vitrodiag_articulos', JSON.stringify(articulosList));
+            
+            // Si el editado es el activo, actualizar
+            if (activeArticle.id === id) {
+                activeArticle = article;
+                applyActiveArticleParams();
+            }
+
+            populateArticleSelects();
+            // Mantener selección del modal en el editado
+            document.getElementById('modalSelectArticle').value = id;
+
+            showToast("Ficha técnica del artículo actualizada con éxito", "success");
+            closeArticlesModal();
+        }
+
+        function resetArticlesDefault() {
+            if (confirm("¿Estás seguro de que deseas restaurar las fichas técnicas por defecto? Perderás cualquier cambio realizado.")) {
+                articulosList = JSON.parse(JSON.stringify(ARTICULOS_DEFAULT));
+                localStorage.setItem('vitrodiag_articulos', JSON.stringify(articulosList));
+                
+                // Mantener artículo activo si aún existe
+                activeArticle = articulosList.find(a => a.id === activeArticle.id) || articulosList[0];
+                localStorage.setItem('vitrodiag_active_article_id', activeArticle.id);
+                
+                populateArticleSelects();
+                applyActiveArticleParams();
+                loadArticleInModal(activeArticle.id);
+                showToast("Fichas técnicas restauradas de fábrica", "info");
+                closeArticlesModal();
+            }
+        }
+
         // Sistema de Notificaciones Toast
         function showToast(message, type = 'info', duration = 3000) {
             const container = document.getElementById('toastContainer');
@@ -3993,7 +4426,9 @@
                     `;
                 } else {
                     // Filtrar por la zona que el operador está inspeccionando para que sea coherente
-                    const potentialDefects = DEFECTOS_DB.filter(d => d.zona === activeFilter || activeFilter === 'general');
+                    const potentialDefects = (activeFilter === "todo") 
+                        ? DEFECTOS_DB 
+                        : DEFECTOS_DB.filter(d => d.zona === activeFilter || activeFilter === 'general');
                     const selectedDefect = potentialDefects[Math.floor(Math.random() * potentialDefects.length)] || DEFECTOS_DB[0];
                     
                     // Mostrar con simulación
@@ -4314,6 +4749,10 @@
             }
 
             let reportText = `📋 *VITRODIAG - REPORTE DE TURNO MAQUINA I.S.*\n`;
+            if (activeArticle) {
+                reportText += `📦 *Artículo:* ${activeArticle.nombre} (${activeArticle.proceso})\n`;
+                reportText += `⚙️ *Parámetros:* ${activeArticle.bpm} BPM | ${activeArticle.secciones} Sec | ${activeArticle.cavidades} Gota\n`;
+            }
             reportText += `_Fecha: ${new Date().toLocaleDateString()}_\n\n`;
             
             bitacoraList.forEach((item, index) => {
@@ -4381,6 +4820,8 @@
 
         // Inicializar el directorio de defectos en la primera carga
         renderDefectsList(DEFECTOS_DB);
+        // Inicializar las fichas técnicas de artículos
+        initArticles();
     </script>
 </body>
 </html>
