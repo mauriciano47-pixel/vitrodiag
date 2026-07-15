@@ -4728,17 +4728,20 @@
                 return (360 - start) + end;
             }
 
-            // 1. Duración del Prensado del Macho (Plunger Dwell)
+            // 1. Duración del Prensado del Macho (Plunger Dwell en grados)
             const plungerDwellDeg = getDegDiff(plungerUp, plungerDown);
-            const plungerDwellMs = plungerDwellDeg * msPerDeg;
             let plungerClass = "success";
             let plungerIcon = "🟢";
-            let plungerMsg = `Prensado Macho (Dwell): ${plungerDwellDeg.toFixed(0)}° (${plungerDwellMs.toFixed(0)} ms). Correcto.`;
+            let plungerMsg = `Prensado Macho (Dwell): ${plungerDwellDeg.toFixed(0)}°. Rango óptimo en grados: de 60° a 80° para NNPB.`;
 
-            if (plungerDwellMs < 300) {
+            if (plungerDwellDeg < 60) {
                 plungerClass = "warning";
                 plungerIcon = "⚠️";
-                plungerMsg = `Prensado Macho (Dwell) muy corto: ${plungerDwellMs.toFixed(0)} ms. Recomendado >= 300 ms en NNPB para evitar bajo boca.`;
+                plungerMsg = `Prensado Macho (Dwell) insuficiente: ${plungerDwellDeg.toFixed(0)}°. Recomendado mínimo 60° en NNPB para evitar bajo boca.`;
+            } else if (plungerDwellDeg > 80) {
+                plungerClass = "warning";
+                plungerIcon = "⚠️";
+                plungerMsg = `Prensado Macho (Dwell) excesivo: ${plungerDwellDeg.toFixed(0)}°. Recomendado máximo 80° para evitar enfriamiento excesivo del macho.`;
             }
             html += `
                 <div class="validation-alert ${plungerClass}">
@@ -4747,17 +4750,20 @@
                 </div>
             `;
 
-            // 2. Duración del Soplado Final
+            // 2. Duración del Soplado Final (en grados)
             const blowDwellDeg = getDegDiff(blowOn, blowOff);
-            const blowDwellMs = blowDwellDeg * msPerDeg;
             let blowClass = "success";
             let blowIcon = "🟢";
-            let blowMsg = `Soplado Final: ${blowDwellDeg.toFixed(0)}° (${blowDwellMs.toFixed(0)} ms). Suficiente enfriamiento.`;
+            let blowMsg = `Soplado Final: ${blowDwellDeg.toFixed(0)}°. Rango óptimo: de 50° a 70° del ciclo.`;
 
-            if (blowDwellMs < 800) {
+            if (blowDwellDeg < 50) {
                 blowClass = "warning";
                 blowIcon = "⚠️";
-                blowMsg = `Soplado Final corto: ${blowDwellMs.toFixed(0)} ms. Recomendado >= 800 ms para evitar deformación por calor en el deadplate.`;
+                blowMsg = `Soplado Final corto: ${blowDwellDeg.toFixed(0)}°. Recomendado mínimo 50° de soplado para estabilizar el envase y evitar deformaciones en el cuerpo.`;
+            } else if (blowDwellDeg > 70) {
+                blowClass = "warning";
+                blowIcon = "⚠️";
+                blowMsg = `Soplado Final largo: ${blowDwellDeg.toFixed(0)}°. Excede el rango recomendado (máx 70°) reduciendo el tiempo disponible para otros mecanismos.`;
             }
             html += `
                 <div class="validation-alert ${blowClass}">
@@ -4766,7 +4772,7 @@
                 </div>
             `;
 
-            // 3. Colisión Crítica: Macho vs Inversión
+            // 3. Colisión Crítica: Macho vs Inversión (en grados)
             // Comprobar si Invert Start está programado mientras el macho está arriba
             let colisionPlunger = false;
             if (plungerDown > plungerUp) {
@@ -4777,23 +4783,23 @@
 
             const plungerToInvertDeg = getDegDiff(plungerDown, invertStart);
 
-            if (colisionPlunger || plungerToInvertDeg < 10) {
+            if (colisionPlunger || plungerToInvertDeg < 15) {
                 html += `
                     <div class="validation-alert danger">
                         <span class="validation-alert-icon">🚨</span>
-                        <span><b>PELIGRO DE COLISIÓN CRÍTICA</b>: La inversión inicia en ${invertStart}° y el macho baja en ${plungerDown}°. El macho no alcanzará a salir, destruyendo el molde de boca y anillo. Aumentar Plunger Down o retrasar Invert.</span>
+                        <span><b>PELIGRO DE COLISIÓN CRÍTICA</b>: La inversión inicia en ${invertStart}° y el macho baja en ${plungerDown}°. El margen de seguridad actual es de solo ${plungerToInvertDeg.toFixed(0)}° (mínimo recomendado: 15°). Peligro de destrucción del molde de boca y mecanismo inversor. Aumentar Plunger Down o retrasar Invert.</span>
                     </div>
                 `;
             } else {
                 html += `
                     <div class="validation-alert success">
                         <span class="validation-alert-icon">🟢</span>
-                        <span>Retiro de Macho e Inversión: Margen seguro de ${plungerToInvertDeg.toFixed(0)}° (${(plungerToInvertDeg * msPerDeg).toFixed(0)} ms).</span>
+                        <span>Retiro de Macho e Inversión: Margen seguro de ${plungerToInvertDeg.toFixed(0)}° de desfase (correcto).</span>
                     </div>
                 `;
             }
 
-            // 4. Caída anticipada: Anillo de Boca vs Molde Final
+            // 4. Caída anticipada: Anillo de Boca vs Molde Final (en grados)
             // El anillo abre a neckOpen y el molde final cierra a blowClose. El molde final debe estar cerrado antes.
             let colisionNeck = false;
             if (neckOpen < blowClose) {
@@ -4801,28 +4807,29 @@
             }
             const blowToNeckDeg = getDegDiff(blowClose, neckOpen);
 
-            if (colisionNeck) {
+            if (colisionNeck || blowToNeckDeg < 10) {
                 html += `
                     <div class="validation-alert danger">
                         <span class="validation-alert-icon">🚨</span>
-                        <span><b>GRAVE: Apertura de Anillo Anticipada</b>. El Anillo abre a los ${neckOpen}° y el Molde Final cierra a los ${blowClose}°. La preforma caerá en caliente sin soporte físico.</span>
+                        <span><b>GRAVE: Soporte Físico de Preforma Inseguro</b>. El Anillo abre a los ${neckOpen}° y el Molde Final cierra a los ${blowClose}°. Margen actual de ${blowToNeckDeg.toFixed(0)}° (mínimo seguro: 10°). La preforma caerá en caliente sin soporte del molde final cerrado, provocando botellas deformes o colgadas.</span>
                     </div>
                 `;
             } else {
                 html += `
                     <div class="validation-alert success">
                         <span class="validation-alert-icon">🟢</span>
-                        <span>Soporte de Molde Final: El molde cierra antes de abrir el anillo (Margen: ${blowToNeckDeg.toFixed(0)}°).</span>
+                        <span>Soporte de Molde Final: El molde cierra antes de abrir el anillo con un margen seguro de ${blowToNeckDeg.toFixed(0)}° (correcto).</span>
                     </div>
                 `;
             }
 
-            // 5. Soplado final anticipado (Blow Head vs Blow Mold Close)
-            if (blowOn < blowClose) {
+            // 5. Soplado final anticipado (Blow Head vs Blow Mold Close en grados)
+            const blowToCloseDeg = getDegDiff(blowClose, blowOn);
+            if (blowOn < blowClose || blowToCloseDeg < 15) {
                 html += `
                     <div class="validation-alert warning">
                         <span class="validation-alert-icon">⚠️</span>
-                        <span><b>Soplado final anticipado</b>: Iniciando a los ${blowOn}° antes del cierre de molde final (${blowClose}°). Pérdida de presión de soplado y enfriamiento irregular.</span>
+                        <span><b>Soplado final anticipado</b>: Iniciando a los ${blowOn}° frente al cierre de molde a los ${blowClose}° (margen subóptimo de ${blowToCloseDeg.toFixed(0)}°). Se recomienda iniciar soplado al menos 15° después de que el molde final esté completamente cerrado para evitar fugas de presión.</span>
                     </div>
                 `;
             }
