@@ -1647,9 +1647,9 @@
             {
                 id: "ssp_296",
                 nombre: "Botella SSP 296cc (NNPB)",
-                bpm: 308, // Velocidad típica para 11 secciones doble gota (~14 ciclos/sección)
+                bpm: 396, // Velocidad real: 396 BPM a Triple Gota (12 ciclos/sección)
                 secciones: 11,
-                cavidades: 2,
+                cavidades: 3,
                 swabInterval: 20,
                 altura: 244.2,
                 diametroCuerpo: 57.8,
@@ -1702,6 +1702,14 @@
             const saved = localStorage.getItem('vitrodiag_articulos');
             if (saved) {
                 articulosList = JSON.parse(saved);
+                
+                // Forzar actualización de ssp_296 si estaba guardado con los valores antiguos (2 cavidades)
+                const savedSsp = articulosList.find(a => a.id === "ssp_296");
+                if (savedSsp && savedSsp.cavidades === 2) {
+                    savedSsp.bpm = 396;
+                    savedSsp.cavidades = 3;
+                }
+
                 // Si por alguna razón agregamos un artículo por defecto nuevo en el código y no está en localstorage:
                 ARTICULOS_DEFAULT.forEach(defArt => {
                     if (!articulosList.some(a => a.id === defArt.id)) {
