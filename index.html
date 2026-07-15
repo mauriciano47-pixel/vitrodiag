@@ -1600,12 +1600,21 @@
                     <label for="defectSelector">Seleccionar Defecto observado en Caliente:</label>
                     <select id="defectSelector" class="select-input" onchange="showDefectRemedy()">
                         <option value="">-- Elegir un defecto de moldería --</option>
-                        <option value="bajo_boca">Borde Incompleto / Bajo Boca (NNPB)</option>
+                        <option value="bajo_boca">Boca Incompleta / Bajo Boca (NNPB)</option>
                         <option value="cuello_torcido">Botella Colgada / Cuello Torcido</option>
                         <option value="espesor_desigual">Espesor de Pared Desigual / Parison Frío</option>
                         <option value="rebaba_boca">Rebaba en Molde de Boca (NNPB)</option>
-                        <option value="fondo_deforme">Fondo Deformado o Caído</option>
+                        <option value="fondo_deforme">Fondo Deformado, Hundido o Caído</option>
                         <option value="grieta_cuello">Grietas o Fisuras en el Cuello</option>
+                        <option value="boca_hinchada">Boca Hinchada o Deformada</option>
+                        <option value="rosca_partida">Rosca Partida (Split Thread)</option>
+                        <option value="boca_ovalada">Boca Ovalada (Out of Round Finish)</option>
+                        <option value="hombro_caido">Hombro Caído / Pliegues en Hombro</option>
+                        <option value="heavy_joint">Costura de Cuerpo Sobresaliente (Heavy Joint)</option>
+                        <option value="thin_bottom">Fondo Delgado (Thin Bottom)</option>
+                        <option value="neck_wave">Pliegue u Onda en el Cuello (Neck Wave)</option>
+                        <option value="marcas_vacio">Marcas de Vacío en Boca (Vacuum Marks)</option>
+                        <option value="grieta_boca">Grieta en la Boca o Corona (Corkage Check)</option>
                     </select>
                 </div>
 
@@ -4946,39 +4955,93 @@
         // --- SISTEMA EXPERTO DE SOLUCIÓN DE DEFECTOS BDF ---
         const DEFECTOS_TEMPORIZACION = {
             bajo_boca: {
-                titulo: "Borde Incompleto / Bajo Boca (NNPB)",
-                descripcion: "El vidrio no llena por completo la rosca o corona del molde de boca. Suele deberse a una corta duración del prensado o enfriamiento excesivo.",
-                accion: "Incrementar la ventana del Macho Arriba (Plunger Dwell). Adelantar Plunger Up (ej. a 65°) o retrasar Plunger Down (ej. a 155°). Rango óptimo en grados: de 60° a 80°.",
-                preset: [65, 155, 190, 195, 240, 245, 270, 325]
+                titulo: "Boca Incompleta / Bajo Boca (Underfilled Finish)",
+                descripcion: "Falta de vidrio en el contorno superior de la boca. La rosca o la cara de sellado quedan incompletas, impidiendo el correcto hermetismo.",
+                accion: "Aumentar los grados de Macho Arriba (Plunger Dwell). Adelantar Plunger Up (ej. a 65°) o retrasar Plunger Down (ej. a 160°) para dar más tiempo de conformado de la corona en NNPB.",
+                preset: [65, 160, 190, 195, 240, 245, 270, 325]
             },
             cuello_torcido: {
-                titulo: "Botella Colgada / Cuello Torcido",
-                descripcion: "La botella se deforma o el cuello se tuerce al salir del molde final. Indica que el cuello no se ha enfriado lo suficiente en el anillo, o el soplado duró muy poco.",
-                accion: "Incrementar soplado final (retrasar Blow OFF, ej. a 335°) o retrasar apertura de anillo (Neck Ring Open, ej. a 255°). Rango óptimo soplado: 50° a 70°.",
+                titulo: "Botella Colgada / Cuello Torcido (Crooked Finish)",
+                descripcion: "La boca está inclinada respecto al eje vertical de la botella. Ocurre si el cuello está muy caliente al desmoldar, deformándose bajo el peso del envase recién extraído.",
+                accion: "Incrementar la duración del soplado final para solidificar el envase (retrasar Blow OFF a 335°). También es recomendable retrasar la apertura del anillo de boca (Neck Ring Open, ej. a 255°).",
                 preset: [80, 150, 190, 195, 240, 255, 270, 335]
             },
             espesor_desigual: {
-                titulo: "Espesor de Pared Desigual / Parison Frío",
-                descripcion: "La preforma se enfría de forma irregular en el aire antes de entrar al molde final. Causado por una inversión lenta o inicio tardío.",
-                accion: "Alinear grados de apertura de preforma (Blank Open, ej. a 185°) y adelantar inicio de inversión (Invert Start, ej. a 190°).",
+                titulo: "Espesor de Pared Desigual / Parison Frío (Uneven Distribution)",
+                descripcion: "Grosor asimétrico del vidrio en el cuerpo de la botella. Causado por una inversión del parison lenta o retrasada, enfriando una cara más que la otra en el aire.",
+                accion: "Alinear los grados de apertura de preforma (Blank Open, ej. a 185°) y adelantar el inicio de la inversión (Invert Start, ej. a 190°) para agilizar la transferencia.",
                 preset: [80, 150, 185, 190, 240, 245, 270, 325]
             },
             rebaba_boca: {
-                titulo: "Rebaba en Molde de Boca (NNPB)",
-                descripcion: "Se forma una rebaba de vidrio fino en la costura de la boca. El macho ejerce presión antes del cierre correcto de la preforma, o el anillo abre temprano.",
-                accion: "El macho debe subir (Plunger Up) al menos 15° después del cierre del molde. Retrasar apertura de anillo (Neck Ring Open, ej. a 250°).",
-                preset: [80, 150, 190, 195, 240, 250, 270, 325]
+                titulo: "Rebaba en Molde de Boca (Overpressed Finish)",
+                descripcion: "Proyección delgada de vidrio en la rosca o cara de sellado. El macho ejerce presión antes de que la preforma cierre por completo o cuando el anillo abre anticipadamente.",
+                accion: "Retrasar el inicio del macho (Plunger Up) al menos 15° tras el cierre para asegurar sello. Retrasar la apertura del anillo de boca (Neck Ring Open, ej. a 250°).",
+                preset: [85, 150, 190, 195, 240, 250, 270, 325]
             },
             fondo_deforme: {
-                titulo: "Fondo Deformado o Caído",
-                descripcion: "El fondo de la botella se hunde al desmoldar. La base no se solidificó en el molde final por falta de soplado o enfriamiento de fondo.",
-                accion: "Incrementar la duración del soplado final. Adelantar Blow ON (ej. a 255°) o retrasar Blow OFF (ej. a 330°). Rango óptimo soplado: 65° a 70°.",
+                titulo: "Fondo Deformado, Hundido o Caído (Sagged Bottom)",
+                descripcion: "La base de la botella se sume o se cuelga por efecto del peso al desmoldar. El fondo no se enfrió ni solidificó lo suficiente en el molde final.",
+                accion: "Extender la duración del soplado final (Final Blow). Adelantar Blow ON (ej. a 255°) o retrasar Blow OFF (ej. a 330°). Asegurar un soplado robusto de 65° a 70° de duración.",
                 preset: [80, 150, 190, 195, 240, 245, 255, 330]
             },
             grieta_cuello: {
-                titulo: "Grietas o Fisuras en el Cuello",
-                descripcion: "Microfisuras en el cuello o bajo boca debido a un enfriamiento metálico violento (choque térmico).",
-                accion: "Reducir duración del prensado. Retrasar Plunger Up (ej. a 90°) o adelantar Plunger Down (ej. a 140°) para no enfriar en exceso la corona.",
+                titulo: "Grietas o Fisuras en el Cuello (Neck Check)",
+                descripcion: "Fisuras térmicas diminutas en el cuello. Ocurren debido a un choque térmico brusco por excesivo enfriamiento de contacto metálico del macho.",
+                accion: "Reducir la duración del prensado. Retrasar Plunger Up (ej. a 90°) o adelantar Plunger Down (ej. a 140°) para suavizar el intercambio de calor en la preforma.",
+                preset: [90, 140, 190, 195, 240, 245, 270, 325]
+            },
+            boca_hinchada: {
+                titulo: "Boca Hinchada o Deformada (Bulged Finish)",
+                descripcion: "El diámetro exterior de la boca se deforma plásticamente por exceso de calor y presión interna de aire anticipada antes del soplado.",
+                accion: "Retardar la bajada del cabezal o el soplado. Incrementar el rango de enfriamiento de boca y posponer el inicio del soplado (Blow ON, ej. a 275°).",
+                preset: [80, 150, 190, 195, 240, 245, 275, 325]
+            },
+            rosca_partida: {
+                titulo: "Rosca Partida (Split Thread)",
+                descripcion: "Fisuras que corren a lo largo de los hilos de la rosca. Indican que el molde de boca abrió con brusquedad o que el vidrio se adhirió a la rosca.",
+                accion: "Suavizar la apertura de anillo (Neck Ring Open, ej. a 250°) y optimizar el swabbing. Asegurar que el molde final esté cerrado.",
+                preset: [80, 150, 190, 195, 240, 250, 270, 325]
+            },
+            boca_ovalada: {
+                titulo: "Boca Ovalada (Out of Round Finish)",
+                descripcion: "La boca pierde su forma circular perfecta por falta de retención mecánica durante la fase plástica inicial.",
+                accion: "Retrasar la apertura del anillo de boca (Neck Ring Open, ej. a 255°) para mantener la botella sujeta mientras el molde final completa el conformado.",
+                preset: [80, 150, 190, 195, 240, 255, 270, 325]
+            },
+            hombro_caido: {
+                titulo: "Hombro Caído o Pliegues en Hombro (Shoulder Tear)",
+                descripcion: "Pliegues u ondulaciones en el hombro de la botella. Ocurre porque la preforma se abre demasiado temprano o la inversión es retrasada.",
+                accion: "Retrasar la apertura de la preforma (Blank Open, ej. a 200°) e inicio de inversión (Invert Start, ej. a 205°) para evitar que el parison se estire en exceso.",
+                preset: [80, 150, 200, 205, 240, 245, 270, 325]
+            },
+            heavy_joint: {
+                titulo: "Costura de Cuerpo Sobresaliente (Heavy Joint)",
+                descripcion: "Rebaba de costura muy marcada a lo largo del cuerpo de la botella. Indica cierres imperfectos o lentos de los porta-moldes finales.",
+                accion: "Adelantar el cierre de molde final (Blow Close, ej. a 230°) o retrasar soplado para asegurar que los moldes estén sellados antes de inyectar presión.",
+                preset: [80, 150, 190, 195, 230, 245, 270, 325]
+            },
+            thin_bottom: {
+                titulo: "Fondo Delgado (Thin Bottom)",
+                descripcion: "Espesor de vidrio extremadamente delgado en la base. Ocurre por excesivo recalentamiento del parison antes del soplado.",
+                accion: "Adelantar el soplado final (Blow ON, ej. a 260°) para estirar y solidificar el fondo antes de que el vidrio fluya excesivamente hacia abajo.",
+                preset: [80, 150, 190, 195, 240, 245, 260, 325]
+            },
+            neck_wave: {
+                titulo: "Pliegue u Onda en el Cuello (Neck Wave)",
+                descripcion: "Ondulación interna en el cuello del envase. Suele originarse en el recalentamiento desigual del parison o soplado tardío.",
+                accion: "Reducir la exposición al aire del parison. Adelantar apertura de preforma (Blank Open, ej. a 180°) y soplado final (Blow ON, ej. a 260°).",
+                preset: [80, 150, 180, 185, 240, 245, 260, 325]
+            },
+            marcas_vacio: {
+                titulo: "Marcas de Vacío en Boca (Vacuum Marks)",
+                descripcion: "Líneas o pliegues estéticos en la rosca causados por una aplicación violenta o mal sincronizada del vacío de preforma.",
+                accion: "Sincronizar el vacío. Ajustar el inicio de vacío con la caída de gota. Ajustar Plunger Up para evitar estrangulamiento de succión.",
+                preset: [80, 150, 190, 195, 240, 245, 270, 325]
+            },
+            grieta_boca: {
+                titulo: "Grieta en la Boca o Corona (Corkage Check)",
+                descripcion: "Pequeñas fisuras en la parte superior del anillo de boca. Ocurren por choque térmico debido a machos sumamente fríos.",
+                accion: "Disminuir la presión del enfriamiento interno de la moldería y retrasar Plunger Up (ej. a 90°) para suavizar el prensado.",
                 preset: [90, 140, 190, 195, 240, 245, 270, 325]
             }
         };
