@@ -1592,13 +1592,85 @@
                 </div>
             </div>
 
+            <!-- ASISTENTE EXPERTO DE DEFECTOS DE TEMPORIZACIÓN -->
+            <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                <div style="font-weight: bold; font-size: 0.85rem; color: var(--primary); margin-bottom: 12px; text-align: left;">🔧 Asistente de Corrección de Defectos (BDF Expert):</div>
+                
+                <div class="form-group">
+                    <label for="defectSelector">Seleccionar Defecto observado en Caliente:</label>
+                    <select id="defectSelector" class="select-input" onchange="showDefectRemedy()">
+                        <option value="">-- Elegir un defecto de moldería --</option>
+                        <option value="bajo_boca">Borde Incompleto / Bajo Boca (NNPB)</option>
+                        <option value="cuello_torcido">Botella Colgada / Cuello Torcido</option>
+                        <option value="espesor_desigual">Espesor de Pared Desigual / Parison Frío</option>
+                        <option value="rebaba_boca">Rebaba en Molde de Boca (NNPB)</option>
+                        <option value="fondo_deforme">Fondo Deformado o Caído</option>
+                        <option value="grieta_cuello">Grietas o Fisuras en el Cuello</option>
+                    </select>
+                </div>
+
+                <!-- Tarjeta explicativa de la corrección -->
+                <div id="defectRemedyCard" style="display: none; padding: 12px; border-radius: 8px; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.8rem; line-height: 1.4; text-align: left;">
+                    <div style="font-weight: bold; color: #60a5fa; margin-bottom: 6px;" id="remedyTitle">Título del Defecto</div>
+                    <div style="color: var(--text-muted); margin-bottom: 10px;" id="remedyDescription">Explicación física de la falla...</div>
+                    <div style="margin-bottom: 12px;">
+                        <span style="font-weight: bold; color: #34d399;">Acción Correctiva BDF:</span>
+                        <span id="remedyAction" style="color: #fff;">Qué grados mover...</span>
+                    </div>
+                    <button class="filter-btn" style="width: 100%; padding: 8px; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa; font-size: 0.75rem;" id="applyRemedyBtn">Simular Ajuste en Ciclo</button>
+                </div>
+            </div>
+
+            <!-- LÍNEA DE TIEMPO DEL CICLO (GANTT 360°) -->
+            <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                <div style="font-weight: bold; font-size: 0.85rem; color: var(--primary); margin-bottom: 12px; text-align: left;">📈 Diagrama de Ciclo de Sección (0° a 360°):</div>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 8px; font-size: 0.75rem;">
+                    <!-- Barra de Plunger (Macho) -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Macho (Up/Dn)</span>
+                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
+                            <div id="barPlunger" style="position: absolute; height: 100%; background: #3b82f6; border-radius: 5px;"></div>
+                        </div>
+                        <span id="labelPlunger" style="width: 70px; text-align: right; font-family: monospace;">80°-150°</span>
+                    </div>
+                    
+                    <!-- Barra de Inversión / Reversión -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Inversión</span>
+                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
+                            <div id="barInvert" style="position: absolute; height: 100%; background: #a855f7; border-radius: 5px;"></div>
+                        </div>
+                        <span id="labelInvert" style="width: 70px; text-align: right; font-family: monospace;">195°-240°</span>
+                    </div>
+
+                    <!-- Barra de Molde Final (Cierre a Apertura) -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Molde Final</span>
+                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
+                            <div id="barBlowMold" style="position: absolute; height: 100%; background: #10b981; border-radius: 5px;"></div>
+                        </div>
+                        <span id="labelBlowMold" style="width: 70px; text-align: right; font-family: monospace;">240°-330°</span>
+                    </div>
+
+                    <!-- Barra de Soplado Final -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Soplado Final</span>
+                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
+                            <div id="barFinalBlow" style="position: absolute; height: 100%; background: #eab308; border-radius: 5px;"></div>
+                        </div>
+                        <span id="labelFinalBlow" style="width: 70px; text-align: right; font-family: monospace;">270°-325°</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Presets rápidos para carga de configuraciones seguras e inseguras -->
             <div class="preset-block" style="margin-top: 20px;">
                 <div class="calibration-title preset-btn">Simular Escenarios BDF en Caliente:</div>
                 <div class="preset-buttons">
                     <button class="filter-btn preset-btn" style="background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: #34d399;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 325)">SOP Nominal Seguro (TG)</button>
                     <button class="filter-btn preset-btn" style="background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: #f87171;" onclick="loadBdfPreset(80, 190, 190, 185, 240, 230, 250, 325)">Peligro Colisión Macho/Inversión</button>
-                    <button class="filter-btn preset-btn" style="background: rgba(245, 158, 11, 0.1); border-color: var(--warning); color: #fbbf24;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 290)">Soplado Insuficiente (<800ms)</button>
+                    <button class="filter-btn preset-btn" style="background: rgba(245, 158, 11, 0.1); border-color: var(--warning); color: #fbbf24;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 290)">Soplado Insuficiente (<50°)</button>
                 </div>
             </div>
         </div>
@@ -4835,7 +4907,110 @@
             }
 
             resultsContainer.innerHTML = html;
+
+            // --- ACTUALIZAR BARRAS GANTT DEL CICLO BDF ---
+            const barPlunger = document.getElementById('barPlunger');
+            const barInvert = document.getElementById('barInvert');
+            const barBlowMold = document.getElementById('barBlowMold');
+            const barFinalBlow = document.getElementById('barFinalBlow');
+
+            const labelPlunger = document.getElementById('labelPlunger');
+            const labelInvert = document.getElementById('labelInvert');
+            const labelBlowMold = document.getElementById('labelBlowMold');
+            const labelFinalBlow = document.getElementById('labelFinalBlow');
+
+            function updateGanttBar(bar, label, start, end, color) {
+                if (!bar || !label) return;
+                let leftPercent = (start / 360) * 100;
+                let widthPercent = 0;
+                if (end >= start) {
+                    widthPercent = ((end - start) / 360) * 100;
+                    bar.style.left = `${leftPercent}%`;
+                    bar.style.width = `${widthPercent}%`;
+                    bar.style.background = color;
+                } else {
+                    widthPercent = (((360 - start) + end) / 360) * 100;
+                    bar.style.left = `${leftPercent}%`;
+                    bar.style.width = `${widthPercent}%`;
+                    bar.style.background = `linear-gradient(to right, ${color}, rgba(255,255,255,0.15))`;
+                }
+                label.innerText = `${start.toFixed(0)}°-${end.toFixed(0)}°`;
+            }
+
+            updateGanttBar(barPlunger, labelPlunger, plungerUp, plungerDown, '#3b82f6');
+            updateGanttBar(barInvert, labelInvert, invertStart, blowClose, '#a855f7');
+            updateGanttBar(barBlowMold, labelBlowMold, blowClose, 330, '#10b981'); // Se asume apertura molde final a 330°
+            updateGanttBar(barFinalBlow, labelFinalBlow, blowOn, blowOff, '#eab308');
         }
+
+        // --- SISTEMA EXPERTO DE SOLUCIÓN DE DEFECTOS BDF ---
+        const DEFECTOS_TEMPORIZACION = {
+            bajo_boca: {
+                titulo: "Borde Incompleto / Bajo Boca (NNPB)",
+                descripcion: "El vidrio no llena por completo la rosca o corona del molde de boca. Suele deberse a una corta duración del prensado o enfriamiento excesivo.",
+                accion: "Incrementar la ventana del Macho Arriba (Plunger Dwell). Adelantar Plunger Up (ej. a 65°) o retrasar Plunger Down (ej. a 155°). Rango óptimo en grados: de 60° a 80°.",
+                preset: [65, 155, 190, 195, 240, 245, 270, 325]
+            },
+            cuello_torcido: {
+                titulo: "Botella Colgada / Cuello Torcido",
+                descripcion: "La botella se deforma o el cuello se tuerce al salir del molde final. Indica que el cuello no se ha enfriado lo suficiente en el anillo, o el soplado duró muy poco.",
+                accion: "Incrementar soplado final (retrasar Blow OFF, ej. a 335°) o retrasar apertura de anillo (Neck Ring Open, ej. a 255°). Rango óptimo soplado: 50° a 70°.",
+                preset: [80, 150, 190, 195, 240, 255, 270, 335]
+            },
+            espesor_desigual: {
+                titulo: "Espesor de Pared Desigual / Parison Frío",
+                descripcion: "La preforma se enfría de forma irregular en el aire antes de entrar al molde final. Causado por una inversión lenta o inicio tardío.",
+                accion: "Alinear grados de apertura de preforma (Blank Open, ej. a 185°) y adelantar inicio de inversión (Invert Start, ej. a 190°).",
+                preset: [80, 150, 185, 190, 240, 245, 270, 325]
+            },
+            rebaba_boca: {
+                titulo: "Rebaba en Molde de Boca (NNPB)",
+                descripcion: "Se forma una rebaba de vidrio fino en la costura de la boca. El macho ejerce presión antes del cierre correcto de la preforma, o el anillo abre temprano.",
+                accion: "El macho debe subir (Plunger Up) al menos 15° después del cierre del molde. Retrasar apertura de anillo (Neck Ring Open, ej. a 250°).",
+                preset: [80, 150, 190, 195, 240, 250, 270, 325]
+            },
+            fondo_deforme: {
+                titulo: "Fondo Deformado o Caído",
+                descripcion: "El fondo de la botella se hunde al desmoldar. La base no se solidificó en el molde final por falta de soplado o enfriamiento de fondo.",
+                accion: "Incrementar la duración del soplado final. Adelantar Blow ON (ej. a 255°) o retrasar Blow OFF (ej. a 330°). Rango óptimo soplado: 65° a 70°.",
+                preset: [80, 150, 190, 195, 240, 245, 255, 330]
+            },
+            grieta_cuello: {
+                titulo: "Grietas o Fisuras en el Cuello",
+                descripcion: "Microfisuras en el cuello o bajo boca debido a un enfriamiento metálico violento (choque térmico).",
+                accion: "Reducir duración del prensado. Retrasar Plunger Up (ej. a 90°) o adelantar Plunger Down (ej. a 140°) para no enfriar en exceso la corona.",
+                preset: [90, 140, 190, 195, 240, 245, 270, 325]
+            }
+        };
+
+        window.showDefectRemedy = function() {
+            const selector = document.getElementById('defectSelector');
+            const card = document.getElementById('defectRemedyCard');
+            const title = document.getElementById('remedyTitle');
+            const desc = document.getElementById('remedyDescription');
+            const action = document.getElementById('remedyAction');
+            const applyBtn = document.getElementById('applyRemedyBtn');
+
+            if (!selector || !card) return;
+
+            const defectKey = selector.value;
+            if (!defectKey || !DEFECTOS_TEMPORIZACION[defectKey]) {
+                card.style.display = "none";
+                return;
+            }
+
+            const def = DEFECTOS_TEMPORIZACION[defectKey];
+            title.innerText = def.titulo;
+            desc.innerText = def.descripcion;
+            action.innerText = def.accion;
+            
+            applyBtn.onclick = function() {
+                window.loadBdfPreset(...def.preset);
+                showToast(`Grados correctores aplicados para: ${def.titulo}`);
+            };
+
+            card.style.display = "block";
+        };
 
         // Registrar eventos de cambio en la calculadora
         setTimeout(() => {
@@ -4851,6 +5026,13 @@
             document.getElementById('valNeckOpen').value = nOpen;
             document.getElementById('valBlowOn').value = bOn;
             document.getElementById('valBlowOff').value = bOff;
+            
+            // Limpiar selector de defectos
+            const selector = document.getElementById('defectSelector');
+            if (selector) selector.value = "";
+            const card = document.getElementById('defectRemedyCard');
+            if (card) card.style.display = "none";
+
             validateBdfTiming();
         };
 
