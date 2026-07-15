@@ -1499,6 +1499,37 @@
             Iniciando motor de IA TensorFlow.js...
         </div>
 
+        <!-- PANEL DE CONTROL DE IA TENSORFLOW.JS (OPCIONES DE PRECISIÓN) -->
+        <div style="margin-top: 15px; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; text-align: left;">
+            <div style="font-weight: bold; color: var(--primary); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <span>⚙️ Panel del Motor de IA</span>
+                <span id="iaConfidenceBadge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(59, 130, 246, 0.2); color: #60a5fa;">Filtro: >75%</span>
+            </div>
+            
+            <div style="color: var(--text-muted); line-height: 1.35; margin-bottom: 12px;">
+                Permite conectar modelos de visión artificial entrenados con fotos reales de CristalChile (formato TensorFlow.js) para evitar falsos positivos por brillos o reflejos en el Hot End.
+            </div>
+
+            <div class="form-row" style="margin-bottom: 10px; gap: 8px;">
+                <div style="flex: 1; text-align: left;">
+                    <label for="uploadModelJson" style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Archivo model.json</label>
+                    <input type="file" id="uploadModelJson" accept=".json" style="font-size: 0.7rem; width: 100%; color: var(--text-muted);">
+                </div>
+                <div style="flex: 1; text-align: left;">
+                    <label for="uploadModelBin" style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Pesos (.bin)</label>
+                    <input type="file" id="uploadModelBin" accept=".bin" multiple style="font-size: 0.7rem; width: 100%; color: var(--text-muted);">
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <button class="filter-btn" style="flex: 1; padding: 6px; font-size: 0.75rem; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa;" onclick="loadCustomUploadedModel()">Cargar Red Neuronal</button>
+                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Umbral:</span>
+                    <input type="range" id="confidenceThreshold" min="50" max="95" value="75" oninput="updateConfidenceThresholdDisplay(this.value)" style="width: 60px;">
+                </div>
+            </div>
+        </div>
+
         <div class="diagnostic-card" id="resultadoCard">
             <div class="card-title" id="diagTitulo">Analizando...</div>
             <div class="diag-status-row">
@@ -4290,9 +4321,45 @@
             }
         }
 
-                // --- ARQUITECTURA TENSORFLOW.JS PARA CLASIFICACIÓN OFFLINE EN CALIENTE ---
+        // --- ARQUITECTURA TENSORFLOW.JS PARA CLASIFICACIÓN OFFLINE EN CALIENTE ---
         let tfModel = null;
+        let confidenceThreshold = 75;
         const tfjsStatus = document.getElementById('tfjsStatus');
+
+        function updateConfidenceThresholdDisplay(val) {
+            confidenceThreshold = parseInt(val);
+            const badge = document.getElementById('iaConfidenceBadge');
+            if (badge) badge.innerText = `Filtro: >${confidenceThreshold}%`;
+        }
+
+        async function loadCustomUploadedModel() {
+            const jsonInput = document.getElementById('uploadModelJson');
+            const binInput = document.getElementById('uploadModelBin');
+
+            if (!jsonInput || !binInput || jsonInput.files.length === 0 || binInput.files.length === 0) {
+                showToast("Debes seleccionar el archivo model.json y sus pesos (.bin)", "warning");
+                return;
+            }
+
+            const modelJsonFile = jsonInput.files[0];
+            const weightsFiles = Array.from(binInput.files);
+
+            tfjsStatus.innerText = "Cargando modelo personalizado en GPU local...";
+            tfjsStatus.style.color = "#fbbf24";
+
+            try {
+                // Carga dinámica local usando IndexedDB y FileReader en TF.js
+                tfModel = await tf.loadLayersModel(tf.io.browserFiles([modelJsonFile, ...weightsFiles]));
+                tfjsStatus.innerText = "Motor IA: Red Neuronal Personalizada cargada con éxito";
+                tfjsStatus.style.color = "#10b981";
+                showToast("Modelo de IA personalizado conectado con éxito", "success");
+            } catch (err) {
+                console.error("Error al cargar modelo subido:", err);
+                tfjsStatus.innerText = "Error: Fallo al cargar los archivos de la Red Neuronal";
+                tfjsStatus.style.color = "#ef4444";
+                showToast("Error al procesar modelo. Asegúrate que correspondan a TensorFlow.js", "danger");
+            }
+        }
 
         async function loadTensorFlowModel() {
             if (typeof tf === 'undefined') {
@@ -4618,8 +4685,8 @@
                             }
                         }
 
-                        // 4. Renderizar resultado del Diagnóstico de Alta Afinidad (Confianza > 55%)
-                        if (detectedDefect && maxConfidence > 55) {
+                        // 4. Renderizar resultado del Diagnóstico de Alta Afinidad según umbral de confianza IA
+                        if (detectedDefect && maxConfidence >= confidenceThreshold) {
                             mostrarResultadoDefecto(detectedDefect);
                             const displayConfidence = Math.min(100, maxConfidence);
                             
@@ -4630,8 +4697,25 @@
                                 <b>Detalle:</b> ${detectedDefect.descripcion}<br>
                                 <div style="margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; border-radius: 4px;">
                                     <b>Firma de Falla Detectada:</b> ${reason}<br>
-                                    <b>Confianza del Algoritmo:</b> <span style="color:#ef4444; font-weight:bold;">${displayConfidence}% (Diagnóstico Confiable)</span>
+                                    <b>Confianza del Algoritmo:</b> <span style="color:#ef4444; font-weight:bold;">${displayConfidence}% (Supera el umbral del ${confidenceThreshold}%)</span>
                                 </div>
+                            `;
+                        } else if (detectedDefect && maxConfidence < confidenceThreshold) {
+                            // Si se detecta un defecto pero tiene baja confianza (falsos positivos / destellos)
+                            document.getElementById('diagTitulo').innerText = "⚠️ LECTURA DESCARTADA (UMBRAL IA)";
+                            document.getElementById('diagGravedad').innerText = "Incierto / Ruido";
+                            document.getElementById('diagGravedad').className = "status-alert warning";
+                            document.getElementById('diagGravedad').style.display = "inline-block";
+                            document.getElementById('diagEstado').innerHTML = `
+                                <b>Anomalía ignorada por baja certeza:</b> Se detectó un posible desvío en la zona del ${detectedDefect.zona.toUpperCase()} con una confianza del <b>${maxConfidence}%</b>, lo cual no supera tu umbral de seguridad establecido de <b>${confidenceThreshold}%</b>.<br><br>
+                                <div style="margin-top: 10px; padding: 10px; background: rgba(245, 158, 11, 0.08); border-left: 3px solid #fbbf24; border-radius: 4px;">
+                                    <b>Motivo del filtro:</b> Evita malas lecturas operativas debido a destellos del vidrio fundido, reflejos del molde metálico caliente o variaciones bruscas de iluminación ambiental.<br>
+                                    <b>Sugerencia:</b> Centra mejor el envase en la guía, limpia la cámara de tu smartphone o atenúa la iluminación ambiente en el Hot End y vuelve a escanear.
+                                </div>
+                            `;
+                            document.getElementById('diagAcciones').innerHTML = `
+                                <li>Mantener la máquina I.S. produciendo sin paradas.</li>
+                                <li>Verificar visualmente la botella piloto antes de tomar acciones correctivas en la consola BDF.</li>
                             `;
                         } else {
                             // Envase 100% Conforme
