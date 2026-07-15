@@ -5046,6 +5046,35 @@
             }
         };
 
+        function populateDefectSelector() {
+            const selector = document.getElementById('defectSelector');
+            if (!selector) return;
+
+            let html = '<option value="">-- Elegir un defecto de moldería --</option>';
+
+            const zonas = {
+                boca: "Zona de la Boca",
+                cuello: "Zona del Cuello",
+                hombro: "Zona del Hombro",
+                cuerpo: "Zona del Cuerpo",
+                fondo: "Zona del Fondo",
+                general: "Otros Defectos / General"
+            };
+
+            Object.keys(zonas).forEach(zonaKey => {
+                const defsZona = DEFECTOS_DB.filter(d => d.zona === zonaKey);
+                if (defsZona.length > 0) {
+                    html += `<optgroup label="${zonas[zonaKey]}">`;
+                    defsZona.forEach(d => {
+                        html += `<option value="${d.id}">${d.nombre}</option>`;
+                    });
+                    html += `</optgroup>`;
+                }
+            });
+
+            selector.innerHTML = html;
+        }
+
         window.showDefectRemedy = function() {
             const selector = document.getElementById('defectSelector');
             const card = document.getElementById('defectRemedyCard');
@@ -5056,21 +5085,47 @@
 
             if (!selector || !card) return;
 
-            const defectKey = selector.value;
-            if (!defectKey || !DEFECTOS_TEMPORIZACION[defectKey]) {
+            const defectId = selector.value;
+            if (!defectId) {
                 card.style.display = "none";
                 return;
             }
 
-            const def = DEFECTOS_TEMPORIZACION[defectKey];
-            title.innerText = def.titulo;
-            desc.innerText = def.descripcion;
-            action.innerText = def.accion;
-            
-            applyBtn.onclick = function() {
-                window.loadBdfPreset(...def.preset);
-                showToast(`Grados correctores aplicados para: ${def.titulo}`);
-            };
+            // Buscar en la base de datos principal de defectos (DEFECTOS_DB)
+            const defectObj = DEFECTOS_DB.find(d => d.id === defectId);
+            if (!defectObj) {
+                card.style.display = "none";
+                return;
+            }
+
+            title.innerText = defectObj.nombre;
+
+            // Construir explicación detallada
+            let descHtml = `<b>Descripción:</b> ${defectObj.descripcion}<br><br>`;
+            if (defectObj.causas && defectObj.causas.length > 0) {
+                descHtml += `<b>Causas comunes:</b><br>• ` + defectObj.causas.join('<br>• ') + `<br>`;
+            }
+            desc.innerHTML = descHtml;
+
+            // Verificar si este defecto tiene un ajuste de grados de ciclo BDF
+            const hasPreset = DEFECTOS_TEMPORIZACION[defectId];
+            if (hasPreset) {
+                action.innerHTML = `<b>Ajuste BDF Recomendado:</b> ${hasPreset.accion}`;
+                applyBtn.style.display = "block";
+                applyBtn.innerText = "Simular Corrección de Grados";
+                applyBtn.onclick = function() {
+                    window.loadBdfPreset(...hasPreset.preset);
+                    showToast(`Grados correctores aplicados para: ${defectObj.nombre}`);
+                };
+            } else {
+                // Defectos físicos/térmicos
+                const accionFisica = defectObj.acciones && defectObj.acciones.length > 0 
+                    ? defectObj.acciones.join('<br>• ') 
+                    : "Revisar alineación mecánica, lubricación o temperatura del canal.";
+
+                action.innerHTML = `<span style="color: #fbbf24; font-weight: bold;">⚠️ Defecto Físico/Mecánico (No requiere grados de ciclo):</span><br>• ${accionFisica}`;
+                applyBtn.style.display = "none";
+            }
 
             card.style.display = "block";
         };
@@ -5367,6 +5422,8 @@
         renderDefectsList(DEFECTOS_DB);
         // Inicializar las fichas técnicas de artículos
         initArticles();
+        // Poblar dinámicamente el selector de defectos de la calculadora
+        populateDefectSelector();
     </script>
 </body>
 </html>
