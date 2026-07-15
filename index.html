@@ -3,6 +3,8 @@
 <head>
     <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+    <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
     <link rel="manifest" href="./manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1394,8 +1396,9 @@
     <div class="tabs">
         <button class="tab-btn active" onclick="switchView('live')">Diagnóstico</button>
         <button class="tab-btn" onclick="switchView('sop')">Calculadora SOP</button>
+        <button class="tab-btn" onclick="switchView('scanner')">Escáner Panel</button>
         <button class="tab-btn" onclick="switchView('log')">Bitácora</button>
-        <button class="tab-btn" onclick="switchView('directory')">Directorio (90)</button>
+        <button class="tab-btn" onclick="switchView('directory')">Directorio</button>
     </div>
 
     <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO -->
@@ -1711,6 +1714,97 @@
                     <button class="filter-btn preset-btn" style="background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: #34d399;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 325)">SOP Nominal Seguro (TG)</button>
                     <button class="filter-btn preset-btn" style="background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: #f87171;" onclick="loadBdfPreset(80, 190, 190, 185, 240, 230, 250, 325)">Peligro Colisión Macho/Inversión</button>
                     <button class="filter-btn preset-btn" style="background: rgba(245, 158, 11, 0.1); border-color: var(--warning); color: #fbbf24;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 290)">Soplado Insuficiente (<50°)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PESTAÑA 1.7: ESCÁNER DE FICHA TÉCNICA Y CONSOLA BDF -->
+    <div id="scannerView" class="view-content">
+        <div class="sop-calculator">
+            <div class="calibration-title">🔍 Escáner Digital de Consola & Fichas Técnicas</div>
+            
+            <div style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 20px; background: rgba(30,41,59,0.3); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+                Apunta la cámara del celular a la pantalla de la consola BDF o a una ficha técnica de temporizaciones impresa. El motor de reconocimiento de texto (OCR Offline) extraerá los valores para compararlos con las consignas teóricas de tu artículo.
+            </div>
+
+            <!-- SELECTOR DE ENTRADA DE IMAGEN -->
+            <div class="form-row" style="margin-bottom: 20px; gap: 10px;">
+                <button class="filter-btn active" id="btnScannerUseCam" style="flex: 1;" onclick="setScannerSource('camera')">Usar Cámara Escáner</button>
+                <button class="filter-btn" id="btnScannerUseFile" style="flex: 1;" onclick="setScannerSource('file')">Subir Foto / Archivo</button>
+            </div>
+
+            <!-- CONTENEDOR DE CÁMARA Y CAPTURA -->
+            <div id="scannerCameraArea" style="position: relative; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--primary-glow); margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; width: 100%;">
+                <video id="scannerVideo" autoplay muted playsinline style="width: 100%; max-height: 280px; object-fit: cover; background: #000;"></video>
+                <canvas id="scannerCanvas" style="display: none; width: 100%; max-height: 280px; object-fit: cover;"></canvas>
+                
+                <!-- Guía de encuadre translúcida -->
+                <div style="position: absolute; top: 10%; left: 10%; right: 10%; bottom: 20%; border: 2px dashed #06b6d4; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); pointer-events: none;">
+                    <div style="position: absolute; bottom: -20px; left: 0; right: 0; text-align: center; color: #06b6d4; font-size: 0.65rem; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase;">Alinear pantalla / Ficha técnica aquí</div>
+                </div>
+
+                <button class="btn-action" style="position: absolute; bottom: 10px; width: auto; padding: 8px 20px; font-size: 0.8rem; background: #06b6d4; border-color: #06b6d4;" onclick="captureScannerSnapshot()">Capturar Foto del Panel</button>
+            </div>
+
+            <!-- CONTENEDOR DE SUBIDA DE ARCHIVO -->
+            <div id="scannerUploadArea" style="background: rgba(30,41,59,0.3); border: 2px dashed var(--glass-border); padding: 30px 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; display: none;">
+                <label for="scannerFileInput" style="cursor: pointer; display: block;">
+                    <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">📸</span>
+                    <span style="color: var(--primary); font-weight: bold; display: block; margin-bottom: 6px;">Seleccionar foto de galería</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Soporta formatos JPG, PNG, WEBP</span>
+                </label>
+                <input type="file" id="scannerFileInput" accept="image/*" style="display: none;" onchange="handleScannerFileSelect(this)">
+            </div>
+
+            <!-- PREVISUALIZACIÓN DE IMAGEN SELECCIONADA/CAPTURADA -->
+            <div id="scannerPreviewArea" style="display: none; margin-bottom: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); position: relative; background: #000;">
+                <img id="scannerPreviewImg" style="width: 100%; max-height: 250px; object-fit: contain;">
+                <button style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer;" onclick="resetScannerImage()">&times;</button>
+            </div>
+
+            <!-- ACCIÓN DE ESCANEAR Y ESTADO -->
+            <button class="btn-action" id="btnRunOcr" style="margin-bottom: 15px; font-weight: bold;" onclick="runScannerOcr()" disabled>Escanear Imagen (Esperando foto...)</button>
+            
+            <div id="ocrLoader" style="display: none; margin-bottom: 20px; text-align: center;">
+                <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(6, 182, 212, 0.2); border-radius: 50%; border-top-color: #06b6d4; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
+                <div id="ocrStatusMsg" style="font-size: 0.8rem; color: #06b6d4; font-weight: bold;">Cargando motor de reconocimiento OCR...</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Este proceso se ejecuta 100% de forma local y offline</div>
+            </div>
+
+            <!-- RESULTADO Y TABLA COMPARATIVA -->
+            <div id="scannerResultsCard" style="display: none; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; text-align: left;">
+                <div style="font-weight: bold; color: var(--primary); margin-bottom: 12px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>📊 Reporte Comparativo del Ciclo</span>
+                    <span id="scannerArticleBadge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(59,130,246,0.15); color: #60a5fa;">SSP 296</span>
+                </div>
+
+                <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 15px; border-left: 2px solid #06b6d4; padding-left: 8px;">
+                    Se compararon las lecturas extraídas de la consola con la ficha teórica recomendada para el artículo activo en VitroDiag.
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 15px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                            <th style="padding: 6px 0;">Mecanismo</th>
+                            <th style="padding: 6px 0; text-align: center;">Consola Física</th>
+                            <th style="padding: 6px 0; text-align: center;">Teórico SOP</th>
+                            <th style="padding: 6px 0; text-align: right;">Diferencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scannerComparisonBody">
+                        <!-- Llenado dinámico mediante JavaScript -->
+                    </tbody>
+                </table>
+
+                <!-- RESUMEN DE SEGURIDAD / ADVERTENCIAS -->
+                <div id="scannerSafetyAlert" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; font-size: 0.75rem; line-height: 1.35;">
+                    <!-- Mensaje dinámico de colisión o desvío -->
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button class="filter-btn" style="flex: 1; padding: 8px; background: rgba(6,182,212,0.15); border-color: #06b6d4; color: #22d3ee; font-size: 0.75rem;" onclick="applyScannerValuesToCalculator()">Cargar en Calculadora</button>
+                    <button class="filter-btn" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.75rem;" onclick="resetScannerReport()">Limpiar Todo</button>
                 </div>
             </div>
         </div>
@@ -5580,6 +5674,369 @@
                 }
             });
         });
+
+        });
+
+        // ==========================================
+        // MÓDULO DE ESCÁNER DE PANEL & FICHA TÉCNICA (OCR)
+        // ==========================================
+        let scannerStream = null;
+        let scannerImageBase64 = null;
+        let scannerParsedValues = {};
+
+        window.setScannerSource = function(source) {
+            const btnCam = document.getElementById('btnScannerUseCam');
+            const btnFile = document.getElementById('btnScannerUseFile');
+            const camArea = document.getElementById('scannerCameraArea');
+            const uploadArea = document.getElementById('scannerUploadArea');
+
+            if (source === 'camera') {
+                btnCam.classList.add('active');
+                btnFile.classList.remove('active');
+                camArea.style.display = 'flex';
+                uploadArea.style.display = 'none';
+                startScannerCamera();
+            } else {
+                btnCam.classList.remove('active');
+                btnFile.classList.add('active');
+                camArea.style.display = 'none';
+                uploadArea.style.display = 'block';
+                stopScannerCamera();
+            }
+        };
+
+        async function startScannerCamera() {
+            const video = document.getElementById('scannerVideo');
+            if (!video) return;
+
+            if (scannerStream) stopScannerCamera();
+
+            try {
+                scannerStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                    audio: false
+                });
+                video.srcObject = scannerStream;
+                video.setAttribute('playsinline', true);
+                video.play();
+            } catch (err) {
+                console.error("Error al iniciar cámara del escáner:", err);
+                showToast("No se pudo acceder a la cámara. Prueba a subir una foto.", "warning");
+                window.setScannerSource('file');
+            }
+        }
+
+        window.stopScannerCamera = function() {
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(track => track.stop());
+                scannerStream = null;
+            }
+            const video = document.getElementById('scannerVideo');
+            if (video) video.srcObject = null;
+        };
+
+        window.captureScannerSnapshot = function() {
+            const video = document.getElementById('scannerVideo');
+            const canvas = document.getElementById('scannerCanvas');
+            const previewArea = document.getElementById('scannerPreviewArea');
+            const previewImg = document.getElementById('scannerPreviewImg');
+            const runOcrBtn = document.getElementById('btnRunOcr');
+            const camArea = document.getElementById('scannerCameraArea');
+
+            if (!video || !canvas || !previewImg) return;
+
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            scannerImageBase64 = canvas.toDataURL('image/jpeg');
+            previewImg.src = scannerImageBase64;
+
+            camArea.style.display = 'none';
+            previewArea.style.display = 'block';
+            stopScannerCamera();
+
+            runOcrBtn.removeAttribute('disabled');
+            runOcrBtn.innerText = "Escanear Imagen Capturada";
+            runOcrBtn.style.background = "var(--primary)";
+            runOcrBtn.style.borderColor = "var(--primary)";
+        };
+
+        window.handleScannerFileSelect = function(input) {
+            const previewArea = document.getElementById('scannerPreviewArea');
+            const previewImg = document.getElementById('scannerPreviewImg');
+            const runOcrBtn = document.getElementById('btnRunOcr');
+
+            if (!input.files || input.files.length === 0 || !previewImg) return;
+
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                scannerImageBase64 = e.target.result;
+                previewImg.src = scannerImageBase64;
+                previewArea.style.display = 'block';
+                
+                runOcrBtn.removeAttribute('disabled');
+                runOcrBtn.innerText = "Escanear Foto Subida";
+                runOcrBtn.style.background = "var(--primary)";
+                runOcrBtn.style.borderColor = "var(--primary)";
+            };
+
+            reader.readAsDataURL(file);
+        };
+
+        window.resetScannerImage = function() {
+            const previewArea = document.getElementById('scannerPreviewArea');
+            const previewImg = document.getElementById('scannerPreviewImg');
+            const runOcrBtn = document.getElementById('btnRunOcr');
+            const camArea = document.getElementById('scannerCameraArea');
+            const btnCam = document.getElementById('btnScannerUseCam');
+
+            if (previewArea) previewArea.style.display = 'none';
+            if (previewImg) previewImg.src = "";
+            scannerImageBase64 = null;
+
+            if (runOcrBtn) {
+                runOcrBtn.setAttribute('disabled', 'true');
+                runOcrBtn.innerText = "Escanear Imagen (Esperando foto...)";
+                runOcrBtn.style.background = "rgba(255,255,255,0.05)";
+                runOcrBtn.style.borderColor = "rgba(255,255,255,0.1)";
+            }
+
+            if (btnCam && btnCam.classList.contains('active')) {
+                camArea.style.display = 'flex';
+                startScannerCamera();
+            }
+        };
+
+        window.runScannerOcr = async function() {
+            const loader = document.getElementById('ocrLoader');
+            const statusMsg = document.getElementById('ocrStatusMsg');
+            const resultsCard = document.getElementById('scannerResultsCard');
+            const runOcrBtn = document.getElementById('btnRunOcr');
+
+            if (!scannerImageBase64) return;
+
+            resultsCard.style.display = 'none';
+            loader.style.display = 'block';
+            runOcrBtn.setAttribute('disabled', 'true');
+            statusMsg.innerText = "Inicializando motor OCR local...";
+
+            try {
+                const worker = await Tesseract.createWorker('spa');
+                statusMsg.innerText = "Analizando caracteres e interpretando texto...";
+                
+                const ret = await worker.recognize(scannerImageBase64);
+                const text = ret.data.text;
+                console.log("Texto extraído por OCR del panel:", text);
+                
+                statusMsg.innerText = "Liberando recursos de memoria local...";
+                await worker.terminate();
+
+                statusMsg.innerText = "Interpretando datos de grados de la consola BDF...";
+                parseScannerOcrText(text);
+
+                loader.style.display = 'none';
+                runOcrBtn.removeAttribute('disabled');
+            } catch (err) {
+                console.error("Error en motor OCR Tesseract.js:", err);
+                loader.style.display = 'none';
+                runOcrBtn.removeAttribute('disabled');
+                showToast("Error al digitalizar imagen. Asegúrate que tenga buena luz.", "danger");
+            }
+        };
+
+        function parseScannerOcrText(text) {
+            const raw = text.toLowerCase();
+            scannerParsedValues = {};
+
+            const keys = {
+                plungerUp: [/plunger\s*up/g, /macho\s*arriba/g, /pl\s*up/g, /pl\s*u/g, /up/g],
+                plungerDown: [/plunger\s*down/g, /macho\s*abajo/g, /pl\s*down/g, /pl\s*d/g, /down/g],
+                invertStart: [/invert\s*start/g, /inversion\s*inicio/g, /inv\s*st/g, /inv\s*s/g, /invert/g],
+                blowClose: [/blow\s*close/g, /molde\s*cierre/g, /bl\s*cl/g, /bl\s*c/g, /close/g],
+                neckRingOpen: [/neck\s*ring\s*open/g, /anillo\s*apertura/g, /nr\s*op/g, /nr\s*o/g, /neck/g],
+                blowOn: [/blow\s*on/g, /soplado\s*inicio/g, /bl\s*on/g, /bl\s*o/g, /soplado/g],
+                blowOff: [/blow\s*off/g, /soplado\s*fin/g, /bl\s*off/g, /bl\s*f/g, /off/g]
+            };
+
+            Object.keys(keys).forEach(mechKey => {
+                const regexes = keys[mechKey];
+                for (let r of regexes) {
+                    const match = raw.match(new RegExp(r.source + '\\D*(\\d{1,3})'));
+                    if (match && match[1]) {
+                        const val = parseInt(match[1]);
+                        if (val >= 0 && val <= 360) {
+                            scannerParsedValues[mechKey] = val;
+                            break;
+                        }
+                    }
+                }
+            });
+
+            const allNumbers = [];
+            const numberMatches = raw.match(/\b\d{1,3}\b/g);
+            if (numberMatches) {
+                numberMatches.forEach(numStr => {
+                    const n = parseInt(numStr);
+                    if (n >= 0 && n <= 360 && !allNumbers.includes(n)) {
+                        allNumbers.push(n);
+                    }
+                });
+            }
+
+            console.log("Números crudos filtrados en rango de grados [0-360] en OCR:", allNumbers);
+
+            if (Object.keys(scannerParsedValues).length < 3 && allNumbers.length >= 4) {
+                allNumbers.sort((a, b) => a - b);
+                
+                allNumbers.forEach(n => {
+                    if (n >= 50 && n <= 100 && !scannerParsedValues.plungerUp) scannerParsedValues.plungerUp = n;
+                    else if (n >= 130 && n <= 165 && !scannerParsedValues.plungerDown) scannerParsedValues.plungerDown = n;
+                    else if (n >= 170 && n <= 210 && !scannerParsedValues.invertStart) scannerParsedValues.invertStart = n;
+                    else if (n >= 215 && n <= 250 && !scannerParsedValues.blowClose) {
+                        scannerParsedValues.blowClose = n;
+                        scannerParsedValues.neckRingOpen = n + 5;
+                    }
+                    else if (n >= 251 && n <= 290 && !scannerParsedValues.blowOn) scannerParsedValues.blowOn = n;
+                    else if (n >= 291 && n <= 345 && !scannerParsedValues.blowOff) scannerParsedValues.blowOff = n;
+                });
+            }
+
+            const defaultValues = {
+                plungerUp: parseInt(document.getElementById('valPlungerUp').value) || 80,
+                plungerDown: parseInt(document.getElementById('valPlungerDown').value) || 150,
+                invertStart: parseInt(document.getElementById('valInvertStart').value) || 190,
+                blowClose: parseInt(document.getElementById('valBlowClose').value) || 240,
+                neckRingOpen: parseInt(document.getElementById('valNeckRingOpen').value) || 245,
+                blowOn: parseInt(document.getElementById('valBlowOn').value) || 270,
+                blowOff: parseInt(document.getElementById('valBlowOff').value) || 325
+            };
+
+            Object.keys(defaultValues).forEach(mechKey => {
+                if (scannerParsedValues[mechKey] === undefined) {
+                    scannerParsedValues[mechKey] = defaultValues[mechKey];
+                }
+            });
+
+            renderScannerComparisonTable(defaultValues);
+        }
+
+        function renderScannerComparisonTable(defaults) {
+            const tableBody = document.getElementById('scannerComparisonBody');
+            const badge = document.getElementById('scannerArticleBadge');
+            const alertContainer = document.getElementById('scannerSafetyAlert');
+            const resultsCard = document.getElementById('scannerResultsCard');
+
+            if (!tableBody || !badge || !alertContainer || !resultsCard) return;
+
+            badge.innerText = activeArticle ? activeArticle.nombre : "SSP 296";
+
+            const mechanisms = [
+                { key: "plungerUp", name: "Plunger Up (Macho Arriba)" },
+                { key: "plungerDown", name: "Plunger Down (Macho Abajo)" },
+                { key: "invertStart", name: "Invert Start (Inversión)" },
+                { key: "blowClose", name: "Blow Close (Cierre Molde)" },
+                { key: "neckRingOpen", name: "Neck Ring Open (Abre Anillo)" },
+                { key: "blowOn", name: "Blow ON (Soplado)" },
+                { key: "blowOff", name: "Blow OFF (Fin Soplado)" }
+            ];
+
+            let html = "";
+            let maxDeviation = 0;
+            let criticalDeviation = false;
+
+            mechanisms.forEach(m => {
+                const readVal = scannerParsedValues[m.key];
+                const theoryVal = defaults[m.key];
+                const diff = readVal - theoryVal;
+                
+                let diffText = "";
+                let diffStyle = "color: var(--text-muted);";
+
+                if (diff > 0) {
+                    diffText = `+${diff}°`;
+                    diffStyle = "color: var(--warning);";
+                } else if (diff < 0) {
+                    diffText = `${diff}°`;
+                    diffStyle = "color: #60a5fa;";
+                } else {
+                    diffText = "0°";
+                    diffStyle = "color: var(--success);";
+                }
+
+                if (Math.abs(diff) > maxDeviation) maxDeviation = Math.abs(diff);
+                if (Math.abs(diff) >= 15) criticalDeviation = true;
+
+                html += `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.75rem;">
+                        <td style="padding: 8px 0; font-weight: bold; color: var(--text-main);">${m.name}</td>
+                        <td style="padding: 8px 0; text-align: center; font-family: monospace; font-weight: bold; color: #06b6d4;">${readVal}°</td>
+                        <td style="padding: 8px 0; text-align: center; font-family: monospace; color: var(--text-muted);">${theoryVal}°</td>
+                        <td style="padding: 8px 0; text-align: right; font-family: monospace; font-weight: bold; ${diffStyle}">${diffText}</td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+
+            const marginInvert = scannerParsedValues.invertStart - scannerParsedValues.plungerDown;
+            if (marginInvert < 15) {
+                alertContainer.style.background = "rgba(239, 68, 68, 0.15)";
+                alertContainer.style.borderLeft = "4px solid #ef4444";
+                alertContainer.style.color = "#fca5a5";
+                alertContainer.innerHTML = `
+                    <b>🚨 INFORME CRÍTICO: Peligro de colisión mecánica.</b><br>
+                    El margen entre Plunger Down (${scannerParsedValues.plungerDown}°) e Invert Start (${scannerParsedValues.invertStart}°) es de solo <b>${marginInvert}°</b> (Mínimo seguro: 15°). Si cargas esta configuración, el anillo de boca iniciará la inversión antes de que el macho termine de bajar, lo que provocará colisión física del herramental.
+                `;
+            } else if (criticalDeviation) {
+                alertContainer.style.background = "rgba(245, 158, 11, 0.15)";
+                alertContainer.style.borderLeft = "4px solid #f59e0b";
+                alertContainer.style.color = "#fde047";
+                alertContainer.innerHTML = `
+                    <b>⚠️ ADVERTENCIA: Desvíos severos de temporización.</b><br>
+                    Se detectaron desvíos superiores a 15° en el ciclo respecto a la consigna nominal del artículo. Esto puede generar deformaciones en la corona o hombro por estiramiento térmico descontrolado.
+                `;
+            } else {
+                alertContainer.style.background = "rgba(16, 185, 129, 0.15)";
+                alertContainer.style.borderLeft = "4px solid #10b981";
+                alertContainer.style.color = "#a7f3d0";
+                alertContainer.innerHTML = `
+                    <b>🟢 CICLO COMPATIBLE Y SEGURO.</b><br>
+                    Las temporizaciones leídas de la consola física están dentro de los límites seguros. No se detectaron riesgos de colisiones o interferencias en el ciclo de 360°.
+                `;
+            }
+
+            resultsCard.style.display = 'block';
+            resultsCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        window.applyScannerValuesToCalculator = function() {
+            if (!scannerParsedValues || Object.keys(scannerParsedValues).length === 0) return;
+
+            document.getElementById('valPlungerUp').value = scannerParsedValues.plungerUp;
+            document.getElementById('valPlungerDown').value = scannerParsedValues.plungerDown;
+            document.getElementById('valInvertStart').value = scannerParsedValues.invertStart;
+            document.getElementById('valBlowClose').value = scannerParsedValues.blowClose;
+            document.getElementById('valNeckRingOpen').value = scannerParsedValues.neckRingOpen;
+            document.getElementById('valBlowOn').value = scannerParsedValues.blowOn;
+            document.getElementById('valBlowOff').value = scannerParsedValues.blowOff;
+
+            showToast("Valores escaneados de grados cargados en la calculadora", "success");
+            
+            validateBdfTiming();
+
+            window.switchView('sop');
+        };
+
+        window.resetScannerReport = function() {
+            const resultsCard = document.getElementById('scannerResultsCard');
+            if (resultsCard) resultsCard.style.display = 'none';
+            resetScannerImage();
+        };
 
         // Registrar Service Worker para PWA Offline con autodetección y recarga automática
         if ('serviceWorker' in navigator) {
