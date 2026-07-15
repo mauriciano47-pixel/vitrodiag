@@ -1645,6 +1645,18 @@
         // --- BASE DE DATOS DE ARTÍCULOS ESTÁNDAR Y PERSONALIZADOS ---
         const ARTICULOS_DEFAULT = [
             {
+                id: "ssp_296",
+                nombre: "Botella SSP 296cc (NNPB)",
+                bpm: 308, // Velocidad típica para 11 secciones doble gota (~14 ciclos/sección)
+                secciones: 11,
+                cavidades: 2,
+                swabInterval: 20,
+                altura: 244.2,
+                diametroCuerpo: 57.8,
+                diametroBoca: 26,
+                proceso: "NNPB"
+            },
+            {
                 id: "cerveza_330",
                 nombre: "Botella Cerveza 330ml (NNPB)",
                 bpm: 260,
@@ -1690,13 +1702,24 @@
             const saved = localStorage.getItem('vitrodiag_articulos');
             if (saved) {
                 articulosList = JSON.parse(saved);
+                // Si por alguna razón agregamos un artículo por defecto nuevo en el código y no está en localstorage:
+                ARTICULOS_DEFAULT.forEach(defArt => {
+                    if (!articulosList.some(a => a.id === defArt.id)) {
+                        articulosList.push(defArt);
+                    }
+                });
+                localStorage.setItem('vitrodiag_articulos', JSON.stringify(articulosList));
             } else {
                 articulosList = JSON.parse(JSON.stringify(ARTICULOS_DEFAULT));
                 localStorage.setItem('vitrodiag_articulos', JSON.stringify(articulosList));
             }
             
             // Cargar artículo activo
-            const savedActiveId = localStorage.getItem('vitrodiag_active_article_id');
+            let savedActiveId = localStorage.getItem('vitrodiag_active_article_id');
+            // Si el active id no está guardado o es el viejo por defecto, cambiémoslo a ssp_296
+            if (!savedActiveId || savedActiveId === "cerveza_330") {
+                savedActiveId = "ssp_296";
+            }
             activeArticle = articulosList.find(a => a.id === savedActiveId) || articulosList[0];
             localStorage.setItem('vitrodiag_active_article_id', activeArticle.id);
 
@@ -4291,8 +4314,8 @@
                                 console.log("Análisis Angular de Cuello: Inclinación =", angleDev.toFixed(2), "grados | Límite =", angleThreshold.toFixed(2), "grados");
 
                                 if (angleDev > angleThreshold) {
-                                    // Confianza del diagnóstico basada en qué tan inclinada está la botella
-                                    const confidence = Math.min(100, Math.floor((angleDev / angleThreshold) * 78));
+                                    // Ponderar la confianza del cuello torcido permitiendo superar 100 en la competencia de prioridad
+                                    const confidence = Math.floor((angleDev / angleThreshold) * 110);
                                     if (confidence > maxConfidence) {
                                         maxConfidence = confidence;
                                         detectedDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.zona === "cuello" && d.nombre.toLowerCase().includes("doblado")) || DEFECTOS_DB.find(d => d.id === "cuello_torcido");
@@ -4368,6 +4391,7 @@
                         // 4. Renderizar resultado del Diagnóstico de Alta Afinidad (Confianza > 55%)
                         if (detectedDefect && maxConfidence > 55) {
                             mostrarResultadoDefecto(detectedDefect);
+                            const displayConfidence = Math.min(100, maxConfidence);
                             
                             // Inyectar el reporte científico de confianza en la interfaz
                             document.getElementById('diagTitulo').innerText = `🚨 ${detectedDefect.nombre.toUpperCase()}`;
@@ -4376,7 +4400,7 @@
                                 <b>Detalle:</b> ${detectedDefect.descripcion}<br>
                                 <div style="margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; border-radius: 4px;">
                                     <b>Firma de Falla Detectada:</b> ${reason}<br>
-                                    <b>Confianza del Algoritmo:</b> <span style="color:#ef4444; font-weight:bold;">${maxConfidence}% (Diagnóstico Confiable)</span>
+                                    <b>Confianza del Algoritmo:</b> <span style="color:#ef4444; font-weight:bold;">${displayConfidence}% (Diagnóstico Confiable)</span>
                                 </div>
                             `;
                         } else {
