@@ -38,6 +38,11 @@ self.addEventListener('activate', event => {
 
 // Intercepción de peticiones (Estrategia Cache First con red de respaldo)
 self.addEventListener('fetch', event => {
+  // Ignorar peticiones que no sean GET o que tengan esquemas no soportados (ej. chrome-extension://)
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {

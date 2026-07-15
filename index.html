@@ -4,9 +4,8 @@
     <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#ff6f00">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitroDiag v9.0 - Operador IS</title>
 
     <style>
@@ -25,6 +24,31 @@
             --danger: #ef4444;
             --glass-border: rgba(255, 255, 255, 0.05);
         }
+
+        .d-none { display: none !important; }
+        .slider-group-spaced { margin-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px; }
+        .slider-header-spaced { margin-bottom: 6px; }
+        .vision-mode-options { display: flex; gap: 6px; width: 100%; }
+        .vision-mode-option { flex: 1; }
+        .vision-mode-radio { display: none; }
+        .tfjs-status { font-size: 0.65rem; text-align: center; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+        .diag-status-row { margin-bottom: 8px; }
+        .diag-state { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
+        .form-row { display: flex; gap: 10px; margin-bottom: 14px; }
+        .form-group-half { flex: 1; margin-bottom: 0; }
+        .calc-diff { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+        .preset-block { margin-top: 16px; }
+        .preset-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+        .preset-btn { font-size: 0.75rem; padding: 6px 10px; }
+        .btn-action-alt { margin-top: 10px; }
+        .btn-action-success { margin-top: 8px; background: #25d366; border-color: #25d366; }
+        .swab-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+        .swab-controls .select-input { flex: 2; }
+        .swab-controls .filter-btn { flex: 1; padding: 10px; }
+        .swab-last-time { font-size: 0.75rem; color: var(--text-muted); }
+        .footer-cell-wide { flex: 2; }
+        .footer-cell-narrow { flex: 1; }
+        .footer-row-separator { border-top: 1.5px solid rgba(255, 111, 0, 0.2); }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -58,6 +82,7 @@
             background: linear-gradient(135deg, #fff 30%, var(--primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .subtitle {
@@ -78,6 +103,7 @@
             border-radius: 30px;
             padding: 4px;
             margin-bottom: 20px;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
 
@@ -206,6 +232,7 @@
             width: 100%;
             max-width: 360px;
             box-sizing: border-box;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             display: none;
         }
@@ -274,7 +301,6 @@
             max-width: 400px;
             padding-bottom: 10px;
             margin-bottom: 15px;
-            scrollbar-width: none; /* Firefox */
         }
         
         .filter-bar::-webkit-scrollbar {
@@ -322,6 +348,7 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            -webkit-user-select: none;
             user-select: none;
         }
 
@@ -418,6 +445,7 @@
             font-weight: bold;
             z-index: 10;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(6px);
             backdrop-filter: blur(6px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
             display: flex;
@@ -443,6 +471,7 @@
             padding: 12px 16px;
             border-radius: 12px;
             margin: 12px 0;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             width: 100%;
             max-width: 480px;
@@ -508,6 +537,7 @@
             padding: 14px 16px;
             border-radius: 12px;
             margin: 12px 0;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             width: 100%;
             max-width: 480px;
@@ -550,6 +580,7 @@
             border-radius: 3px;
             outline: none;
             -webkit-appearance: none;
+            appearance: none;
             accent-color: var(--primary);
         }
 
@@ -572,6 +603,7 @@
             z-index: 999;
             box-shadow: 0 4px 20px rgba(255, 111, 0, 0.4);
             cursor: pointer;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
         }
@@ -608,6 +640,7 @@
             width: 100%;
             max-width: 480px;
             box-sizing: border-box;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
         }
 
@@ -621,6 +654,7 @@
             width: 100%;
             max-width: 480px;
             box-sizing: border-box;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
         }
         .form-group {
@@ -677,6 +711,7 @@
             width: 100%;
             max-width: 480px;
             box-sizing: border-box;
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
         }
         .select-input {
@@ -973,6 +1008,7 @@
             max-width: 480px;
             margin: 0 auto;
             box-sizing: border-box;
+            -webkit-backdrop-filter: blur(4px);
             backdrop-filter: blur(4px);
         }
         .cajetin-row {
@@ -1019,11 +1055,75 @@
                 font-size: 0.7rem;
             }
         }
+
+        /* Contenedor de notificaciones Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 360px;
+            pointer-events: none;
+        }
+        .toast {
+            background: rgba(14, 16, 19, 0.95);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success {
+            border-left-color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .toast.warning {
+            border-left-color: var(--warning);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        .toast.danger {
+            border-left-color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0;
+            line-height: 1;
+        }
     </style>
 </head>
 <body>
+    <!-- Contenedor de Toasts -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <!-- Swabbing Timer Flotante Fijo -->
-    <div class="swab-widget" id="swabWidget" style="display: none;">
+    <div class="swab-widget d-none" id="swabWidget">
         <span class="swab-time" id="swabWidgetTime">15m</span>
         <span class="swab-label" id="swabWidgetLabel">Swab</span>
     </div>
@@ -1043,9 +1143,9 @@
     <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO -->
     <div id="liveView" class="view-content active">
         <div class="camera-wrapper">
-            <div id="opencvStatus" class="opencv-status">OpenCV: Cargando...</div>
-            <video id="webcam" autoplay playsinline muted></video>
-            <canvas id="canvasOutput" style="display:none;"></canvas>
+            <div id="opencvStatus" class="opencv-status">Motor Visión: Cargando...</div>
+            <video id="webcam" autoplay muted></video>
+            <canvas id="canvasOutput" class="d-none"></canvas>
             
             <div class="overlay-guide">
                 <div class="guide-neck"></div>
@@ -1056,7 +1156,7 @@
         <div class="toggle-container">
             <span class="toggle-label">Ver Bordes de Silueta (Visión Artificial)</span>
             <label class="switch">
-                <input type="checkbox" id="silhouetteToggle">
+                <input type="checkbox" id="silhouetteToggle" title="Ver bordes de silueta" aria-label="Ver bordes de silueta">
                 <span class="slider round"></span>
             </label>
         </div>
@@ -1096,21 +1196,21 @@
                 </div>
                 <input type="range" id="sliderTolerance" class="range-input" min="2" max="15" step="1" value="8">
             </div>
-            <div class="slider-group" style="margin-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 10px;">
-                <div class="slider-header" style="margin-bottom: 6px;">
+            <div class="slider-group slider-group-spaced">
+                <div class="slider-header slider-header-spaced">
                     <span>Modo de Visión Artificial</span>
                 </div>
-                <div style="display: flex; gap: 6px; width: 100%;">
-                    <label style="flex: 1;">
-                        <input type="radio" name="visionMode" value="fine" checked style="display: none;">
+                <div class="vision-mode-options">
+                    <label class="vision-mode-option">
+                        <input class="vision-mode-radio" type="radio" name="visionMode" value="fine" checked>
                         <span class="vision-mode-tab active" id="tabModeFine" onclick="setVisionMode('fine')">Silueta Fina</span>
                     </label>
-                    <label style="flex: 1;">
-                        <input type="radio" name="visionMode" value="sobel" style="display: none;">
+                    <label class="vision-mode-option">
+                        <input class="vision-mode-radio" type="radio" name="visionMode" value="sobel">
                         <span class="vision-mode-tab" id="tabModeSobel" onclick="setVisionMode('sobel')">Sobel</span>
                     </label>
-                    <label style="flex: 1;">
-                        <input type="radio" name="visionMode" value="thermal" style="display: none;">
+                    <label class="vision-mode-option">
+                        <input class="vision-mode-radio" type="radio" name="visionMode" value="thermal">
                         <span class="vision-mode-tab" id="tabModeThermal" onclick="setVisionMode('thermal')">Térmico</span>
                     </label>
                 </div>
@@ -1129,16 +1229,16 @@
         </div>
 
         <button class="btn-action" id="btnDiagnosticar">Diagnosticar Envase</button>
-        <div id="tfjsStatus" style="font-size: 0.65rem; text-align: center; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.05em; text-transform: uppercase;">
+        <div id="tfjsStatus" class="tfjs-status">
             Iniciando motor de IA TensorFlow.js...
         </div>
 
         <div class="diagnostic-card" id="resultadoCard">
             <div class="card-title" id="diagTitulo">Analizando...</div>
-            <div style="margin-bottom: 8px;">
+            <div class="diag-status-row">
                 <span id="diagGravedad" class="status-alert"></span>
             </div>
-            <div id="diagEstado" style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.4;"></div>
+            <div id="diagEstado" class="diag-state"></div>
             
             <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
             <ol class="actions-list" id="diagAcciones"></ol>
@@ -1155,8 +1255,8 @@
                 <input type="number" id="calcBpm" class="input-number" min="30" max="1000" value="240">
             </div>
             
-            <div style="display: flex; gap: 10px; margin-bottom: 14px;">
-                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+            <div class="form-row">
+                <div class="form-group form-group-half">
                     <label for="calcSections">Secciones Máquina</label>
                     <select id="calcSections" class="select-input">
                         <option value="6">6 Secciones</option>
@@ -1165,7 +1265,7 @@
                         <option value="12">12 Secciones</option>
                     </select>
                 </div>
-                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <div class="form-group form-group-half">
                     <label for="calcCavities">Tipo de Gota (Cavidad)</label>
                     <select id="calcCavities" class="select-input">
                         <option value="1">Simple Gota (DG)</option>
@@ -1189,16 +1289,16 @@
             <div class="calc-result">
                 <div class="calc-result-title">Duración Física del Evento</div>
                 <div class="calc-result-val" id="calcMsResult">75.0 ms</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;" id="calcDegreesDiff">Intervalo: 45° de ciclo</div>
+                <div class="calc-diff" id="calcDegreesDiff">Intervalo: 45° de ciclo</div>
             </div>
 
             <!-- Ajustes rápidos estándar de moldería -->
-            <div style="margin-top: 16px;">
-                <div class="calibration-title" style="font-size: 0.7rem; border: none;">Presets Rápidos SOP:</div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="filter-btn" style="font-size: 0.75rem; padding: 6px 10px;" onclick="loadPresetSop(30, 75)">Settle Blow (45°)</button>
-                    <button class="filter-btn" style="font-size: 0.75rem; padding: 6px 10px;" onclick="loadPresetSop(180, 350)">Soplado Final (170°)</button>
-                    <button class="filter-btn" style="font-size: 0.75rem; padding: 6px 10px;" onclick="loadPresetSop(240, 290)">Apertura Molde (50°)</button>
+            <div class="preset-block">
+                <div class="calibration-title preset-btn">Presets Rápidos SOP:</div>
+                <div class="preset-buttons">
+                    <button class="filter-btn preset-btn" onclick="loadPresetSop(30, 75)">Settle Blow (45°)</button>
+                    <button class="filter-btn preset-btn" onclick="loadPresetSop(180, 350)">Soplado Final (170°)</button>
+                    <button class="filter-btn preset-btn" onclick="loadPresetSop(240, 290)">Apertura Molde (50°)</button>
                 </div>
             </div>
         </div>
@@ -1244,8 +1344,8 @@
                 </select>
             </div>
 
-            <button class="btn-action" style="margin-top: 10px;" id="btnAddLog">Registrar en Bitácora</button>
-            <button class="btn-action" style="margin-top: 8px; background: #25d366; border-color: #25d366;" id="btnShareLog">Copiar Reporte para WhatsApp</button>
+            <button class="btn-action btn-action-alt" id="btnAddLog">Registrar en Bitácora</button>
+            <button class="btn-action btn-action-success" id="btnShareLog">Copiar Reporte para WhatsApp</button>
             
             <div class="log-list" id="logListContainer">
                 <!-- Items agregados -->
@@ -1255,16 +1355,16 @@
         <!-- Panel del temporizador de swabbing para control visual -->
         <div class="swab-config-panel">
             <div class="calibration-title">⏰ Temporizador de Swabbing (Lubricación)</div>
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-                <select id="swabInterval" class="select-input" style="flex: 2;">
+            <div class="swab-controls">
+                <select id="swabInterval" class="select-input">
                     <option value="10">Cada 10 minutos (Alta Frecuencia)</option>
                     <option value="15" selected>Cada 15 minutos (Estándar)</option>
                     <option value="20">Cada 20 minutos (Línea Rápida)</option>
                     <option value="30">Cada 30 minutos (Frascos Grandes)</option>
                 </select>
-                <button class="filter-btn" style="flex: 1; padding: 10px;" id="btnStartSwab">Iniciar</button>
+                <button class="filter-btn" id="btnStartSwab">Iniciar</button>
             </div>
-            <div id="swabLastTime" style="font-size: 0.75rem; color: var(--text-muted);">Último Swabbing registrado: Ninguno</div>
+            <div id="swabLastTime" class="swab-last-time">Último Swabbing registrado: Ninguno</div>
         </div>
     </div>
 
@@ -1292,21 +1392,21 @@
         <div class="footer-line"></div>
         <div class="blueprint-cajetin">
             <div class="cajetin-row">
-                <div class="cajetin-cell" style="flex: 2;">
+                <div class="cajetin-cell footer-cell-wide">
                     <span class="cajetin-label">DESARROLLADO POR</span>
                     <span class="cajetin-value">MAURICIO URIBE MALDONADO</span>
                 </div>
-                <div class="cajetin-cell" style="flex: 1;">
+                <div class="cajetin-cell footer-cell-narrow">
                     <span class="cajetin-label">VERSIÓN</span>
                     <span class="cajetin-value">V9.0</span>
                 </div>
             </div>
-            <div class="cajetin-row" style="border-top: 1.5px solid rgba(255, 111, 0, 0.2);">
-                <div class="cajetin-cell" style="flex: 2;">
+            <div class="cajetin-row footer-row-separator">
+                <div class="cajetin-cell footer-cell-wide">
                     <span class="cajetin-label">PLANTA</span>
                     <span class="cajetin-value">CRISTAL CHILE</span>
                 </div>
-                <div class="cajetin-cell" style="flex: 1;">
+                <div class="cajetin-cell footer-cell-narrow">
                     <span class="cajetin-label">PROCESO</span>
                     <span class="cajetin-value">SOP / NNPB</span>
                 </div>
@@ -1316,8 +1416,37 @@
     </footer>
 
     <script>
+        // Sistema de Notificaciones Toast
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Forzar reflow para animación
+            toast.offsetHeight;
+
+            // Mostrar toast
+            toast.classList.add('show');
+
+            // Autodestrucción
+            setTimeout(() => {
+                toast.classList.remove('show');
+                toast.addEventListener('transitionend', () => {
+                    toast.remove();
+                });
+            }, duration);
+        }
+
         // BASE DE DATOS DE 32 DEFECTOS DE MÁQUINA I.S. (Clasificación de Emhart y Cristalerías)
-                const DEFECTOS_DB = [
+        const DEFECTOS_DB = [
             // --- BOCA (18 defectos) ---
             {
                 id: "rebaba_boca",
@@ -1563,7 +1692,7 @@
                 descripcion: "Microfisuras superficiales en el vidrio del anillo de boca que le dan un aspecto áspero o escamoso.",
                 causas: [
                     "Moldería de boca excesivamente fría en el ciclo.",
-                    "Hisponeado con desmoldante que contiene trazas de agua."
+                    "Hisopeado con desmoldante que contiene trazas de agua."
                 ],
                 acciones: [
                     "Reducir el caudal de enfriamiento del molde de boca.",
@@ -1839,7 +1968,7 @@
                 causas: [
                     "Vidrio excesivamente caliente y fluido.",
                     "Presión de prensado baja (bajo los 15 psi) que deforma mal el parison.",
-                    "Hisponeado (lubricación) muy cargado que colapsa el parison internamente."
+                    "Hisopeado (lubricación) muy cargado que colapsa el parison internamente."
                 ],
                 acciones: [
                     "Aumentar el enfriamiento de los premoldes.",
@@ -3667,7 +3796,7 @@
                                 const confidence = Math.min(100, Math.floor((1 - fillRatio) * 100));
                                 if (confidence > maxConfidence) {
                                     maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "boca_incompleta") || DEFECTOS_DB.find(d => d.zona === "boca");
+                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "bajo_boca") || DEFECTOS_DB.find(d => d.zona === "boca");
                                     reason = `Borde incompleto en corona del envase. Cobertura del contorno de boca de solo ${(fillRatio*100).toFixed(0)}% (Límite: >80%).`;
                                 }
                             }
@@ -3684,8 +3813,7 @@
                             const neckXPoints = [];
                             const bodyXPoints = [];
                             
-                            const height = lastBordersHeight;
-                            const width = lastBordersWidth;
+
                             
                             // Escanear para tener coordenadas Y y X promedio de cuello y cuerpo
                             let neckYSum = 0, neckYCount = 0;
@@ -3759,8 +3887,6 @@
                             // Vidrio Sucio / Grafito (Falsa rebaba): Alta densidad de ruido interno.
                             // Para evitar falsas lecturas de Rebaba de Corona o Anillo, filtramos que el ruido interior sea extremadamente denso (>50px) y no se confunda con bordes reales.
                             let innerPixels = 0;
-                            const height = lastBordersHeight;
-                            const width = lastBordersWidth;
                             for (let y = zones.cuerpo.startY; y < zones.cuerpo.endY; y += 4) {
                                 for (let x = Math.floor(width * 0.3); x < Math.floor(width * 0.7); x += 4) {
                                     if (lastProcessedBorders[y * width + x] > 0) {
@@ -3931,9 +4057,8 @@
                 activeViewId = viewName + 'View';
             }
 
-            // Pausar/Reanudar cámara u OpenCV según la pestaña
             if (viewName === 'live') {
-                if (toggle.checked && cvReady) startProcessing();
+                if (toggle.checked) startProcessing();
             } else {
                 stopProcessing();
             }
@@ -3954,14 +4079,15 @@
         const calcDegreesDiff = document.getElementById('calcDegreesDiff');
 
         function calculateSopMs() {
-            const bpm = parseFloat(calcBpm.value) || 240;
+            const bpmInput = calcBpm.value.trim();
+            const bpm = bpmInput === "" ? 0 : (parseFloat(bpmInput) || 0);
             const sections = parseInt(calcSections.value) || 10;
             const cavity = parseInt(calcCavities.value) || 2;
             const start = parseFloat(calcStart.value) || 0;
             const end = parseFloat(calcEnd.value) || 0;
 
             // FÓRMULA DE RELACIÓN: CPM = BPM / (Secciones * Cavidades)
-            const cpm = bpm / (sections * cavity);
+            const cpm = (bpm > 0) ? (bpm / (sections * cavity)) : 0;
 
             // Calcular diferencia de grados
             let degDiff = 0;
@@ -3972,10 +4098,10 @@
             }
 
             // Tiempo de un ciclo completo de la sección en milisegundos
-            const cycleMs = (60 / cpm) * 1000;
+            const cycleMs = (cpm > 0) ? ((60 / cpm) * 1000) : 0;
             
             // Duración del evento en milisegundos
-            const eventMs = (degDiff / 360) * cycleMs;
+            const eventMs = (cycleMs > 0) ? ((degDiff / 360) * cycleMs) : 0;
 
             calcMsResult.innerText = eventMs.toFixed(1) + " ms";
             calcDegreesDiff.innerText = `Sección: ${cpm.toFixed(1)} CPM | Intervalo: ${degDiff.toFixed(0)}° | Ciclo total: ${cycleMs.toFixed(0)} ms`;
@@ -4025,7 +4151,7 @@
             updateSwabCountdown();
             swabTimer = setInterval(updateSwabCountdown, 1000);
             
-            alert(`Temporizador iniciado: Alarma en ${minutes} minutos.`);
+            showToast(`Temporizador iniciado: Alarma en ${minutes} minutos.`, 'success');
         });
 
         function updateSwabCountdown() {
@@ -4077,7 +4203,7 @@
             }, 1000);
         }
 
-        // Apagar alarma al presionar el widget flotante (Simula botón de reinicio de la moldería)
+        // Apagar alarma o reiniciar timer al presionar el widget flotante (Simula botón de reinicio de la moldería)
         swabWidget.addEventListener('click', () => {
             if (swabWidget.classList.contains('alarm-active')) {
                 clearInterval(alarmInterval);
@@ -4087,7 +4213,21 @@
                 // Registrar swabbing
                 const now = new Date();
                 swabLastTime.innerText = `Último Swabbing registrado: ${now.toLocaleTimeString()} (Confirmado)`;
-                alert("Swabbing registrado con éxito. Alarma silenciada.");
+                showToast("Swabbing registrado con éxito. Alarma silenciada.", 'success');
+            } else {
+                // Si hace clic durante la cuenta regresiva, reinicia el temporizador de forma rápida
+                const minutes = parseInt(swabInterval.value);
+                const durationMs = minutes * 60 * 1000;
+                swabEndTime = Date.now() + durationMs;
+                
+                const now = new Date();
+                swabLastTime.innerText = `Último Swabbing registrado: ${now.toLocaleTimeString()} (Reiniciado)`;
+                
+                if (swabTimer) clearInterval(swabTimer);
+                updateSwabCountdown();
+                swabTimer = setInterval(updateSwabCountdown, 1000);
+                
+                showToast(`Swabbing reiniciado de forma anticipada (${minutes} min).`, 'success');
             }
         });
 
@@ -4137,7 +4277,7 @@
             localStorage.setItem('vitrodiag_bitacora', JSON.stringify(bitacoraList));
             renderBitacoraList();
             
-            alert(`Registrado en sección ${newItem.section} - Gota ${newItem.cavity}: ${newItem.defectName}`);
+            showToast(`Registrado en sección ${newItem.section} - Gota ${newItem.cavity}: ${newItem.defectName}`, 'success');
         });
 
         window.deleteLogItem = function(id) {
@@ -4169,7 +4309,7 @@
         // Copiar reporte listo para pegar en WhatsApp del grupo de la máquina
         btnShareLog.addEventListener('click', () => {
             if (bitacoraList.length === 0) {
-                alert("La bitácora está vacía. Registra algún defecto primero.");
+                showToast("La bitácora está vacía. Registra algún defecto primero.", 'warning');
                 return;
             }
 
@@ -4182,14 +4322,13 @@
             
             reportText += `\n_Enviado desde VitroDiag v9.0 (Sistema SOP / NNPB Offline)_`;
 
-            // Copiar al portapapeles
             navigator.clipboard.writeText(reportText.replace(/\\n/g, '\n'))
             .then(() => {
-                alert("¡Reporte formateado copiado al portapapeles! Ya puedes abrir WhatsApp y pegarlo.");
+                showToast("¡Reporte copiado al portapapeles! Listo para WhatsApp.", 'success');
             })
             .catch(err => {
                 console.error("Error al copiar reporte: ", err);
-                alert("No se pudo copiar de forma automática. Intentando compartir por API...");
+                showToast("No se pudo copiar. Intentando compartir...", 'info');
                 if (navigator.share) {
                     navigator.share({
                         title: 'Reporte de Máquina IS',
