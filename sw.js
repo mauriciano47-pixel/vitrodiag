@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vitrodiag-cache-v36';
+const CACHE_NAME = 'vitrodiag-cache-v37';
 const ASSETS = [
   './index.html',
   './manifest.json',
