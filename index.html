@@ -1498,6 +1498,7 @@
         </div>
 
         <button class="btn-action" id="btnDiagnosticar">Diagnosticar Envase</button>
+        <button class="btn-action" id="btnReanudarCamara" style="display: none; background: var(--success); border-color: var(--success); margin-top: 10px; font-weight: bold;">Reanudar Cámara</button>
         <div id="tfjsStatus" class="tfjs-status">
             Iniciando motor de IA TensorFlow.js...
         </div>
@@ -1803,6 +1804,48 @@
                 <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(6, 182, 212, 0.2); border-radius: 50%; border-top-color: #06b6d4; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
                 <div id="ocrStatusMsg" style="font-size: 0.8rem; color: #06b6d4; font-weight: bold;">Cargando motor de reconocimiento OCR...</div>
                 <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Este proceso se ejecuta 100% de forma local y offline</div>
+            </div>
+
+            <!-- ASISTENTE DE CONFIRMACIÓN DE OCR -->
+            <div id="scannerOcrConfirmArea" style="display: none; margin-bottom: 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px;">
+                <div style="font-weight: bold; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                    <span>🔎 Validar Lectura de Panel BDF</span>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4;">
+                    El OCR ha digitalizado los siguientes valores del panel de control. Por favor, verifica que coincidan con la pantalla y corrígelos si es necesario antes de comparar.
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-bottom: 15px;">
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Macho Arriba (Plunger Up)</label>
+                        <input type="number" id="ocrValPlungerUp" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Macho Abajo (Plunger Down)</label>
+                        <input type="number" id="ocrValPlungerDown" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Inversión (Invert Start)</label>
+                        <input type="number" id="ocrValInvertStart" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Cierre Molde (Blow Close)</label>
+                        <input type="number" id="ocrValBlowClose" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Abre Anillo (Neck Ring Open)</label>
+                        <input type="number" id="ocrValNeckRingOpen" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                    </div>
+                    <div>
+                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Soplado ON (Blow ON)</label>
+                        <input type="number" id="ocrValBlowOn" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-action" style="background: var(--success); border-color: var(--success); flex: 1; font-weight: bold;" onclick="confirmOcrAndCompare()">Confirmar y Comparar</button>
+                    <button class="btn-action" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #f87171; flex: 1;" onclick="cancelOcrConfirm()">Cancelar</button>
+                </div>
             </div>
 
             <!-- RESULTADO Y TABLA COMPARATIVA -->
@@ -4139,6 +4182,7 @@
         const canvas = document.getElementById('canvasOutput');
         const ctx = canvas.getContext('2d');
         const btn = document.getElementById('btnDiagnosticar');
+        const btnReanudar = document.getElementById('btnReanudarCamara');
         const card = document.getElementById('resultadoCard');
         const toggle = document.getElementById('silhouetteToggle');
         const status = document.getElementById('opencvStatus');
@@ -4311,6 +4355,20 @@
             if (!streamActive) return;
             
             try {
+                // Ajustar dinámicamente el tamaño del canvas según la relación de aspecto real de la cámara
+                if (video.videoWidth > 0) {
+                    const videoAspect = video.videoWidth / video.videoHeight;
+                    let targetWidth = 320;
+                    let targetHeight = Math.round(targetWidth / videoAspect);
+                    
+                    if (offscreenCanvas.width !== targetWidth || offscreenCanvas.height !== targetHeight) {
+                        offscreenCanvas.width = targetWidth;
+                        offscreenCanvas.height = targetHeight;
+                        canvas.width = targetWidth;
+                        canvas.height = targetHeight;
+                    }
+                }
+
                 // 1. Pintar el frame de video en canvas oculto de baja resolución
                 offscreenCtx.drawImage(video, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
                 const imgData = offscreenCtx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
@@ -4653,32 +4711,32 @@
         }
 
         // Preprocesar el frame de cámara a un Tensor de entrada estándar [1, 224, 224, 3]
-        function preprocessTensor(canvasElement) {
-            return tf.tidy(() => {
-                // Convertir elemento canvas a Tensor
-                let tensor = tf.browser.fromPixels(canvasElement);
-                // Redimensionar a la entrada de MobileNet (224x224)
-                tensor = tf.image.resizeBilinear(tensor, [224, 224]);
-                // Normalizar valores de píxeles a [0, 1]
-                tensor = tensor.toFloat().div(tf.scalar(255.0));
-                // Expandir dimensiones para lote (batch)
-                return tensor.expandDims(0);
-            });
-        }
-
-        // Ejecutar carga de TensorFlow.js al iniciar la app
-        window.addEventListener('load', loadTensorFlowModel);
-
-        // Lógica de diagnóstico interactivo y real con análisis geométrico
         btn.addEventListener('click', () => {
+            if (!toggle.checked) {
+                showToast("Por favor, activa el 'Modo Contorno / Silueta' para congelar y diagnosticar el envase.", "warning");
+                return;
+            }
+
+            if (!lastProcessedBorders) {
+                showToast("Esperando a que la cámara detecte los bordes del envase...", "warning");
+                return;
+            }
+
+            // 1. Congelar el frame actual
+            streamActive = false; // Detiene la animación de processFrame, congelando la imagen dibujada en el canvas
+
+            // 2. Alternar visibilidad de botones
+            btn.style.display = 'none';
+            btnReanudar.style.display = 'block';
+
+            // 3. Mostrar tarjeta en análisis
             card.style.display = 'block';
             document.getElementById('diagTitulo').innerText = "🤖 VitroDiag: Analizando Silueta...";
             document.getElementById('diagGravedad').className = "status-alert";
             document.getElementById('diagGravedad').style.display = "none";
-            document.getElementById('diagEstado').innerText = "Analizando distribución de bordes y asimetría de la botella...";
+            document.getElementById('diagEstado').innerText = "Analizando distribución de bordes y asimetría de la botella congelada...";
             document.getElementById('diagAcciones').innerHTML = "<li>Procesando algoritmos de visión...</li>";
             
-            // Simular análisis de tensores en consola si TensorFlow está activo
             if (typeof tf !== 'undefined') {
                 console.log("TensorFlow.js activo. Tensores en memoria:", tf.memory().numTensors);
                 if (tfModel) {
@@ -4692,35 +4750,129 @@
                     } else {
                         tfjsStatus.innerText = "Motor IA: Modo Emulación (Listo para ./model/model.json)";
                     }
-                }, 1200);
+                }, 1000);
             }
 
             setTimeout(() => {
                 card.scrollIntoView({ behavior: 'smooth' });
             }, 100);
 
-            // ANÁLISIS CIENTÍFICO POR FIRMA RADIAL DEL CONTORNO Y COMPARACIÓN DE DESVIACIÓN DE PERFIL PATRÓN
+            // 4. ANÁLISIS CIENTÍFICO POR FIRMA RADIAL DEL CONTORNO SOBRE EL FRAME CONGELADO
             setTimeout(() => {
-                let totalPixels = 0;
-                let hasSilhouette = false;
+                const width = lastBordersWidth;
+                const height = lastBordersHeight;
 
-                if (toggle.checked && lastProcessedBorders) {
-                    const width = lastBordersWidth;
-                    const height = lastBordersHeight;
+                // Segmentación Altitudinal de Precisión
+                const zones = {
+                    boca: { startY: 0, endY: Math.floor(height * 0.18), lProfile: [], rProfile: [], deviations: [], total: 0 },
+                    cuello: { startY: Math.floor(height * 0.18), endY: Math.floor(height * 0.38), lProfile: [], rProfile: [], deviations: [], total: 0 },
+                    cuerpo: { startY: Math.floor(height * 0.38), endY: Math.floor(height * 0.82), lProfile: [], rProfile: [], deviations: [], total: 0 },
+                    fondo: { startY: Math.floor(height * 0.82), endY: height, lProfile: [], rProfile: [], deviations: [], total: 0 }
+                };
 
-                    // 1. Segmentación Altitudinal de Precisión
-                    const zones = {
-                        boca: { startY: 0, endY: Math.floor(height * 0.18), lProfile: [], rProfile: [], deviations: [], total: 0 },
-                        cuello: { startY: Math.floor(height * 0.18), endY: Math.floor(height * 0.38), lProfile: [], rProfile: [], deviations: [], total: 0 },
-                        cuerpo: { startY: Math.floor(height * 0.38), endY: Math.floor(height * 0.82), lProfile: [], rProfile: [], deviations: [], total: 0 },
-                        fondo: { startY: Math.floor(height * 0.82), endY: height, lProfile: [], rProfile: [], deviations: [], total: 0 }
-                    };
+                // Auto-Alineación y Centrado Dinámico por Base
+                let baseLefts = [];
+                let baseRights = [];
+                for (let y = Math.floor(height * 0.7); y < Math.floor(height * 0.9); y += 4) {
+                    let l = -1, r = -1;
+                    for (let x = 2; x < width / 2; x++) {
+                        if (lastProcessedBorders[y * width + x] > 0) { l = x; break; }
+                    }
+                    for (let x = width - 3; x >= width / 2; x--) {
+                        if (lastProcessedBorders[y * width + x] > 0) { r = x; break; }
+                    }
+                    if (l !== -1 && r !== -1) {
+                        baseLefts.push(l);
+                        baseRights.push(r);
+                    }
+                }
 
-                    // 2. Auto-Alineación y Centrado Dinámico por Base (Alineación con el molde final)
-                    // Buscamos los límites reales de la botella en el fondo y cuerpo para hallar el eje real
-                    let baseLefts = [];
-                    let baseRights = [];
-                    for (let y = Math.floor(height * 0.7); y < Math.floor(height * 0.9); y += 4) {
+                let midX = width / 2;
+                if (baseLefts.length > 0 && baseRights.length > 0) {
+                    const avgL = baseLefts.reduce((sum, v) => sum + v, 0) / baseLefts.length;
+                    const avgR = baseRights.reduce((sum, v) => sum + v, 0) / baseRights.length;
+                    midX = (avgL + avgR) / 2;
+                }
+
+                // Llenar perfiles por zona
+                for (let y = 2; y < height - 2; y += 2) {
+                    let leftX = -1;
+                    let rightX = -1;
+                    for (let x = 1; x < width / 2; x++) {
+                        if (lastProcessedBorders[y * width + x] > 0) { leftX = x; break; }
+                    }
+                    for (let x = width - 2; x >= width / 2; x--) {
+                        if (lastProcessedBorders[y * width + x] > 0) { rightX = x; break; }
+                    }
+
+                    if (leftX !== -1 && rightX !== -1) {
+                        let targetZone = null;
+                        if (y < zones.boca.endY) targetZone = zones.boca;
+                        else if (y < zones.cuello.endY) targetZone = zones.cuello;
+                        else if (y < zones.cuerpo.endY) targetZone = zones.cuerpo;
+                        else targetZone = zones.fondo;
+
+                        const distLeft = midX - leftX;
+                        const distRight = rightX - midX;
+                        const dev = distLeft - distRight;
+
+                        targetZone.lProfile.push(distLeft);
+                        targetZone.rProfile.push(distRight);
+                        targetZone.deviations.push(dev);
+                        targetZone.total++;
+                    }
+                }
+
+                let detectedDefect = null;
+                let maxConfidence = 0;
+                let reason = "";
+
+                // --- FIRMA A: BOCA INCLINADA / REBABA BOCA / BOCA INCOMPLETA ---
+                if (zones.boca.total > 2) {
+                    const bDevs = zones.boca.deviations;
+                    const avgDev = bDevs.reduce((sum, val) => sum + val, 0) / bDevs.length;
+
+                    if (Math.abs(avgDev) > 3.0) {
+                        const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 7) * 100));
+                        if (confidence > maxConfidence) {
+                            maxConfidence = confidence;
+                            detectedDefect = DEFECTOS_DB.find(d => d.id === "boca_inclinada") || DEFECTOS_DB.find(d => d.zona === "boca" && d.nombre.toLowerCase().includes("inclinada"));
+                            reason = `Desviación angular promedio en boca detectada de ${avgDev.toFixed(1)} px respecto al eje (Límite: ±1.2 px).`;
+                        }
+                    }
+                    
+                    const maxDevBoca = bDevs.reduce((max, val) => Math.max(max, Math.abs(val)), 0);
+                    if (maxDevBoca > 4.2) {
+                        const confidence = Math.min(100, Math.floor((maxDevBoca / 8) * 100));
+                        if (confidence > maxConfidence) {
+                            maxConfidence = confidence;
+                            detectedDefect = DEFECTOS_DB.find(d => d.id === "rebaba_boca") || DEFECTOS_DB.find(d => d.zona === "boca" && d.nombre.toLowerCase().includes("rebaba"));
+                            reason = `Exceso de vidrio proyectado o pico de asimetría máxima de ${maxDevBoca.toFixed(1)} px detectado en corona.`;
+                        }
+                    }
+                    
+                    const expectedBocaRows = zones.boca.endY - zones.boca.startY;
+                    const fillRatio = zones.boca.total / expectedBocaRows;
+                    if (fillRatio < 0.35) {
+                        const confidence = Math.min(100, Math.floor((1 - fillRatio) * 100));
+                        if (confidence > maxConfidence) {
+                            maxConfidence = confidence;
+                            detectedDefect = DEFECTOS_DB.find(d => d.id === "bajo_boca") || DEFECTOS_DB.find(d => d.zona === "boca");
+                            reason = `Borde incompleto en corona del envase (cobertura ${(fillRatio*100).toFixed(0)}%).`;
+                        }
+                    }
+                }
+
+                // --- FIRMA B: CUELLO DOBLADO / CUELLO TORCIDO ---
+                const tolerancePct = parseFloat(sliderTolerance.value) || 8;
+                const angleThreshold = tolerancePct * 0.35;
+                if (zones.cuello.total > 2 && zones.cuerpo.total > 3) {
+                    const neckXPoints = [];
+                    const bodyXPoints = [];
+                    let neckYSum = 0, neckYCount = 0;
+                    let bodyYSum = 0, bodyYCount = 0;
+
+                    for (let y = 4; y < height - 4; y += 2) {
                         let l = -1, r = -1;
                         for (let x = 2; x < width / 2; x++) {
                             if (lastProcessedBorders[y * width + x] > 0) { l = x; break; }
@@ -4729,339 +4881,140 @@
                             if (lastProcessedBorders[y * width + x] > 0) { r = x; break; }
                         }
                         if (l !== -1 && r !== -1) {
-                            baseLefts.push(l);
-                            baseRights.push(r);
+                            const centerX = (l + r) / 2;
+                            if (y >= zones.cuello.startY && y < zones.cuello.endY) {
+                                neckXPoints.push(centerX);
+                                neckYSum += y;
+                                neckYCount++;
+                            } else if (y >= zones.cuerpo.startY && y < zones.cuerpo.endY) {
+                                bodyXPoints.push(centerX);
+                                bodyYSum += y;
+                                bodyYCount++;
+                            }
                         }
                     }
 
-                    // Eje central real dinámico (evita errores por no centrar perfectamente el celular)
-                    let midX = width / 2;
-                    if (baseLefts.length > 2) {
-                        const avgL = baseLefts.reduce((sum, v) => sum + v, 0) / baseLefts.length;
-                        const avgR = baseRights.reduce((sum, v) => sum + v, 0) / baseRights.length;
-                        midX = (avgL + avgR) / 2;
-                        console.log("Alineación Dinámica: Eje central recalculado a X =", midX.toFixed(1));
-                    }
+                    if (neckXPoints.length > 2 && bodyXPoints.length > 3) {
+                        const avgNeckX = neckXPoints.reduce((sum, v) => sum + v, 0) / neckXPoints.length;
+                        const avgBodyX = bodyXPoints.reduce((sum, v) => sum + v, 0) / bodyXPoints.length;
+                        const avgNeckY = neckYSum / neckYCount;
+                        const avgBodyY = bodyYSum / bodyYCount;
 
-                    // 3. Extraer Firma Radial del Envase referenciada al Eje Real
-                    let borderRows = 0;
+                        const deltaX = avgNeckX - avgBodyX;
+                        const deltaY = avgBodyY - avgNeckY;
 
-                    for (let y = 4; y < height - 4; y += 2) {
-                        let leftX = -1;
-                        let rightX = -1;
-
-                        // Buscar primer píxel de borde desde la izquierda hacia el eje central dinámico
-                        for (let x = 2; x < Math.floor(midX); x++) {
-                            if (lastProcessedBorders[y * width + x] > 0) {
-                                leftX = x;
-                                break;
+                        const angleDev = Math.atan2(Math.abs(deltaX), deltaY) * (180 / Math.PI);
+                        if (angleDev > angleThreshold) {
+                            const confidence = Math.floor((angleDev / angleThreshold) * 110);
+                            if (confidence > maxConfidence) {
+                                maxConfidence = confidence;
+                                detectedDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.id === "cuello_torcido");
+                                reason = `Desvío angular del cuello de ${angleDev.toFixed(1)}° respecto a la base (Límite: ±${angleThreshold.toFixed(1)}°).`;
                             }
                         }
-
-                        // Buscar primer píxel de borde desde la derecha hacia el eje central dinámico
-                        for (let x = width - 3; x >= Math.floor(midX); x--) {
-                            if (lastProcessedBorders[y * width + x] > 0) {
-                                rightX = x;
-                                break;
-                            }
-                        }
-
-                        // Si encontramos ambos límites de la botella en esta línea
-                        if (leftX !== -1 && rightX !== -1) {
-                            borderRows++;
-                            totalPixels += 2;
-
-                            // Determinar a qué zona pertenece esta línea horizontal
-                            let targetZone = null;
-                            if (y < zones.boca.endY) targetZone = zones.boca;
-                            else if (y < zones.cuello.endY) targetZone = zones.cuello;
-                            else if (y < zones.cuerpo.endY) targetZone = zones.cuerpo;
-                            else targetZone = zones.fondo;
-
-                            // Distancia radial desde el eje real recalculado
-                            const distLeft = midX - leftX;
-                            const distRight = rightX - midX;
-                            const dev = distLeft - distRight; // Desviación local de simetría
-
-                            targetZone.lProfile.push(distLeft);
-                            targetZone.rProfile.push(distRight);
-                            targetZone.deviations.push(dev);
-                            targetZone.total++;
-                        }
-                    }
-
-                    // Se considera silueta confiable si detectamos bordes en al menos el 15% vertical
-                    if (borderRows > (height * 0.12)) {
-                        hasSilhouette = true;
-
-                        // 4. Evaluar firmas de desviación por zona para encontrar la anomalía real
-                        let detectedDefect = null;
-                        let maxConfidence = 0;
-                        let reason = "";
-
-                        // --- FIRMA A: BOCA INCLINADA / BOCA INCOMPLETA ---
-                        if (zones.boca.total > 2) {
-                            const bDevs = zones.boca.deviations;
-                            const avgDev = bDevs.reduce((sum, val) => sum + val, 0) / bDevs.length;
-
-                            // 1. Boca Inclinada: Desviación lateral sistemática asimétrica en la boca (diferencia > 3.0px con eje real)
-                            if (Math.abs(avgDev) > 3.0) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 7) * 100));
-                                if (confidence > maxConfidence) {
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "boca_inclinada") || DEFECTOS_DB.find(d => d.zona === "boca" && d.nombre.toLowerCase().includes("inclinada"));
-                                    reason = `Desviación angular promedio en boca detectada de ${avgDev.toFixed(1)} px respecto al eje de base (Límite: ±1.2 px).`;
-                                }
-                            }
-                            
-                            // 2. Rebaba de Boca (Overpressed Finish): Un pico de asimetría local máxima extrema en la boca (desviación máxima > 4.2 px)
-                            const maxDevBoca = bDevs.reduce((max, val) => Math.max(max, Math.abs(val)), 0);
-                            if (maxDevBoca > 4.2) {
-                                const confidence = Math.min(100, Math.floor((maxDevBoca / 8) * 100));
-                                if (confidence > maxConfidence) {
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "rebaba_boca") || DEFECTOS_DB.find(d => d.zona === "boca" && d.nombre.toLowerCase().includes("rebaba"));
-                                    reason = `Exceso de vidrio proyectado o pico de asimetría máxima de ${maxDevBoca.toFixed(1)} px detectado en corona (Límite tolerado: ±1.2 px). Sugiere Rebaba en Molde de Boca (Overpressed).`;
-                                }
-                            }
-                            
-                            // 3. Boca Incompleta: Pérdida abrupta de contornos en la boca (menos del 35% de filas con datos)
-                            const expectedBocaRows = zones.boca.endY - zones.boca.startY;
-                            const fillRatio = zones.boca.total / expectedBocaRows;
-                            if (fillRatio < 0.35) {
-                                const confidence = Math.min(100, Math.floor((1 - fillRatio) * 100));
-                                if (confidence > maxConfidence) {
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "bajo_boca") || DEFECTOS_DB.find(d => d.zona === "boca");
-                                    reason = `Borde incompleto en corona del envase. Cobertura del contorno de boca de solo ${(fillRatio*100).toFixed(0)}% (Límite: >80%).`;
-                                }
-                            }
-                        }
-
-                        // --- FIRMA B: CUELLO DOBLADO / CUELLO TORCIDO (ANÁLISIS ANGULAR PENDIENTE DEL EJE) ---
-                        // Leemos el control de tolerancia táctil. Si es 8%, la tolerancia angular es 8 * 0.35 = 2.8 grados.
-                        const tolerancePct = parseFloat(sliderTolerance.value) || 8;
-                        const angleThreshold = tolerancePct * 0.35; // Umbral de inclinación en grados
-
-                        if (zones.cuello.total > 2 && zones.cuerpo.total > 3) {
-                            // Hallar el centro medio del cuello en X (promedio de los puntos centrales del canal)
-                            // Y el centro medio del cuerpo en X (promedio de los puntos centrales del cuerpo)
-                            const neckXPoints = [];
-                            const bodyXPoints = [];
-                            
-
-                            
-                            // Escanear para tener coordenadas Y y X promedio de cuello y cuerpo
-                            let neckYSum = 0, neckYCount = 0;
-                            let bodyYSum = 0, bodyYCount = 0;
-
-                            for (let y = 4; y < height - 4; y += 2) {
-                                let l = -1, r = -1;
-                                for (let x = 2; x < width / 2; x++) {
-                                    if (lastProcessedBorders[y * width + x] > 0) { l = x; break; }
-                                }
-                                for (let x = width - 3; x >= width / 2; x--) {
-                                    if (lastProcessedBorders[y * width + x] > 0) { r = x; break; }
-                                }
-                                if (l !== -1 && r !== -1) {
-                                    const centerX = (l + r) / 2;
-                                    if (y >= zones.cuello.startY && y < zones.cuello.endY) {
-                                        neckXPoints.push(centerX);
-                                        neckYSum += y;
-                                        neckYCount++;
-                                    } else if (y >= zones.cuerpo.startY && y < zones.cuerpo.endY) {
-                                        bodyXPoints.push(centerX);
-                                        bodyYSum += y;
-                                        bodyYCount++;
-                                    }
-                                }
-                            }
-
-                            if (neckXPoints.length > 2 && bodyXPoints.length > 3) {
-                                const avgNeckX = neckXPoints.reduce((sum, v) => sum + v, 0) / neckXPoints.length;
-                                const avgBodyX = bodyXPoints.reduce((sum, v) => sum + v, 0) / bodyXPoints.length;
-                                
-                                const avgNeckY = neckYSum / neckYCount;
-                                const avgBodyY = bodyYSum / bodyYCount;
-
-                                // Calcular delta X (desvío lateral) y delta Y (altura vertical)
-                                const deltaX = avgNeckX - avgBodyX;
-                                const deltaY = avgBodyY - avgNeckY; // La base está más abajo en la imagen (Y mayor)
-
-                                // Ángulo de inclinación del cuello con respecto a la vertical
-                                const angleDev = Math.atan2(Math.abs(deltaX), deltaY) * (180 / Math.PI);
-                                
-                                console.log("Análisis Angular de Cuello: Inclinación =", angleDev.toFixed(2), "grados | Límite =", angleThreshold.toFixed(2), "grados");
-
-                                if (angleDev > angleThreshold) {
-                                    // Ponderar la confianza del cuello torcido permitiendo superar 100 en la competencia de prioridad
-                                    const confidence = Math.floor((angleDev / angleThreshold) * 110);
-                                    if (confidence > maxConfidence) {
-                                        maxConfidence = confidence;
-                                        detectedDefect = DEFECTOS_DB.find(d => d.id === "cuello_doblado") || DEFECTOS_DB.find(d => d.zona === "cuello" && d.nombre.toLowerCase().includes("doblado")) || DEFECTOS_DB.find(d => d.id === "cuello_torcido");
-                                        reason = `Desvío angular del eje del cuello de ${angleDev.toFixed(1)}° con respecto a la base (Límite tolerado: ±${angleThreshold.toFixed(1)}°). Cuello Torcido confirmado.`;
-                                    }
-                                }
-                            }
-                        }
-
-                        // --- FIRMA C: PARISON DOBLADO / BOTELLA DEFORMADA (CUERPO) ---
-                        if (zones.cuerpo.total > 5) {
-                            const bodyDevs = zones.cuerpo.deviations;
-                            const avgDev = bodyDevs.reduce((sum, val) => sum + val, 0) / bodyDevs.length;
-
-                            // Parison Doblado: Desviación sistemática de la masa de vidrio en el cuerpo (asimetría > 4.2px)
-                            if (Math.abs(avgDev) > 4.2) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 9) * 100));
-                                if (confidence > maxConfidence) {
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "parison_doblado") || DEFECTOS_DB.find(d => d.id === "botella_deformada") || DEFECTOS_DB.find(d => d.zona === "cuerpo");
-                                    reason = `Desalineación de soplado en cuerpo de botella de ${avgDev.toFixed(1)} px. Indica parison doblado.`;
-                                }
-                            }
-
-                            // Vidrio Sucio / Grafito (Falsa rebaba): Alta densidad de ruido interno.
-                            // Para evitar falsas lecturas de Rebaba de Corona o Anillo, filtramos que el ruido interior sea extremadamente denso (>50px) y no se confunda con bordes reales.
-                            let innerPixels = 0;
-                            for (let y = zones.cuerpo.startY; y < zones.cuerpo.endY; y += 4) {
-                                for (let x = Math.floor(width * 0.3); x < Math.floor(width * 0.7); x += 4) {
-                                    if (lastProcessedBorders[y * width + x] > 0) {
-                                        innerPixels++;
-                                    }
-                                }
-                            }
-                            if (innerPixels > 45) { // Subimos el umbral de ruido para evitar falsos positivos
-                                const confidence = Math.min(100, Math.floor((innerPixels / 70) * 100));
-                                if (confidence > maxConfidence && maxConfidence < 75) { // Solo si no hay un cuello torcido o defecto geométrico crítico detectado con alta confianza
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "vidrio_sucio") || DEFECTOS_DB.find(d => d.zona === "cuerpo" && d.nombre.toLowerCase().includes("sucio"));
-                                    reason = `Acumulación de bordes internos por textura de vidrio irregular o marcas de planchado.`;
-                                }
-                            }
-                        }
-
-                        // --- FIRMA D: FONDO INCLINADO / FONDO HUNDIDO / FONDO DELGADO ---
-                        if (zones.fondo.total > 2) {
-                            const fDevs = zones.fondo.deviations;
-                            const avgDev = fDevs.reduce((sum, val) => sum + val, 0) / fDevs.length;
-
-                            // Fondo Hundido o Inclinado: Asimetría en la base
-                            if (Math.abs(avgDev) > 3.8) {
-                                const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 8) * 100));
-                                if (confidence > maxConfidence) {
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "fondo_hundido") || DEFECTOS_DB.find(d => d.id === "fondo_inclinado") || DEFECTOS_DB.find(d => d.zona === "fondo");
-                                    reason = `Asimetría en asiento de la base detectada de ${avgDev.toFixed(1)} px (Tolerancia: ±1.5 px).`;
-                                }
-                            }
-
-                            // Fondo Delgado: Pérdida de contornos en la zona del baffle / fondo (cobertura < 45%)
-                            const expectedFondoRows = zones.fondo.endY - zones.fondo.startY;
-                            const fillRatio = zones.fondo.total / expectedFondoRows;
-                            if (fillRatio < 0.45) {
-                                const confidence = Math.min(100, Math.floor((1 - fillRatio) * 100));
-                                if (confidence > maxConfidence) {
-                                    maxConfidence = confidence;
-                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "fondo_delgado") || DEFECTOS_DB.find(d => d.zona === "fondo");
-                                    reason = `Falta de definición en asiento del envase (cobertura ${(fillRatio*100).toFixed(0)}%). Sugiere enfriamiento de fondo deficiente.`;
-                                }
-                            }
-                        }
-
-                        // 4. Renderizar resultado del Diagnóstico de Alta Afinidad según umbral de confianza IA
-                        if (detectedDefect && maxConfidence >= confidenceThreshold) {
-                            mostrarResultadoDefecto(detectedDefect);
-                            const displayConfidence = Math.min(100, maxConfidence);
-                            
-                            // Inyectar el reporte científico de confianza en la interfaz
-                            document.getElementById('diagTitulo').innerText = `🚨 ${detectedDefect.nombre.toUpperCase()}`;
-                            document.getElementById('diagEstado').innerHTML = `
-                                <b>Diagnóstico de Precisión:</b> Zona del ${detectedDefect.zona.toUpperCase()}<br>
-                                <b>Detalle:</b> ${detectedDefect.descripcion}<br>
-                                <div style="margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; border-radius: 4px;">
-                                    <b>Firma de Falla Detectada:</b> ${reason}<br>
-                                    <b>Confianza del Algoritmo:</b> <span style="color:#ef4444; font-weight:bold;">${displayConfidence}% (Supera el umbral del ${confidenceThreshold}%)</span>
-                                </div>
-                            `;
-                        } else if (detectedDefect && maxConfidence < confidenceThreshold) {
-                            // Si se detecta un defecto pero tiene baja confianza (falsos positivos / destellos)
-                            document.getElementById('diagTitulo').innerText = "⚠️ LECTURA DESCARTADA (UMBRAL IA)";
-                            document.getElementById('diagGravedad').innerText = "Incierto / Ruido";
-                            document.getElementById('diagGravedad').className = "status-alert warning";
-                            document.getElementById('diagGravedad').style.display = "inline-block";
-                            document.getElementById('diagEstado').innerHTML = `
-                                <b>Anomalía ignorada por baja certeza:</b> Se detectó un posible desvío en la zona del ${detectedDefect.zona.toUpperCase()} con una confianza del <b>${maxConfidence}%</b>, lo cual no supera tu umbral de seguridad establecido de <b>${confidenceThreshold}%</b>.<br><br>
-                                <div style="margin-top: 10px; padding: 10px; background: rgba(245, 158, 11, 0.08); border-left: 3px solid #fbbf24; border-radius: 4px;">
-                                    <b>Motivo del filtro:</b> Evita malas lecturas operativas debido a destellos del vidrio fundido, reflejos del molde metálico caliente o variaciones bruscas de iluminación ambiental.<br>
-                                    <b>Sugerencia:</b> Centra mejor el envase en la guía, limpia la cámara de tu smartphone o atenúa la iluminación ambiente en el Hot End y vuelve a escanear.
-                                </div>
-                            `;
-                            document.getElementById('diagAcciones').innerHTML = `
-                                <li>Mantener la máquina I.S. produciendo sin paradas.</li>
-                                <li>Verificar visualmente la botella piloto antes de tomar acciones correctivas en la consola BDF.</li>
-                            `;
-                        } else {
-                            // Envase 100% Conforme
-                            document.getElementById('diagTitulo').innerText = "🟢 ENVASE CONFORME";
-                            document.getElementById('diagGravedad').innerText = "Artículo Conforme";
-                            document.getElementById('diagGravedad').className = "status-alert menor";
-                            document.getElementById('diagGravedad').style.display = "inline-block";
-                            document.getElementById('diagEstado').innerHTML = `
-                                <b>Inspección Óptica:</b> Silueta simétrica con desvíos del eje de simetría dentro de tolerancias mecánicas (±1.5 px).<br>
-                                <div style="margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10b981; border-radius: 4px;">
-                                    <b>Análisis de Firma Radial:</b> Coeficiente de correlación de simetría de 97.4% (Excelente).<br>
-                                    <b>Distribución de Espesor:</b> Homogénea en Boca, Cuello y Fondo.
-                                </div>
-                            `;
-                            document.getElementById('diagAcciones').innerHTML = `
-                                <li>El artículo cumple con el perfil geométrico de soplado.</li>
-                                <li>Mantener la velocidad y el enfriamiento actual del molde final.</li>
-                            `;
-                        }
-                        return;
                     }
                 }
 
-                // Fallback si la cámara no está en modo silueta o no detecta bordes (Simulación Contextual)
-                // Se simulará el diagnóstico de forma prioritaria sobre la zona filtrada activamente en el directorio de defectos
-                const activeFilterBtn = document.querySelector('.filter-btn.active');
-                let activeFilter = 'general';
-                if (activeFilterBtn) {
-                    activeFilter = activeFilterBtn.innerText.toLowerCase();
-                    if (activeFilter.includes('generales')) activeFilter = 'general';
+                // --- FIRMA C: PARISON DOBLADO / VIDRIO SUCIO ---
+                if (zones.cuerpo.total > 5) {
+                    const bodyDevs = zones.cuerpo.deviations;
+                    const avgDev = bodyDevs.reduce((sum, val) => sum + val, 0) / bodyDevs.length;
+
+                    if (Math.abs(avgDev) > 4.2) {
+                        const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 9) * 100));
+                        if (confidence > maxConfidence) {
+                            maxConfidence = confidence;
+                            detectedDefect = DEFECTOS_DB.find(d => d.id === "parison_doblado") || DEFECTOS_DB.find(d => d.id === "botella_deformada");
+                            reason = `Desalineación de soplado en cuerpo de ${avgDev.toFixed(1)} px. Indica parison doblado.`;
+                        }
+                    }
+
+                    let innerPixels = 0;
+                    for (let y = zones.cuerpo.startY; y < zones.cuerpo.endY; y += 4) {
+                        for (let x = Math.floor(width * 0.3); x < Math.floor(width * 0.7); x += 4) {
+                            if (lastProcessedBorders[y * width + x] > 0) innerPixels++;
+                        }
+                    }
+                    if (innerPixels > 45) {
+                        const confidence = Math.min(100, Math.floor((innerPixels / 70) * 100));
+                        if (confidence > maxConfidence && maxConfidence < 75) {
+                            maxConfidence = confidence;
+                            detectedDefect = DEFECTOS_DB.find(d => d.id === "vidrio_sucio");
+                            reason = `Acumulación de bordes internos por textura de vidrio irregular o marcas de planchado.`;
+                        }
+                    }
                 }
 
-                if (Math.random() < 0.20) {
-                    // Simular conforme
-                    document.getElementById('diagTitulo').innerText = "🟢 ENVASE CONFORME (SIM)";
+                // --- FIRMA D: FONDO INCLINADO / FONDO HUNDIDO / FONDO DELGADO ---
+                if (zones.fondo.total > 2) {
+                    const fDevs = zones.fondo.deviations;
+                    const avgDev = fDevs.reduce((sum, val) => sum + val, 0) / fDevs.length;
+
+                    if (Math.abs(avgDev) > 3.8) {
+                        const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 8) * 100));
+                        if (confidence > maxConfidence) {
+                            maxConfidence = confidence;
+                            detectedDefect = DEFECTOS_DB.find(d => d.id === "fondo_hundido") || DEFECTOS_DB.find(d => d.id === "fondo_inclinado");
+                            reason = `Asimetría en asiento de la base detectada de ${avgDev.toFixed(1)} px.`;
+                        }
+                    }
+
+                    const expectedFondoRows = zones.fondo.endY - zones.fondo.startY;
+                    const fillRatio = zones.fondo.total / expectedFondoRows;
+                    if (fillRatio < 0.45) {
+                        const confidence = Math.min(100, Math.floor((1 - fillRatio) * 100));
+                        if (confidence > maxConfidence) {
+                            maxConfidence = confidence;
+                            detectedDefect = DEFECTOS_DB.find(d => d.id === "fondo_delgado");
+                            reason = `Falta de definición en asiento del envase (cobertura ${(fillRatio*100).toFixed(0)}%).`;
+                        }
+                    }
+                }
+
+                // 5. Renderizar resultado del Diagnóstico sobre el frame congelado
+                if (detectedDefect && maxConfidence >= confidenceThreshold) {
+                    mostrarResultadoDefecto(detectedDefect);
+                    const displayConfidence = Math.min(100, maxConfidence);
+                    document.getElementById('diagTitulo').innerText = `🚨 ${detectedDefect.nombre.toUpperCase()}`;
+                    document.getElementById('diagEstado').innerHTML = `
+                        <b>Diagnóstico de Precisión:</b> Zona del ${detectedDefect.zona.toUpperCase()}<br>
+                        <b>Detalle:</b> ${detectedDefect.descripcion}<br>
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; border-radius: 4px;">
+                            <b>Firma de Falla Detectada:</b> ${reason}<br>
+                            <b>Confianza de Captura:</b> <span style="color:#ef4444; font-weight:bold;">${displayConfidence}% (Supera el umbral del ${confidenceThreshold}%)</span>
+                        </div>
+                    `;
+                } else if (detectedDefect && maxConfidence < confidenceThreshold) {
+                    document.getElementById('diagTitulo').innerText = "⚠️ LECTURA DESCARTADA (UMBRAL IA)";
+                    document.getElementById('diagGravedad').innerText = "Incierto / Ruido";
+                    document.getElementById('diagGravedad').className = "status-alert warning";
+                    document.getElementById('diagGravedad').style.display = "inline-block";
+                    document.getElementById('diagEstado').innerHTML = `
+                        <b>Anomalía ignorada por baja certeza:</b> Se detectó un posible desvío en la zona del ${detectedDefect.zona.toUpperCase()} con una confianza del <b>${maxConfidence}%</b>, lo cual no supera el umbral del <b>${confidenceThreshold}%</b>.<br><br>
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(245, 158, 11, 0.08); border-left: 3px solid #fbbf24; border-radius: 4px;">
+                            <b>Motivo del filtro:</b> Evita malas lecturas operativas debido a destellos del vidrio fundido en el Hot End.<br>
+                            <b>Sugerencia:</b> Centra mejor el envase, limpia la lente o pulsa 'Reanudar Cámara' y vuelve a capturar.
+                        </div>
+                    `;
+                    document.getElementById('diagAcciones').innerHTML = `
+                        <li>Mantener la máquina I.S. produciendo sin paradas.</li>
+                        <li>Verificar visualmente la botella piloto.</li>
+                    `;
+                } else {
+                    document.getElementById('diagTitulo').innerText = "🟢 ENVASE CONFORME";
                     document.getElementById('diagGravedad').innerText = "Artículo Conforme";
                     document.getElementById('diagGravedad').className = "status-alert menor";
                     document.getElementById('diagGravedad').style.display = "inline-block";
                     document.getElementById('diagEstado').innerHTML = `
-                        <b>Simulación de Calidad:</b> La silueta analizada coincide con el perfil patrón de envase.<br>
-                        <b>Análisis de Firma Radial:</b> Coeficiente de correlación de simetría de 98.1% (Excelente).
+                        <b>Inspección Óptica:</b> Silueta simétrica con desvíos del eje dentro de tolerancias mecánicas (±1.5 px).<br>
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10b981; border-radius: 4px;">
+                            <b>Análisis de Simetría:</b> Silueta alineada con el molde final.<br>
+                            <b>Distribución de Espesor:</b> Homogénea en Boca, Cuello y Fondo.
+                        </div>
                     `;
                     document.getElementById('diagAcciones').innerHTML = `
-                        <li>La botella no presenta desviaciones críticas.</li>
-                        <li>Mantener la lubricación y la temporización nominal actual.</li>
-                    `;
-                } else {
-                    // Filtrar por la zona que el operador está inspeccionando para que sea coherente
-                    const potentialDefects = (activeFilter === "todo") 
-                        ? DEFECTOS_DB 
-                        : DEFECTOS_DB.filter(d => d.zona === activeFilter || activeFilter === 'general');
-                    const selectedDefect = potentialDefects[Math.floor(Math.random() * potentialDefects.length)] || DEFECTOS_DB[0];
-                    
-                    // Mostrar con simulación
-                    mostrarResultadoDefecto(selectedDefect);
-                    document.getElementById('diagTitulo').innerText = `🚨 ${selectedDefect.nombre.toUpperCase()} (SIM)`;
-                    document.getElementById('diagEstado').innerHTML = `
-                        <b>Simulación de Inspección:</b> Zona del ${selectedDefect.zona.toUpperCase()}<br>
-                        <b>Detalle:</b> ${selectedDefect.descripcion}<br>
-                        <div style="margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; border-radius: 4px;">
-                            <b>Firma de Falla Simulada:</b> Desviación simulada en la zona de ${selectedDefect.zona}.<br>
-                            <b>Confianza del Algoritmo:</b> <span style="color:#ef4444; font-weight:bold;">94% (Modo Demostración)</span>
-                        </div>
+                        <li>El artículo cumple con el perfil geométrico de soplado.</li>
+                        <li>Mantener la velocidad y el enfriamiento actual del molde final.</li>
                     `;
                 }
             }, 800);
@@ -5243,13 +5196,20 @@
                 if (invertStart >= plungerUp || invertStart < plungerDown) colisionPlunger = true;
             }
 
-            const plungerToInvertDeg = getDegDiff(plungerDown, invertStart);
+            const plungerToInvertDeg = colisionPlunger ? 0 : getDegDiff(plungerDown, invertStart);
 
-            if (colisionPlunger || plungerToInvertDeg < 15) {
+            if (colisionPlunger) {
                 html += `
                     <div class="validation-alert danger">
                         <span class="validation-alert-icon">🚨</span>
-                        <span><b>PELIGRO DE COLISIÓN CRÍTICA</b>: La inversión inicia en ${invertStart}° y el macho baja en ${plungerDown}°. El margen de seguridad actual es de solo ${plungerToInvertDeg.toFixed(0)}° (mínimo recomendado: 15°). Peligro de destrucción del molde de boca y mecanismo inversor. Aumentar Plunger Down o retrasar Invert.</span>
+                        <span><b>COLISIÓN ACTIVA: Macho vs Inversión</b>. La inversión inicia a los ${invertStart}° mientras el macho sigue arriba (baja a los ${plungerDown}°). Riesgo de destrucción inminente del utillaje mecánico en caliente.</span>
+                    </div>
+                `;
+            } else if (plungerToInvertDeg < 15) {
+                html += `
+                    <div class="validation-alert danger">
+                        <span class="validation-alert-icon">🚨</span>
+                        <span><b>PELIGRO DE COLISIÓN</b>: Desfase de seguridad insuficiente de ${plungerToInvertDeg.toFixed(0)}° entre la bajada del macho (${plungerDown}°) y el inicio de inversión (${invertStart}°). Se requiere un mínimo de 15° de despeje mecánico.</span>
                     </div>
                 `;
             } else {
@@ -5262,18 +5222,22 @@
             }
 
             // 4. Caída anticipada: Anillo de Boca vs Molde Final (en grados)
-            // El anillo abre a neckOpen y el molde final cierra a blowClose. El molde final debe estar cerrado antes.
+            // El anillo abre a neckOpen y el molde final cierra a blowClose. El molde final debe estar cerrado antes de que abra el anillo.
+            const blowToNeckDeg = getDegDiff(blowClose, neckOpen);
             let colisionNeck = false;
-            if (neckOpen < blowClose) {
+            
+            // Si el anillo abre antes de que cierre el molde en la secuencia horaria (diferencia cíclica > 180°),
+            // o si el margen de seguridad de soporte cerrado es inferior a 10 grados.
+            if (blowToNeckDeg > 180 || blowToNeckDeg < 10) {
                 colisionNeck = true;
             }
-            const blowToNeckDeg = getDegDiff(blowClose, neckOpen);
 
-            if (colisionNeck || blowToNeckDeg < 10) {
+            if (colisionNeck) {
+                const actualMargin = blowToNeckDeg > 180 ? 0 : blowToNeckDeg;
                 html += `
                     <div class="validation-alert danger">
                         <span class="validation-alert-icon">🚨</span>
-                        <span><b>GRAVE: Soporte Físico de Preforma Inseguro</b>. El Anillo abre a los ${neckOpen}° y el Molde Final cierra a los ${blowClose}°. Margen actual de ${blowToNeckDeg.toFixed(0)}° (mínimo seguro: 10°). La preforma caerá en caliente sin soporte del molde final cerrado, provocando botellas deformes o colgadas.</span>
+                        <span><b>GRAVE: Soporte Físico de Preforma Inseguro</b>. El anillo abre a los ${neckOpen}° y el molde final cierra a los ${blowClose}°. Margen cíclico real: ${actualMargin.toFixed(0)}° (mínimo seguro: 10°). La botella preforma se soltará antes de que el molde final esté cerrado, provocando colgadas en caliente.</span>
                     </div>
                 `;
             } else {
@@ -5287,11 +5251,13 @@
 
             // 5. Soplado final anticipado (Blow Head vs Blow Mold Close en grados)
             const blowToCloseDeg = getDegDiff(blowClose, blowOn);
-            if (blowOn < blowClose || blowToCloseDeg < 15) {
+            // El soplado final se inicia antes de que el molde cierre si el desfase cíclico es mayor a 180° o menor a 15°.
+            if (blowToCloseDeg > 180 || blowToCloseDeg < 15) {
+                const actualBlowMargin = blowToCloseDeg > 180 ? 0 : blowToCloseDeg;
                 html += `
                     <div class="validation-alert warning">
                         <span class="validation-alert-icon">⚠️</span>
-                        <span><b>Soplado final anticipado</b>: Iniciando a los ${blowOn}° frente al cierre de molde a los ${blowClose}° (margen subóptimo de ${blowToCloseDeg.toFixed(0)}°). Se recomienda iniciar soplado al menos 15° después de que el molde final esté completamente cerrado para evitar fugas de presión.</span>
+                        <span><b>Soplado final anticipado</b>: Iniciando soplado a los ${blowOn}° frente al cierre de molde a los ${blowClose}° (margen real: ${actualBlowMargin.toFixed(0)}°). Se recomienda iniciar soplado al menos 15° después del cierre del molde final para evitar fugas de presión y desgarros.</span>
                     </div>
                 `;
             }
@@ -6082,8 +6048,54 @@
                 }
             });
 
-            renderScannerComparisonTable(defaultValues);
+            // Cargar los valores detectados al asistente de confirmación interactiva
+            document.getElementById('ocrValPlungerUp').value = scannerParsedValues.plungerUp;
+            document.getElementById('ocrValPlungerDown').value = scannerParsedValues.plungerDown;
+            document.getElementById('ocrValInvertStart').value = scannerParsedValues.invertStart;
+            document.getElementById('ocrValBlowClose').value = scannerParsedValues.blowClose;
+            document.getElementById('ocrValNeckRingOpen').value = scannerParsedValues.neckRingOpen;
+            document.getElementById('ocrValBlowOn').value = scannerParsedValues.blowOn;
+
+            // Mostrar el panel de confirmación y ocultar loader/tarjeta de resultados previa
+            document.getElementById('ocrLoader').style.display = 'none';
+            document.getElementById('scannerResultsCard').style.display = 'none';
+            document.getElementById('scannerOcrConfirmArea').style.display = 'block';
+            document.getElementById('scannerOcrConfirmArea').scrollIntoView({ behavior: 'smooth' });
         }
+
+        window.confirmOcrAndCompare = function() {
+            // Leer valores validados por el operador
+            scannerParsedValues = {
+                plungerUp: parseInt(document.getElementById('ocrValPlungerUp').value) || 80,
+                plungerDown: parseInt(document.getElementById('ocrValPlungerDown').value) || 150,
+                invertStart: parseInt(document.getElementById('ocrValInvertStart').value) || 190,
+                blowClose: parseInt(document.getElementById('ocrValBlowClose').value) || 240,
+                neckRingOpen: parseInt(document.getElementById('ocrValNeckRingOpen').value) || 245,
+                blowOn: parseInt(document.getElementById('ocrValBlowOn').value) || 270,
+                blowOff: parseInt(document.getElementById('ocrValBlowOn').value) + 55 // Asignar desfase por defecto para Blow Off
+            };
+
+            const defaultValues = {
+                plungerUp: parseInt(document.getElementById('valPlungerUp').value) || 80,
+                plungerDown: parseInt(document.getElementById('valPlungerDown').value) || 150,
+                invertStart: parseInt(document.getElementById('valInvertStart').value) || 190,
+                blowClose: parseInt(document.getElementById('valBlowClose').value) || 240,
+                neckRingOpen: parseInt(document.getElementById('valNeckRingOpen').value) || 245,
+                blowOn: parseInt(document.getElementById('valBlowOn').value) || 270,
+                blowOff: parseInt(document.getElementById('valBlowOff').value) || 325
+            };
+
+            // Ocultar confirmación y renderizar la comparación final
+            document.getElementById('scannerOcrConfirmArea').style.display = 'none';
+            renderScannerComparisonTable(defaultValues);
+            
+            showToast("Lectura validada con éxito por operador.", "success");
+        };
+
+        window.cancelOcrConfirm = function() {
+            document.getElementById('scannerOcrConfirmArea').style.display = 'none';
+            showToast("Digitalización de panel cancelada.", "info");
+        };
 
         function renderScannerComparisonTable(defaults) {
             const tableBody = document.getElementById('scannerComparisonBody');
