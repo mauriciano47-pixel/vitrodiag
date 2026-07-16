@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
     <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" defer></script>
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <link rel="manifest" href="./manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1401,7 +1401,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span style="font-size: 0.8rem; vertical-align: middle; padding: 2px 6px; border-radius: 6px; background: rgba(6, 182, 212, 0.2); color: #06b6d4; margin-left: 6px; font-weight: normal; border: 1px solid rgba(6, 182, 212, 0.3);">v42</span></h1>
+        <h1>VitroDiag <span style="font-size: 0.8rem; vertical-align: middle; padding: 2px 6px; border-radius: 6px; background: rgba(6, 182, 212, 0.2); color: #06b6d4; margin-left: 6px; font-weight: normal; border: 1px solid rgba(6, 182, 212, 0.3);">v43</span></h1>
         <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
     </header>
 
@@ -4245,26 +4245,7 @@
             }
         }
 
-        // CAMBIAR ENTRE PESTAÑAS (VISTAS)
-        function switchView(viewName) {
-            const tabs = document.querySelectorAll('.tab-btn');
-            const liveView = document.getElementById('liveView');
-            const directoryView = document.getElementById('directoryView');
-
-            tabs.forEach(tab => tab.classList.remove('active'));
-            liveView.classList.remove('active');
-            directoryView.classList.remove('active');
-
-            if (viewName === 'live') {
-                tabs[0].classList.add('active');
-                liveView.classList.add('active');
-            } else {
-                tabs[1].classList.add('active');
-                directoryView.classList.add('active');
-                // Al cambiar a directorio, renderizar la lista completa
-                renderDefectsList(DEFECTOS_DB);
-            }
-        }
+        // CAMBIAR ENTRE PESTAÑAS (VISTAS) - MANEJADO POR WINDOW.SWITCHVIEW EXPANDIDO MÁS ADELANTE
 
         // FILTRADO DEL DIRECTORIO (BUSCADOR Y BOTONES RÁPIDOS)
         let currentFilterZone = "todo";
@@ -5258,7 +5239,7 @@
         let isCameraTransitioning = false;
 
         // Manejo expandido de pestañas (tabs)
-        window.switchView = async function(viewName) {
+        async function switchView(viewName) {
             if (isCameraTransitioning) {
                 console.log("Cámara ocupada liberando/adquiriendo hardware. Ignorando cambio de pestaña.");
                 return;
@@ -5275,10 +5256,11 @@
                     btn.classList.remove('active');
                 });
 
-                // Encontrar botón cliqueado por onclick
-                const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-                    btn.getAttribute('onclick').includes(viewName)
-                );
+                // Encontrar botón cliqueado por onclick de forma segura
+                const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => {
+                    const clickAttr = btn.getAttribute('onclick');
+                    return clickAttr && clickAttr.includes(viewName);
+                });
                 if (targetBtn) targetBtn.classList.add('active');
 
                 // Mostrar la vista objetivo
@@ -5320,7 +5302,8 @@
             } finally {
                 isCameraTransitioning = false;
             }
-        };
+        }
+        window.switchView = switchView;
 
         // --- CALCULADORA Y VALIDADOR DE TEMPORIZACIÓN BDF INDUSTRIES (MS Y COLISIONES) ---
         const calcBpm = document.getElementById('calcBpm');
@@ -6449,7 +6432,6 @@
         if ('serviceWorker' in navigator) {
             let refreshing = false;
             
-            // Detectar si el controlador cambia para recargar la ventana de inmediato
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (!refreshing) {
                     refreshing = true;
@@ -6459,23 +6441,30 @@
             });
 
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=42')
+                // Desregistrar workers antiguos de forma transparente para forzar la actualizacion limpia
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) {
+                        registration.unregister().then(() => {
+                            console.log("[PWA] Service Worker antiguo removido.");
+                        });
+                    }
+                }).catch(err => console.warn("Error al limpiar workers previos:", err));
+
+                // Registrar directamente sin query string para evitar conflictos MIME de servidores estáticos
+                navigator.serviceWorker.register('./sw.js')
                 .then(reg => {
                     console.log('Service Worker de VitroDiag registrado con éxito.', reg);
                     
-                    // Comprobar si hay una actualización pendiente de activar
                     if (reg.waiting) {
-                        console.log("[PWA] Nueva actualización en espera de activación.");
                         reg.waiting.postMessage({ type: 'SKIP_WAITING' });
                     }
                     
-                    // Escuchar por nuevas actualizaciones en segundo plano
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed') {
                                 if (navigator.serviceWorker.controller) {
-                                    console.log("[PWA] Nueva actualización instalada en caché. Activando...");
+                                    console.log("[PWA] Actualización detectada. Activando...");
                                     newWorker.postMessage({ type: 'SKIP_WAITING' });
                                 }
                             }
