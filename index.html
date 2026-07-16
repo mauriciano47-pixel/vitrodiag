@@ -1728,10 +1728,11 @@
                 Apunta la cámara del celular a la pantalla de la consola BDF o a una ficha técnica de temporizaciones impresa. El motor de reconocimiento de texto (OCR Offline) extraerá los valores para compararlos con las consignas teóricas de tu artículo.
             </div>
 
-            <!-- SELECTOR DE ENTRADA DE IMAGEN -->
-            <div class="form-row" style="margin-bottom: 20px; gap: 10px;">
-                <button class="filter-btn active" id="btnScannerUseCam" style="flex: 1;" onclick="setScannerSource('camera')">Usar Cámara Escáner</button>
-                <button class="filter-btn" id="btnScannerUseFile" style="flex: 1;" onclick="setScannerSource('file')">Subir Foto / Archivo</button>
+            <!-- SELECTOR DE ENTRADA DE IMAGEN O DATOS -->
+            <div class="form-row" style="margin-bottom: 20px; gap: 8px; flex-wrap: wrap;">
+                <button class="filter-btn active" id="btnScannerUseCam" style="flex: 1; min-width: 110px;" onclick="setScannerSource('camera')">Cámara Escáner</button>
+                <button class="filter-btn" id="btnScannerUseFile" style="flex: 1; min-width: 110px;" onclick="setScannerSource('file')">Subir Foto / OCR</button>
+                <button class="filter-btn" id="btnScannerUseManual" style="flex: 1; min-width: 110px;" onclick="setScannerSource('manual')">Ingreso Manual</button>
             </div>
 
             <!-- CONTENEDOR DE CÁMARA Y CAPTURA -->
@@ -1755,6 +1756,38 @@
                     <span style="font-size: 0.75rem; color: var(--text-muted);">Soporta formatos JPG, PNG, WEBP</span>
                 </label>
                 <input type="file" id="scannerFileInput" accept="image/*" style="display: none;" onchange="handleScannerFileSelect(this)">
+            </div>
+
+            <!-- CONTENEDOR DE INGRESO MANUAL OFFLINE (FALLBACK PLANTA) -->
+            <div id="scannerManualArea" style="background: rgba(30,41,59,0.3); border: 1px solid var(--glass-border); padding: 20px 15px; border-radius: 12px; margin-bottom: 15px; display: none;">
+                <div style="font-weight: bold; font-size: 0.85rem; color: #fff; margin-bottom: 15px; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">Tiempos del Panel en Grados (0° - 360°)</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Macho Arriba (Plunger Up) °</label>
+                        <input type="number" id="manualPlungerUp" min="0" max="360" placeholder="Ej: 80" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Macho Abajo (Plunger Down) °</label>
+                        <input type="number" id="manualPlungerDown" min="0" max="360" placeholder="Ej: 150" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Inicio Inversión (Invert) °</label>
+                        <input type="number" id="manualInvertStart" min="0" max="360" placeholder="Ej: 190" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Cierre Molde (Blow Close) °</label>
+                        <input type="number" id="manualBlowClose" min="0" max="360" placeholder="Ej: 240" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Soplado Final ON (Blow ON) °</label>
+                        <input type="number" id="manualBlowOn" min="0" max="360" placeholder="Ej: 270" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Soplado Final OFF (Blow OFF) °</label>
+                        <input type="number" id="manualBlowOff" min="0" max="360" placeholder="Ej: 325" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                    </div>
+                </div>
+                <button class="btn-action" style="margin-top: 15px; font-weight: bold; background: var(--primary); border-color: var(--primary); padding: 10px;" onclick="runScannerManualComparison()">Comparar Datos del Panel</button>
             </div>
 
             <!-- PREVISUALIZACIÓN DE IMAGEN SELECCIONADA/CAPTURADA -->
@@ -4771,7 +4804,7 @@
                             const bDevs = zones.boca.deviations;
                             const avgDev = bDevs.reduce((sum, val) => sum + val, 0) / bDevs.length;
 
-                            // Boca Inclinada: Desviación lateral sistemática asimétrica en la boca (diferencia > 3.0px con eje real)
+                            // 1. Boca Inclinada: Desviación lateral sistemática asimétrica en la boca (diferencia > 3.0px con eje real)
                             if (Math.abs(avgDev) > 3.0) {
                                 const confidence = Math.min(100, Math.floor((Math.abs(avgDev) / 7) * 100));
                                 if (confidence > maxConfidence) {
@@ -4781,7 +4814,18 @@
                                 }
                             }
                             
-                            // Boca Incompleta: Pérdida abrupta de contornos en la boca (menos del 35% de filas con datos)
+                            // 2. Rebaba de Boca (Overpressed Finish): Un pico de asimetría local máxima extrema en la boca (desviación máxima > 4.2 px)
+                            const maxDevBoca = bDevs.reduce((max, val) => Math.max(max, Math.abs(val)), 0);
+                            if (maxDevBoca > 4.2) {
+                                const confidence = Math.min(100, Math.floor((maxDevBoca / 8) * 100));
+                                if (confidence > maxConfidence) {
+                                    maxConfidence = confidence;
+                                    detectedDefect = DEFECTOS_DB.find(d => d.id === "rebaba_boca") || DEFECTOS_DB.find(d => d.zona === "boca" && d.nombre.toLowerCase().includes("rebaba"));
+                                    reason = `Exceso de vidrio proyectado o pico de asimetría máxima de ${maxDevBoca.toFixed(1)} px detectado en corona (Límite tolerado: ±1.2 px). Sugiere Rebaba en Molde de Boca (Overpressed).`;
+                                }
+                            }
+                            
+                            // 3. Boca Incompleta: Pérdida abrupta de contornos en la boca (menos del 35% de filas con datos)
                             const expectedBocaRows = zones.boca.endY - zones.boca.startY;
                             const fillRatio = zones.boca.total / expectedBocaRows;
                             if (fillRatio < 0.35) {
@@ -5080,7 +5124,7 @@
                 // Encender la cámara del escáner si está en modo cámara activo
                 const btnCam = document.getElementById('btnScannerUseCam');
                 if (btnCam && btnCam.classList.contains('active')) {
-                    startScannerCamera();
+                    window.startScannerCamera();
                 }
             } else {
                 // Detener ambas cámaras para ahorrar CPU y RAM en el móvil
@@ -5724,29 +5768,55 @@
         window.setScannerSource = function(source) {
             const btnCam = document.getElementById('btnScannerUseCam');
             const btnFile = document.getElementById('btnScannerUseFile');
+            const btnManual = document.getElementById('btnScannerUseManual');
+            
             const camArea = document.getElementById('scannerCameraArea');
             const uploadArea = document.getElementById('scannerUploadArea');
+            const manualArea = document.getElementById('scannerManualArea');
+            const resultsCard = document.getElementById('scannerResultsCard');
+
+            // Limpiar resultados anteriores al cambiar de modo
+            if (resultsCard) resultsCard.style.display = 'none';
 
             if (source === 'camera') {
                 btnCam.classList.add('active');
                 btnFile.classList.remove('active');
+                btnManual.classList.remove('active');
+                
                 camArea.style.display = 'flex';
                 uploadArea.style.display = 'none';
-                startScannerCamera();
-            } else {
+                manualArea.style.display = 'none';
+                
+                window.startScannerCamera();
+            } else if (source === 'file') {
                 btnCam.classList.remove('active');
                 btnFile.classList.add('active');
+                btnManual.classList.remove('active');
+                
                 camArea.style.display = 'none';
                 uploadArea.style.display = 'block';
-                stopScannerCamera();
+                manualArea.style.display = 'none';
+                
+                window.stopScannerCamera();
+            } else {
+                // Modo Manual
+                btnCam.classList.remove('active');
+                btnFile.classList.remove('active');
+                btnManual.classList.add('active');
+                
+                camArea.style.display = 'none';
+                uploadArea.style.display = 'none';
+                manualArea.style.display = 'block';
+                
+                window.stopScannerCamera();
             }
         };
 
-        async function startScannerCamera() {
+        window.startScannerCamera = async function() {
             const video = document.getElementById('scannerVideo');
             if (!video) return;
 
-            if (scannerStream) stopScannerCamera();
+            if (scannerStream) window.stopScannerCamera();
 
             try {
                 scannerStream = await navigator.mediaDevices.getUserMedia({
@@ -5761,7 +5831,7 @@
                 showToast("No se pudo acceder a la cámara. Prueba a subir una foto.", "warning");
                 window.setScannerSource('file');
             }
-        }
+        };
 
         window.stopScannerCamera = function() {
             if (scannerStream) {
@@ -5845,8 +5915,45 @@
 
             if (btnCam && btnCam.classList.contains('active')) {
                 camArea.style.display = 'flex';
-                startScannerCamera();
+                window.startScannerCamera();
             }
+        };
+
+        window.runScannerManualComparison = function() {
+            const plungerUp = parseInt(document.getElementById('manualPlungerUp').value);
+            const plungerDown = parseInt(document.getElementById('manualPlungerDown').value);
+            const invertStart = parseInt(document.getElementById('manualInvertStart').value);
+            const blowClose = parseInt(document.getElementById('manualBlowClose').value);
+            const blowOn = parseInt(document.getElementById('manualBlowOn').value);
+            const blowOff = parseInt(document.getElementById('manualBlowOff').value);
+
+            if (isNaN(plungerUp) || isNaN(plungerDown) || isNaN(invertStart) || isNaN(blowClose) || isNaN(blowOn) || isNaN(blowOff)) {
+                showToast("Por favor, ingresa los grados (0-360) para todas las variables del panel.", "warning");
+                return;
+            }
+
+            if ([plungerUp, plungerDown, invertStart, blowClose, blowOn, blowOff].some(v => v < 0 || v > 360)) {
+                showToast("Los valores ingresados deben estar entre 0° y 360°.", "danger");
+                return;
+            }
+
+            scannerParsedValues = {
+                plungerUp: plungerUp,
+                plungerDown: plungerDown,
+                invertStart: invertStart,
+                blowClose: blowClose,
+                blowOn: blowOn,
+                blowOff: blowOff
+            };
+
+            // Ejecutar la comparación contra la consigna del artículo activo
+            renderScannerComparisonTable();
+
+            // Mostrar el contenedor de resultados de comparación
+            const resultsCard = document.getElementById('scannerResultsCard');
+            if (resultsCard) resultsCard.style.display = 'block';
+
+            showToast("Comparación de panel manual generada correctamente.", "success");
         };
 
         window.runScannerOcr = async function() {
