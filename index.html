@@ -1154,6 +1154,7 @@
         /* Estilos de la barra de artículo activo */
         .active-article-bar {
             background: rgba(30, 34, 42, 0.6);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
@@ -1229,6 +1230,7 @@
             height: 100%; 
             overflow: auto; 
             background-color: rgba(0,0,0,0.85); 
+            -webkit-backdrop-filter: blur(5px);
             backdrop-filter: blur(5px);
             align-items: center;
             justify-content: center;
@@ -1279,6 +1281,113 @@
             flex: 1;
             margin-bottom: 0;
         }
+        /* --- CLASES UTILITARIAS (Reemplazo de estilos inline) --- */
+        .article-label { font-weight: 500; font-size: 0.85rem; color: var(--text-muted); }
+        .mb-15 { margin-bottom: 15px; }
+        .modal-select-label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        .modal-section-divider { border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 15px; }
+        .modal-form-title { font-size: 0.95rem; color: #fff; margin-top: 0; margin-bottom: 12px; }
+        .form-group-sm { margin-bottom: 10px; }
+        .input-text-left { text-align: left; padding: 8px; }
+        .mt-10 { margin-top: 10px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-save { flex: 2; padding: 10px; background: var(--primary); border-color: var(--primary); color: #fff; }
+        .btn-restore { flex: 1; padding: 10px; background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger); }
+        .toggle-extra { margin-top: 10px; margin-bottom: 15px; }
+        .btn-reanudar { display: none; background: var(--success); border-color: var(--success); margin-top: 10px; font-weight: bold; }
+        .ia-panel { margin-top: 15px; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; text-align: left; }
+        .ia-panel-header { font-weight: bold; color: var(--primary); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .ia-confidence-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .ia-panel-desc { color: var(--text-muted); line-height: 1.35; margin-bottom: 12px; }
+        .ia-form-row { margin-bottom: 10px; gap: 8px; }
+        .ia-upload-col { flex: 1; text-align: left; }
+        .ia-upload-label { font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .ia-upload-input { font-size: 0.7rem; width: 100%; color: var(--text-muted); }
+        .ia-threshold-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .btn-load-nn { flex: 1; padding: 6px; font-size: 0.75rem; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa; }
+        .ia-threshold-group { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .ia-threshold-label { font-size: 0.7rem; color: var(--text-muted); }
+        .ia-threshold-slider { width: 60px; }
+        .sop-section-divider { margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+        .sop-section-title { font-weight: bold; font-size: 0.85rem; color: var(--primary); margin-bottom: 12px; text-align: left; }
+        .bdf-results-panel { margin-top: 20px; text-align: left; padding: 15px; border-radius: 12px; background: rgba(14, 16, 19, 0.9); }
+        .bdf-results-header { color: #fff; font-size: 0.85rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
+        .bdf-cycle-display { font-size: 0.75rem; color: var(--text-muted); }
+        .bdf-validation-col { display: flex; flex-direction: column; gap: 8px; }
+        .bdf-expert-section { margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+        .bdf-remedy-card { display: none; padding: 12px; border-radius: 8px; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.8rem; line-height: 1.4; text-align: left; }
+        .bdf-remedy-title { font-weight: bold; color: #60a5fa; margin-bottom: 6px; }
+        .bdf-remedy-desc { color: var(--text-muted); margin-bottom: 10px; }
+        .bdf-remedy-action-wrap { margin-bottom: 12px; }
+        .bdf-remedy-action-label { font-weight: bold; color: #34d399; }
+        .bdf-remedy-action-text { color: #fff; }
+        .btn-simulate-remedy { width: 100%; padding: 8px; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa; font-size: 0.75rem; }
+        .gantt-section { margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; }
+        .gantt-container { display: flex; flex-direction: column; gap: 8px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 8px; font-size: 0.75rem; }
+        .gantt-row { display: flex; align-items: center; justify-content: space-between; }
+        .gantt-label { width: 80px; text-align: left; color: var(--text-muted); }
+        .gantt-track { flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px; }
+        .gantt-bar { position: absolute; height: 100%; border-radius: 5px; }
+        .gantt-bar-plunger { background: #3b82f6; }
+        .gantt-bar-invert { background: #a855f7; }
+        .gantt-bar-blowmold { background: #10b981; }
+        .gantt-bar-finalblow { background: #eab308; }
+        .gantt-value { width: 70px; text-align: right; font-family: monospace; }
+        .preset-block-spaced { margin-top: 20px; }
+        .btn-preset-safe { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: #34d399; }
+        .btn-preset-danger { background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: #f87171; }
+        .btn-preset-warning { background: rgba(245, 158, 11, 0.1); border-color: var(--warning); color: #fbbf24; }
+        .scanner-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 20px; background: rgba(30,41,59,0.3); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px; }
+        .scanner-source-row { margin-bottom: 20px; gap: 8px; flex-wrap: wrap; }
+        .scanner-source-btn { flex: 1; min-width: 110px; }
+        .scanner-camera-container { position: relative; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--primary-glow); margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .scanner-video { width: 100%; max-height: 280px; object-fit: cover; background: #000; }
+        .scanner-canvas { display: none; width: 100%; max-height: 280px; object-fit: cover; }
+        .scanner-guide-frame { position: absolute; top: 10%; left: 10%; right: 10%; bottom: 20%; border: 2px dashed #06b6d4; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); pointer-events: none; }
+        .scanner-guide-label { position: absolute; bottom: -20px; left: 0; right: 0; text-align: center; color: #06b6d4; font-size: 0.65rem; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase; }
+        .btn-capture { position: absolute; bottom: 10px; width: auto; padding: 8px 20px; font-size: 0.8rem; background: #06b6d4; border-color: #06b6d4; }
+        .scanner-upload-area { background: rgba(30,41,59,0.3); border: 2px dashed var(--glass-border); padding: 30px 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; display: none; }
+        .scanner-upload-label { cursor: pointer; display: block; }
+        .scanner-upload-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+        .scanner-upload-cta { color: var(--primary); font-weight: bold; display: block; margin-bottom: 6px; }
+        .scanner-upload-hint { font-size: 0.75rem; color: var(--text-muted); }
+        .scanner-file-hidden { display: none; }
+        .scanner-manual-area { background: rgba(30,41,59,0.3); border: 1px solid var(--glass-border); padding: 20px 15px; border-radius: 12px; margin-bottom: 15px; display: none; }
+        .scanner-manual-title { font-weight: bold; font-size: 0.85rem; color: #fff; margin-bottom: 15px; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; }
+        .scanner-manual-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .scanner-manual-label { display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; }
+        .scanner-manual-input { width: 100%; padding: 8px; font-size: 0.85rem; }
+        .btn-compare-manual { margin-top: 15px; font-weight: bold; background: var(--primary); border-color: var(--primary); padding: 10px; }
+        .scanner-preview-container { display: none; margin-bottom: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); position: relative; background: #000; }
+        .scanner-preview-img { width: 100%; max-height: 250px; object-fit: contain; }
+        .btn-close-preview { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; }
+        .btn-run-ocr { margin-bottom: 15px; font-weight: bold; }
+        .ocr-loader { display: none; margin-bottom: 20px; text-align: center; }
+        .ocr-spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(6, 182, 212, 0.2); border-radius: 50%; border-top-color: #06b6d4; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        .ocr-status-text { font-size: 0.8rem; color: #06b6d4; font-weight: bold; }
+        .ocr-status-hint { font-size: 0.65rem; color: var(--text-muted); margin-top: 4px; }
+        .ocr-confirm-area { display: none; margin-bottom: 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; }
+        .ocr-confirm-header { font-weight: bold; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .ocr-confirm-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4; }
+        .ocr-confirm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-bottom: 15px; }
+        .ocr-field-label { font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .ocr-field-input { font-size: 0.8rem; padding: 6px; }
+        .ocr-confirm-actions { display: flex; gap: 10px; }
+        .btn-confirm-ocr { background: var(--success); border-color: var(--success); flex: 1; font-weight: bold; }
+        .btn-cancel-ocr { background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #f87171; flex: 1; }
+        .scanner-results-card { display: none; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; text-align: left; }
+        .scanner-results-header { font-weight: bold; color: var(--primary); margin-bottom: 12px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .scanner-article-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .scanner-results-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 15px; border-left: 2px solid #06b6d4; padding-left: 8px; }
+        .scanner-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 15px; }
+        .scanner-table-header { border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .scanner-th { padding: 6px 0; }
+        .scanner-th-center { padding: 6px 0; text-align: center; }
+        .scanner-th-right { padding: 6px 0; text-align: right; }
+        .scanner-safety-alert { margin-bottom: 15px; padding: 10px; border-radius: 6px; font-size: 0.75rem; line-height: 1.35; }
+        .scanner-result-actions { display: flex; gap: 8px; }
+        .btn-load-to-calc { flex: 1; padding: 8px; background: rgba(6,182,212,0.15); border-color: #06b6d4; color: #22d3ee; font-size: 0.75rem; }
+        .btn-clear-scanner { flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.75rem; }
     </style>
 </head>
 <body>
@@ -1300,8 +1409,8 @@
     <div class="active-article-bar">
         <div class="article-info">
             <span class="pulse-indicator"></span>
-            <span style="font-weight: 500; font-size: 0.85rem; color: var(--text-muted);">Artículo en Máquina:</span>
-            <select id="activeArticleSelect" class="article-select" onchange="changeActiveArticle(this.value)">
+            <span class="article-label">Artículo en Máquina:</span>
+            <select id="activeArticleSelect" class="article-select" title="Artículo en producción" aria-label="Seleccionar artículo en producción" onchange="changeActiveArticle(this.value)">
                 <!-- Se cargará dinámicamente -->
             </select>
         </div>
@@ -1318,21 +1427,21 @@
                 <button class="modal-close" onclick="closeArticlesModal()">&times;</button>
             </div>
             
-            <div style="margin-bottom: 15px;">
-                <label for="modalSelectArticle" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Seleccionar Artículo para Editar/Ver</label>
+            <div class="mb-15">
+                <label for="modalSelectArticle" class="modal-select-label">Seleccionar Artículo para Editar/Ver</label>
                 <select id="modalSelectArticle" class="select-input" onchange="loadArticleInModal(this.value)">
                     <!-- Se cargará dinámicamente -->
                 </select>
             </div>
 
-            <div style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 15px;">
-                <h3 style="font-size: 0.95rem; color: #fff; margin-top: 0; margin-bottom: 12px;" id="modalFormTitle">Editar Ficha Técnica</h3>
+            <div class="modal-section-divider">
+                <h3 class="modal-form-title" id="modalFormTitle">Editar Ficha Técnica</h3>
                 
                 <input type="hidden" id="artId">
                 
-                <div class="form-group" style="margin-bottom: 10px;">
+                <div class="form-group form-group-sm">
                     <label for="artNombre">Nombre del Artículo</label>
-                    <input type="text" id="artNombre" class="input-number" style="text-align: left; padding: 8px;" placeholder="Ej: Botella Cerveza 330ml">
+                    <input type="text" id="artNombre" class="input-number input-text-left" placeholder="Ej: Botella Cerveza 330ml">
                 </div>
 
                 <div class="form-row">
@@ -1355,7 +1464,7 @@
                     </div>
                 </div>
 
-                <div class="form-row" style="margin-top: 10px;">
+                <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="artSwab">Swabbing (min)</label>
                         <input type="number" id="artSwab" class="input-number" min="5" max="120">
@@ -1370,7 +1479,7 @@
                     </div>
                 </div>
 
-                <div class="form-row" style="margin-top: 10px;">
+                <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="artAltura">Altura (mm)</label>
                         <input type="number" id="artAltura" class="input-number" min="20" max="600">
@@ -1385,9 +1494,9 @@
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="filter-btn" style="flex: 2; padding: 10px; background: var(--primary); border-color: var(--primary); color: #fff;" onclick="saveActiveArticleForm()">Guardar Cambios</button>
-                    <button class="filter-btn" style="flex: 1; padding: 10px; background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger);" onclick="resetArticlesDefault()">Restaurar</button>
+                <div class="modal-actions">
+                    <button class="filter-btn btn-save" onclick="saveActiveArticleForm()">Guardar Cambios</button>
+                    <button class="filter-btn btn-restore" onclick="resetArticlesDefault()">Restaurar</button>
                 </div>
             </div>
         </div>
@@ -1422,7 +1531,7 @@
             </label>
         </div>
 
-        <div class="toggle-container" style="margin-top: 10px; margin-bottom: 15px;">
+        <div class="toggle-container toggle-extra">
             <span class="toggle-label">Optimizar para Pantalla de Luz (Backlight)</span>
             <label class="switch">
                 <input type="checkbox" id="backlightToggle" title="Optimizar para pantalla de luz" aria-label="Optimizar para pantalla de luz">
@@ -1498,38 +1607,38 @@
         </div>
 
         <button class="btn-action" id="btnDiagnosticar">Diagnosticar Envase</button>
-        <button class="btn-action" id="btnReanudarCamara" style="display: none; background: var(--success); border-color: var(--success); margin-top: 10px; font-weight: bold;">Reanudar Cámara</button>
+        <button class="btn-action btn-reanudar" id="btnReanudarCamara">Reanudar Cámara</button>
         <div id="tfjsStatus" class="tfjs-status">
             Iniciando motor de IA TensorFlow.js...
         </div>
 
         <!-- PANEL DE CONTROL DE IA TENSORFLOW.JS (OPCIONES DE PRECISIÓN) -->
-        <div style="margin-top: 15px; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; text-align: left;">
-            <div style="font-weight: bold; color: var(--primary); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="ia-panel">
+            <div class="ia-panel-header">
                 <span>⚙️ Panel del Motor de IA</span>
-                <span id="iaConfidenceBadge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(59, 130, 246, 0.2); color: #60a5fa;">Filtro: >75%</span>
+                <span id="iaConfidenceBadge" class="ia-confidence-badge">Filtro: >75%</span>
             </div>
             
-            <div style="color: var(--text-muted); line-height: 1.35; margin-bottom: 12px;">
+            <div class="ia-panel-desc">
                 Permite conectar modelos de visión artificial entrenados con fotos reales de CristalChile (formato TensorFlow.js) para evitar falsos positivos por brillos o reflejos en el Hot End.
             </div>
 
-            <div class="form-row" style="margin-bottom: 10px; gap: 8px;">
-                <div style="flex: 1; text-align: left;">
-                    <label for="uploadModelJson" style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Archivo model.json</label>
-                    <input type="file" id="uploadModelJson" accept=".json" style="font-size: 0.7rem; width: 100%; color: var(--text-muted);">
+            <div class="form-row ia-form-row">
+                <div class="ia-upload-col">
+                    <label for="uploadModelJson" class="ia-upload-label">Archivo model.json</label>
+                    <input type="file" id="uploadModelJson" accept=".json" class="ia-upload-input">
                 </div>
-                <div style="flex: 1; text-align: left;">
-                    <label for="uploadModelBin" style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Pesos (.bin)</label>
-                    <input type="file" id="uploadModelBin" accept=".bin" multiple style="font-size: 0.7rem; width: 100%; color: var(--text-muted);">
+                <div class="ia-upload-col">
+                    <label for="uploadModelBin" class="ia-upload-label">Pesos (.bin)</label>
+                    <input type="file" id="uploadModelBin" accept=".bin" multiple class="ia-upload-input">
                 </div>
             </div>
 
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                <button class="filter-btn" style="flex: 1; padding: 6px; font-size: 0.75rem; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa;" onclick="loadCustomUploadedModel()">Cargar Red Neuronal</button>
-                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">Umbral:</span>
-                    <input type="range" id="confidenceThreshold" min="50" max="95" value="75" oninput="updateConfidenceThresholdDisplay(this.value)" style="width: 60px;">
+            <div class="ia-threshold-row">
+                <button class="filter-btn btn-load-nn" onclick="loadCustomUploadedModel()">Cargar Red Neuronal</button>
+                <div class="ia-threshold-group">
+                    <span class="ia-threshold-label">Umbral:</span>
+                    <input type="range" id="confidenceThreshold" min="50" max="95" value="75" title="Umbral de confianza" aria-label="Umbral de confianza de detección" oninput="updateConfidenceThresholdDisplay(this.value)" class="ia-threshold-slider">
                 </div>
             </div>
         </div>
@@ -1567,8 +1676,8 @@
             </div>
 
             <!-- Panel de Entrada de Grados del Ciclo (360°) -->
-            <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                <div style="font-weight: bold; font-size: 0.85rem; color: var(--primary); margin-bottom: 12px; text-align: left;">Programación del Ciclo (0° - 360°):</div>
+            <div class="sop-section-divider">
+                <div class="sop-section-title">Programación del Ciclo (0° - 360°):</div>
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -1581,7 +1690,7 @@
                     </div>
                 </div>
 
-                <div class="form-row" style="margin-top: 10px;">
+                <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="valBlankOpen">Apertura Preforma (Blank Open)</label>
                         <input type="number" id="valBlankOpen" class="input-number" min="0" max="360" value="190" oninput="validateBdfTiming()">
@@ -1592,7 +1701,7 @@
                     </div>
                 </div>
 
-                <div class="form-row" style="margin-top: 10px;">
+                <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="valBlowClose">Cierre Molde Final (Blow Close)</label>
                         <input type="number" id="valBlowClose" class="input-number" min="0" max="360" value="240" oninput="validateBdfTiming()">
@@ -1603,7 +1712,7 @@
                     </div>
                 </div>
 
-                <div class="form-row" style="margin-top: 10px;">
+                <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="valBlowOn">Soplado Final ON (Blow ON)</label>
                         <input type="number" id="valBlowOn" class="input-number" min="0" max="360" value="270" oninput="validateBdfTiming()">
@@ -1616,20 +1725,20 @@
             </div>
 
             <!-- Panel de Alertas de Colisión y Temporización -->
-            <div class="calc-result" style="margin-top: 20px; text-align: left; padding: 15px; border-radius: 12px; background: rgba(14, 16, 19, 0.9);">
-                <div class="calc-result-title" style="color: #fff; font-size: 0.85rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+            <div class="calc-result bdf-results-panel">
+                <div class="calc-result-title bdf-results-header">
                     <span>Diagnóstico de Temporizaciones BDF</span>
-                    <span id="cycleTimeDisplay" style="font-size: 0.75rem; color: var(--text-muted);">Ciclo total: 5000 ms</span>
+                    <span id="cycleTimeDisplay" class="bdf-cycle-display">Ciclo total: 5000 ms</span>
                 </div>
                 
-                <div id="bdfValidationResults" style="display: flex; flex-direction: column; gap: 8px;">
+                <div id="bdfValidationResults" class="bdf-validation-col">
                     <!-- Se poblará dinámicamente -->
                 </div>
             </div>
 
             <!-- ASISTENTE EXPERTO DE DEFECTOS DE TEMPORIZACIÓN -->
-            <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                <div style="font-weight: bold; font-size: 0.85rem; color: var(--primary); margin-bottom: 12px; text-align: left;">🔧 Asistente de Corrección de Defectos (BDF Expert):</div>
+            <div class="bdf-expert-section">
+                <div class="sop-section-title">🔧 Asistente de Corrección de Defectos (BDF Expert):</div>
                 
                 <div class="form-group">
                     <label for="defectSelector">Seleccionar Defecto observado en Caliente:</label>
@@ -1654,67 +1763,67 @@
                 </div>
 
                 <!-- Tarjeta explicativa de la corrección -->
-                <div id="defectRemedyCard" style="display: none; padding: 12px; border-radius: 8px; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.8rem; line-height: 1.4; text-align: left;">
-                    <div style="font-weight: bold; color: #60a5fa; margin-bottom: 6px;" id="remedyTitle">Título del Defecto</div>
-                    <div style="color: var(--text-muted); margin-bottom: 10px;" id="remedyDescription">Explicación física de la falla...</div>
-                    <div style="margin-bottom: 12px;">
-                        <span style="font-weight: bold; color: #34d399;">Acción Correctiva BDF:</span>
-                        <span id="remedyAction" style="color: #fff;">Qué grados mover...</span>
+                <div id="defectRemedyCard" class="bdf-remedy-card">
+                    <div class="bdf-remedy-title" id="remedyTitle">Título del Defecto</div>
+                    <div class="bdf-remedy-desc" id="remedyDescription">Explicación física de la falla...</div>
+                    <div class="bdf-remedy-action-wrap">
+                        <span class="bdf-remedy-action-label">Acción Correctiva BDF:</span>
+                        <span id="remedyAction" class="bdf-remedy-action-text">Qué grados mover...</span>
                     </div>
-                    <button class="filter-btn" style="width: 100%; padding: 8px; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #60a5fa; font-size: 0.75rem;" id="applyRemedyBtn">Simular Ajuste en Ciclo</button>
+                    <button class="filter-btn btn-simulate-remedy" id="applyRemedyBtn">Simular Ajuste en Ciclo</button>
                 </div>
             </div>
 
             <!-- LÍNEA DE TIEMPO DEL CICLO (GANTT 360°) -->
-            <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                <div style="font-weight: bold; font-size: 0.85rem; color: var(--primary); margin-bottom: 12px; text-align: left;">📈 Diagrama de Ciclo de Sección (0° a 360°):</div>
+            <div class="gantt-section">
+                <div class="sop-section-title">📈 Diagrama de Ciclo de Sección (0° a 360°):</div>
                 
-                <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 8px; font-size: 0.75rem;">
+                <div class="gantt-container">
                     <!-- Barra de Plunger (Macho) -->
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Macho (Up/Dn)</span>
-                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
-                            <div id="barPlunger" style="position: absolute; height: 100%; background: #3b82f6; border-radius: 5px;"></div>
+                    <div class="gantt-row">
+                        <span class="gantt-label">Macho (Up/Dn)</span>
+                        <div class="gantt-track">
+                            <div id="barPlunger" class="gantt-bar gantt-bar-plunger"></div>
                         </div>
-                        <span id="labelPlunger" style="width: 70px; text-align: right; font-family: monospace;">80°-150°</span>
+                        <span id="labelPlunger" class="gantt-value">80°-150°</span>
                     </div>
                     
                     <!-- Barra de Inversión / Reversión -->
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Inversión</span>
-                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
-                            <div id="barInvert" style="position: absolute; height: 100%; background: #a855f7; border-radius: 5px;"></div>
+                    <div class="gantt-row">
+                        <span class="gantt-label">Inversión</span>
+                        <div class="gantt-track">
+                            <div id="barInvert" class="gantt-bar gantt-bar-invert"></div>
                         </div>
-                        <span id="labelInvert" style="width: 70px; text-align: right; font-family: monospace;">195°-240°</span>
+                        <span id="labelInvert" class="gantt-value">195°-240°</span>
                     </div>
 
                     <!-- Barra de Molde Final (Cierre a Apertura) -->
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Molde Final</span>
-                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
-                            <div id="barBlowMold" style="position: absolute; height: 100%; background: #10b981; border-radius: 5px;"></div>
+                    <div class="gantt-row">
+                        <span class="gantt-label">Molde Final</span>
+                        <div class="gantt-track">
+                            <div id="barBlowMold" class="gantt-bar gantt-bar-blowmold"></div>
                         </div>
-                        <span id="labelBlowMold" style="width: 70px; text-align: right; font-family: monospace;">240°-330°</span>
+                        <span id="labelBlowMold" class="gantt-value">240°-330°</span>
                     </div>
 
                     <!-- Barra de Soplado Final -->
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="width: 80px; text-align: left; color: var(--text-muted);">Soplado Final</span>
-                        <div style="flex-grow: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; position: relative; margin: 0 10px;">
-                            <div id="barFinalBlow" style="position: absolute; height: 100%; background: #eab308; border-radius: 5px;"></div>
+                    <div class="gantt-row">
+                        <span class="gantt-label">Soplado Final</span>
+                        <div class="gantt-track">
+                            <div id="barFinalBlow" class="gantt-bar gantt-bar-finalblow"></div>
                         </div>
-                        <span id="labelFinalBlow" style="width: 70px; text-align: right; font-family: monospace;">270°-325°</span>
+                        <span id="labelFinalBlow" class="gantt-value">270°-325°</span>
                     </div>
                 </div>
             </div>
 
             <!-- Presets rápidos para carga de configuraciones seguras e inseguras -->
-            <div class="preset-block" style="margin-top: 20px;">
+            <div class="preset-block preset-block-spaced">
                 <div class="calibration-title preset-btn">Simular Escenarios BDF en Caliente:</div>
                 <div class="preset-buttons">
-                    <button class="filter-btn preset-btn" style="background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: #34d399;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 325)">SOP Nominal Seguro (TG)</button>
-                    <button class="filter-btn preset-btn" style="background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: #f87171;" onclick="loadBdfPreset(80, 190, 190, 185, 240, 230, 250, 325)">Peligro Colisión Macho/Inversión</button>
-                    <button class="filter-btn preset-btn" style="background: rgba(245, 158, 11, 0.1); border-color: var(--warning); color: #fbbf24;" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 290)">Soplado Insuficiente (<50°)</button>
+                    <button class="filter-btn preset-btn btn-preset-safe" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 325)">SOP Nominal Seguro (TG)</button>
+                    <button class="filter-btn preset-btn btn-preset-danger" onclick="loadBdfPreset(80, 190, 190, 185, 240, 230, 250, 325)">Peligro Colisión Macho/Inversión</button>
+                    <button class="filter-btn preset-btn btn-preset-warning" onclick="loadBdfPreset(80, 150, 190, 195, 240, 245, 270, 290)">Soplado Insuficiente (<50°)</button>
                 </div>
             </div>
         </div>
@@ -1725,147 +1834,147 @@
         <div class="sop-calculator">
             <div class="calibration-title">🔍 Escáner Digital de Consola & Fichas Técnicas</div>
             
-            <div style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4; margin-bottom: 20px; background: rgba(30,41,59,0.3); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+            <div class="scanner-desc">
                 Apunta la cámara del celular a la pantalla de la consola BDF o a una ficha técnica de temporizaciones impresa. El motor de reconocimiento de texto (OCR Offline) extraerá los valores para compararlos con las consignas teóricas de tu artículo.
             </div>
 
             <!-- SELECTOR DE ENTRADA DE IMAGEN O DATOS -->
-            <div class="form-row" style="margin-bottom: 20px; gap: 8px; flex-wrap: wrap;">
-                <button class="filter-btn active" id="btnScannerUseCam" style="flex: 1; min-width: 110px;" onclick="setScannerSource('camera')">Cámara Escáner</button>
-                <button class="filter-btn" id="btnScannerUseFile" style="flex: 1; min-width: 110px;" onclick="setScannerSource('file')">Subir Foto / OCR</button>
-                <button class="filter-btn" id="btnScannerUseManual" style="flex: 1; min-width: 110px;" onclick="setScannerSource('manual')">Ingreso Manual</button>
+            <div class="form-row scanner-source-row">
+                <button class="filter-btn active scanner-source-btn" id="btnScannerUseCam" onclick="setScannerSource('camera')">Cámara Escáner</button>
+                <button class="filter-btn scanner-source-btn" id="btnScannerUseFile" onclick="setScannerSource('file')">Subir Foto / OCR</button>
+                <button class="filter-btn scanner-source-btn" id="btnScannerUseManual" onclick="setScannerSource('manual')">Ingreso Manual</button>
             </div>
 
             <!-- CONTENEDOR DE CÁMARA Y CAPTURA -->
-            <div id="scannerCameraArea" style="position: relative; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--primary-glow); margin-bottom: 15px; display: flex; flex-direction: column; align-items: center; width: 100%;">
-                <video id="scannerVideo" autoplay muted playsinline style="width: 100%; max-height: 280px; object-fit: cover; background: #000;"></video>
-                <canvas id="scannerCanvas" style="display: none; width: 100%; max-height: 280px; object-fit: cover;"></canvas>
+            <div id="scannerCameraArea" class="scanner-camera-container">
+                <video id="scannerVideo" autoplay muted class="scanner-video"></video>
+                <canvas id="scannerCanvas" class="scanner-canvas"></canvas>
                 
                 <!-- Guía de encuadre translúcida -->
-                <div style="position: absolute; top: 10%; left: 10%; right: 10%; bottom: 20%; border: 2px dashed #06b6d4; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45); pointer-events: none;">
-                    <div style="position: absolute; bottom: -20px; left: 0; right: 0; text-align: center; color: #06b6d4; font-size: 0.65rem; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase;">Alinear pantalla / Ficha técnica aquí</div>
+                <div class="scanner-guide-frame">
+                    <div class="scanner-guide-label">Alinear pantalla / Ficha técnica aquí</div>
                 </div>
 
-                <button class="btn-action" style="position: absolute; bottom: 10px; width: auto; padding: 8px 20px; font-size: 0.8rem; background: #06b6d4; border-color: #06b6d4;" onclick="captureScannerSnapshot()">Capturar Foto del Panel</button>
+                <button class="btn-action btn-capture" onclick="captureScannerSnapshot()">Capturar Foto del Panel</button>
             </div>
 
             <!-- CONTENEDOR DE SUBIDA DE ARCHIVO -->
-            <div id="scannerUploadArea" style="background: rgba(30,41,59,0.3); border: 2px dashed var(--glass-border); padding: 30px 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; display: none;">
-                <label for="scannerFileInput" style="cursor: pointer; display: block;">
-                    <span style="font-size: 2.5rem; display: block; margin-bottom: 10px;">📸</span>
-                    <span style="color: var(--primary); font-weight: bold; display: block; margin-bottom: 6px;">Seleccionar foto de galería</span>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">Soporta formatos JPG, PNG, WEBP</span>
+            <div id="scannerUploadArea" class="scanner-upload-area">
+                <label for="scannerFileInput" class="scanner-upload-label">
+                    <span class="scanner-upload-icon">📸</span>
+                    <span class="scanner-upload-cta">Seleccionar foto de galería</span>
+                    <span class="scanner-upload-hint">Soporta formatos JPG, PNG, WEBP</span>
                 </label>
-                <input type="file" id="scannerFileInput" accept="image/*" style="display: none;" onchange="handleScannerFileSelect(this)">
+                <input type="file" id="scannerFileInput" accept="image/*" class="scanner-file-hidden" onchange="handleScannerFileSelect(this)">
             </div>
 
             <!-- CONTENEDOR DE INGRESO MANUAL OFFLINE (FALLBACK PLANTA) -->
-            <div id="scannerManualArea" style="background: rgba(30,41,59,0.3); border: 1px solid var(--glass-border); padding: 20px 15px; border-radius: 12px; margin-bottom: 15px; display: none;">
-                <div style="font-weight: bold; font-size: 0.85rem; color: #fff; margin-bottom: 15px; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px;">Tiempos del Panel en Grados (0° - 360°)</div>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+            <div id="scannerManualArea" class="scanner-manual-area">
+                <div class="scanner-manual-title">Tiempos del Panel en Grados (0° - 360°)</div>
+                <div class="scanner-manual-grid">
                     <div>
-                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Macho Arriba (Plunger Up) °</label>
-                        <input type="number" id="manualPlungerUp" min="0" max="360" placeholder="Ej: 80" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                        <label class="scanner-manual-label">Macho Arriba (Plunger Up) °</label>
+                        <input type="number" id="manualPlungerUp" min="0" max="360" placeholder="Ej: 80" class="calc-input scanner-manual-input">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Macho Abajo (Plunger Down) °</label>
-                        <input type="number" id="manualPlungerDown" min="0" max="360" placeholder="Ej: 150" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                        <label class="scanner-manual-label">Macho Abajo (Plunger Down) °</label>
+                        <input type="number" id="manualPlungerDown" min="0" max="360" placeholder="Ej: 150" class="calc-input scanner-manual-input">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Inicio Inversión (Invert) °</label>
-                        <input type="number" id="manualInvertStart" min="0" max="360" placeholder="Ej: 190" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                        <label class="scanner-manual-label">Inicio Inversión (Invert) °</label>
+                        <input type="number" id="manualInvertStart" min="0" max="360" placeholder="Ej: 190" class="calc-input scanner-manual-input">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Cierre Molde (Blow Close) °</label>
-                        <input type="number" id="manualBlowClose" min="0" max="360" placeholder="Ej: 240" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                        <label class="scanner-manual-label">Cierre Molde (Blow Close) °</label>
+                        <input type="number" id="manualBlowClose" min="0" max="360" placeholder="Ej: 240" class="calc-input scanner-manual-input">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Soplado Final ON (Blow ON) °</label>
-                        <input type="number" id="manualBlowOn" min="0" max="360" placeholder="Ej: 270" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                        <label class="scanner-manual-label">Soplado Final ON (Blow ON) °</label>
+                        <input type="number" id="manualBlowOn" min="0" max="360" placeholder="Ej: 270" class="calc-input scanner-manual-input">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Soplado Final OFF (Blow OFF) °</label>
-                        <input type="number" id="manualBlowOff" min="0" max="360" placeholder="Ej: 325" class="calc-input" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                        <label class="scanner-manual-label">Soplado Final OFF (Blow OFF) °</label>
+                        <input type="number" id="manualBlowOff" min="0" max="360" placeholder="Ej: 325" class="calc-input scanner-manual-input">
                     </div>
                 </div>
-                <button class="btn-action" style="margin-top: 15px; font-weight: bold; background: var(--primary); border-color: var(--primary); padding: 10px;" onclick="runScannerManualComparison()">Comparar Datos del Panel</button>
+                <button class="btn-action btn-compare-manual" onclick="runScannerManualComparison()">Comparar Datos del Panel</button>
             </div>
 
             <!-- PREVISUALIZACIÓN DE IMAGEN SELECCIONADA/CAPTURADA -->
-            <div id="scannerPreviewArea" style="display: none; margin-bottom: 15px; border-radius: 12px; overflow: hidden; border: 1px solid var(--glass-border); position: relative; background: #000;">
-                <img id="scannerPreviewImg" style="width: 100%; max-height: 250px; object-fit: contain;">
-                <button style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer;" onclick="resetScannerImage()">&times;</button>
+            <div id="scannerPreviewArea" class="scanner-preview-container">
+                <img id="scannerPreviewImg" class="scanner-preview-img">
+                <button class="btn-close-preview" onclick="resetScannerImage()">&times;</button>
             </div>
 
             <!-- ACCIÓN DE ESCANEAR Y ESTADO -->
-            <button class="btn-action" id="btnRunOcr" style="margin-bottom: 15px; font-weight: bold;" onclick="runScannerOcr()" disabled>Escanear Imagen (Esperando foto...)</button>
+            <button class="btn-action btn-run-ocr" id="btnRunOcr" onclick="runScannerOcr()" disabled>Escanear Imagen (Esperando foto...)</button>
             
-            <div id="ocrLoader" style="display: none; margin-bottom: 20px; text-align: center;">
-                <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(6, 182, 212, 0.2); border-radius: 50%; border-top-color: #06b6d4; animation: spin 1s linear infinite; margin-bottom: 10px;"></div>
-                <div id="ocrStatusMsg" style="font-size: 0.8rem; color: #06b6d4; font-weight: bold;">Cargando motor de reconocimiento OCR...</div>
-                <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Este proceso se ejecuta 100% de forma local y offline</div>
+            <div id="ocrLoader" class="ocr-loader">
+                <div class="ocr-spinner"></div>
+                <div id="ocrStatusMsg" class="ocr-status-text">Cargando motor de reconocimiento OCR...</div>
+                <div class="ocr-status-hint">Este proceso se ejecuta 100% de forma local y offline</div>
             </div>
 
             <!-- ASISTENTE DE CONFIRMACIÓN DE OCR -->
-            <div id="scannerOcrConfirmArea" style="display: none; margin-bottom: 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px;">
-                <div style="font-weight: bold; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <div id="scannerOcrConfirmArea" class="ocr-confirm-area">
+                <div class="ocr-confirm-header">
                     <span>🔎 Validar Lectura de Panel BDF</span>
                 </div>
-                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4;">
+                <div class="ocr-confirm-desc">
                     El OCR ha digitalizado los siguientes valores del panel de control. Por favor, verifica que coincidan con la pantalla y corrígelos si es necesario antes de comparar.
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; margin-bottom: 15px;">
+                <div class="ocr-confirm-grid">
                     <div>
-                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Macho Arriba (Plunger Up)</label>
-                        <input type="number" id="ocrValPlungerUp" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                        <label class="ocr-field-label">Macho Arriba (Plunger Up)</label>
+                        <input type="number" id="ocrValPlungerUp" class="form-control ocr-field-input" min="0" max="360">
                     </div>
                     <div>
-                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Macho Abajo (Plunger Down)</label>
-                        <input type="number" id="ocrValPlungerDown" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                        <label class="ocr-field-label">Macho Abajo (Plunger Down)</label>
+                        <input type="number" id="ocrValPlungerDown" class="form-control ocr-field-input" min="0" max="360">
                     </div>
                     <div>
-                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Inversión (Invert Start)</label>
-                        <input type="number" id="ocrValInvertStart" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                        <label class="ocr-field-label">Inversión (Invert Start)</label>
+                        <input type="number" id="ocrValInvertStart" class="form-control ocr-field-input" min="0" max="360">
                     </div>
                     <div>
-                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Cierre Molde (Blow Close)</label>
-                        <input type="number" id="ocrValBlowClose" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                        <label class="ocr-field-label">Cierre Molde (Blow Close)</label>
+                        <input type="number" id="ocrValBlowClose" class="form-control ocr-field-input" min="0" max="360">
                     </div>
                     <div>
-                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Abre Anillo (Neck Ring Open)</label>
-                        <input type="number" id="ocrValNeckRingOpen" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                        <label class="ocr-field-label">Abre Anillo (Neck Ring Open)</label>
+                        <input type="number" id="ocrValNeckRingOpen" class="form-control ocr-field-input" min="0" max="360">
                     </div>
                     <div>
-                        <label style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Soplado ON (Blow ON)</label>
-                        <input type="number" id="ocrValBlowOn" class="form-control" style="font-size: 0.8rem; padding: 6px;" min="0" max="360">
+                        <label class="ocr-field-label">Soplado ON (Blow ON)</label>
+                        <input type="number" id="ocrValBlowOn" class="form-control ocr-field-input" min="0" max="360">
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-action" style="background: var(--success); border-color: var(--success); flex: 1; font-weight: bold;" onclick="confirmOcrAndCompare()">Confirmar y Comparar</button>
-                    <button class="btn-action" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #f87171; flex: 1;" onclick="cancelOcrConfirm()">Cancelar</button>
+                <div class="ocr-confirm-actions">
+                    <button class="btn-action btn-confirm-ocr" onclick="confirmOcrAndCompare()">Confirmar y Comparar</button>
+                    <button class="btn-action btn-cancel-ocr" onclick="cancelOcrConfirm()">Cancelar</button>
                 </div>
             </div>
 
             <!-- RESULTADO Y TABLA COMPARATIVA -->
-            <div id="scannerResultsCard" style="display: none; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; text-align: left;">
-                <div style="font-weight: bold; color: var(--primary); margin-bottom: 12px; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div id="scannerResultsCard" class="scanner-results-card">
+                <div class="scanner-results-header">
                     <span>📊 Reporte Comparativo del Ciclo</span>
-                    <span id="scannerArticleBadge" style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(59,130,246,0.15); color: #60a5fa;">SSP 296</span>
+                    <span id="scannerArticleBadge" class="scanner-article-badge">SSP 296</span>
                 </div>
 
-                <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 15px; border-left: 2px solid #06b6d4; padding-left: 8px;">
+                <div class="scanner-results-desc">
                     Se compararon las lecturas extraídas de la consola con la ficha teórica recomendada para el artículo activo en VitroDiag.
                 </div>
 
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 15px;">
+                <table class="scanner-table">
                     <thead>
-                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                            <th style="padding: 6px 0;">Mecanismo</th>
-                            <th style="padding: 6px 0; text-align: center;">Consola Física</th>
-                            <th style="padding: 6px 0; text-align: center;">Teórico SOP</th>
-                            <th style="padding: 6px 0; text-align: right;">Diferencia</th>
+                        <tr class="scanner-table-header">
+                            <th class="scanner-th">Mecanismo</th>
+                            <th class="scanner-th-center">Consola Física</th>
+                            <th class="scanner-th-center">Teórico SOP</th>
+                            <th class="scanner-th-right">Diferencia</th>
                         </tr>
                     </thead>
                     <tbody id="scannerComparisonBody">
@@ -1874,13 +1983,13 @@
                 </table>
 
                 <!-- RESUMEN DE SEGURIDAD / ADVERTENCIAS -->
-                <div id="scannerSafetyAlert" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; font-size: 0.75rem; line-height: 1.35;">
+                <div id="scannerSafetyAlert" class="scanner-safety-alert">
                     <!-- Mensaje dinámico de colisión o desvío -->
                 </div>
 
-                <div style="display: flex; gap: 8px;">
-                    <button class="filter-btn" style="flex: 1; padding: 8px; background: rgba(6,182,212,0.15); border-color: #06b6d4; color: #22d3ee; font-size: 0.75rem;" onclick="applyScannerValuesToCalculator()">Cargar en Calculadora</button>
-                    <button class="filter-btn" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.75rem;" onclick="resetScannerReport()">Limpiar Todo</button>
+                <div class="scanner-result-actions">
+                    <button class="filter-btn btn-load-to-calc" onclick="applyScannerValuesToCalculator()">Cargar en Calculadora</button>
+                    <button class="filter-btn btn-clear-scanner" onclick="resetScannerReport()">Limpiar Todo</button>
                 </div>
             </div>
         </div>
@@ -4330,10 +4439,29 @@
 
         function startProcessing() {
             streamActive = true;
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            offscreenCanvas.width = 320; // 320x240 resolución interna para fluidez de 60 FPS
-            offscreenCanvas.height = 240;
+            
+            const initCanvasSize = () => {
+                if (video.videoWidth > 0) {
+                    const videoAspect = video.videoWidth / video.videoHeight;
+                    let targetWidth = 320;
+                    let targetHeight = Math.round(targetWidth / videoAspect);
+                    offscreenCanvas.width = targetWidth;
+                    offscreenCanvas.height = targetHeight;
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
+                } else {
+                    canvas.width = 320;
+                    canvas.height = 240;
+                    offscreenCanvas.width = 320;
+                    offscreenCanvas.height = 240;
+                }
+            };
+
+            if (video.readyState >= 1) {
+                initCanvasSize();
+            } else {
+                video.addEventListener('loadedmetadata', initCanvasSize, { once: true });
+            }
             
             animationFrameId = requestAnimationFrame(processFrame);
         }
@@ -4738,9 +4866,22 @@
             document.getElementById('diagAcciones').innerHTML = "<li>Procesando algoritmos de visión...</li>";
             
             if (typeof tf !== 'undefined') {
-                console.log("TensorFlow.js activo. Tensores en memoria:", tf.memory().numTensors);
+                console.log("TensorFlow.js activo. Tensores iniciales en GPU:", tf.memory().numTensors);
                 if (tfModel) {
                     tfjsStatus.innerText = "Motor IA: Ejecutando predicción en GPU (WebGL)...";
+                    try {
+                        const aiPrediction = tf.tidy(() => {
+                            let tensor = tf.browser.fromPixels(canvas);
+                            tensor = tf.image.resizeBilinear(tensor, [224, 224]);
+                            tensor = tensor.toFloat().div(tf.scalar(255.0));
+                            const batch = tensor.expandDims(0);
+                            return tfModel.predict(batch).dataSync();
+                        });
+                        console.log("Predicción en GPU exitosa. Clase afinidad:", aiPrediction);
+                        console.log("Tensores post-predicción en GPU (Limpieza con tf.tidy):", tf.memory().numTensors);
+                    } catch (aiErr) {
+                        console.warn("Fallo en predicción de GPU. Usando firmware local nativo como respaldo.", aiErr);
+                    }
                 } else {
                     tfjsStatus.innerText = "Motor IA: Preprocesando Tensores en modo Emulación...";
                 }
@@ -5041,54 +5182,70 @@
         
         // Vista activa por defecto
         let activeViewId = 'liveView';
+        let isCameraTransitioning = false;
 
         // Manejo expandido de pestañas (tabs)
-        window.switchView = function(viewName) {
-            // Ocultar todas las vistas
-            document.querySelectorAll('.view-content').forEach(view => {
-                view.classList.remove('active');
-            });
-            // Desactivar todos los botones
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Encontrar botón cliqueado por onclick
-            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-                btn.getAttribute('onclick').includes(viewName)
-            );
-            if (targetBtn) targetBtn.classList.add('active');
-
-            // Mostrar la vista objetivo
-            const targetView = document.getElementById(viewName + 'View');
-            if (targetView) {
-                targetView.classList.add('active');
-                activeViewId = viewName + 'View';
+        window.switchView = async function(viewName) {
+            if (isCameraTransitioning) {
+                console.log("Cámara ocupada liberando/adquiriendo hardware. Ignorando cambio de pestaña.");
+                return;
             }
+            isCameraTransitioning = true;
 
-            // Gestión y liberación cruzada de hardware de cámaras para evitar congelamiento
-            if (viewName === 'live') {
-                window.stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
-                startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
-                if (toggle.checked) startProcessing();
-            } else if (viewName === 'scanner') {
-                stopProcessing(); 
-                stopDiagnosticCamera(); // Apagar cámara de diagnóstico al entrar a Escáner
-                // Encender la cámara del escáner si está en modo cámara activo
-                const btnCam = document.getElementById('btnScannerUseCam');
-                if (btnCam && btnCam.classList.contains('active')) {
-                    window.startScannerCamera();
+            try {
+                // Ocultar todas las vistas
+                document.querySelectorAll('.view-content').forEach(view => {
+                    view.classList.remove('active');
+                });
+                // Desactivar todos los botones
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Encontrar botón cliqueado por onclick
+                const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
+                    btn.getAttribute('onclick').includes(viewName)
+                );
+                if (targetBtn) targetBtn.classList.add('active');
+
+                // Mostrar la vista objetivo
+                const targetView = document.getElementById(viewName + 'View');
+                if (targetView) {
+                    targetView.classList.add('active');
+                    activeViewId = viewName + 'View';
                 }
-            } else {
-                // Detener ambas cámaras para ahorrar CPU y RAM en el móvil
-                stopProcessing();
-                stopDiagnosticCamera();
-                window.stopScannerCamera();
-            }
 
-            // Al cambiar a directorio, renderizar la lista completa
-            if (viewName === 'directory') {
-                renderDefectsList(DEFECTOS_DB);
+                // Gestión y liberación cruzada de hardware de cámaras para evitar congelamiento
+                if (viewName === 'live') {
+                    window.stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
+                    await startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
+                    if (toggle.checked) startProcessing();
+                } else if (viewName === 'scanner') {
+                    stopProcessing(); 
+                    stopDiagnosticCamera(); // Apagar cámara de diagnóstico al entrar a Escáner
+                    // Encender la cámara del escáner si está en modo cámara activo
+                    const btnCam = document.getElementById('btnScannerUseCam');
+                    if (btnCam && btnCam.classList.contains('active')) {
+                        await window.startScannerCamera();
+                    }
+                } else {
+                    // Detener ambas cámaras para ahorrar CPU y RAM en el móvil
+                    stopProcessing();
+                    stopDiagnosticCamera();
+                    window.stopScannerCamera();
+                }
+
+                // Al cambiar a directorio, renderizar la lista completa
+                if (viewName === 'directory') {
+                    renderDefectsList(DEFECTOS_DB);
+                }
+
+                // Delay de estabilización física del hardware de cámara antes de liberar el semáforo
+                await new Promise(resolve => setTimeout(resolve, 250));
+            } catch (err) {
+                console.error("Error en transición de hardware de cámara:", err);
+            } finally {
+                isCameraTransitioning = false;
             }
         };
 
@@ -5730,6 +5887,7 @@
         let scannerStream = null;
         let scannerImageBase64 = null;
         let scannerParsedValues = {};
+        let ocrWorker = null;
 
         window.setScannerSource = function(source) {
             const btnCam = document.getElementById('btnScannerUseCam');
@@ -5922,6 +6080,13 @@
             showToast("Comparación de panel manual generada correctamente.", "success");
         };
 
+        async function getOcrWorker(statusElement) {
+            if (ocrWorker) return ocrWorker;
+            statusElement.innerText = "Inicializando Worker OCR local (WebAssembly)...";
+            ocrWorker = await Tesseract.createWorker('spa');
+            return ocrWorker;
+        }
+
         window.runScannerOcr = async function() {
             const loader = document.getElementById('ocrLoader');
             const statusMsg = document.getElementById('ocrStatusMsg');
@@ -5933,23 +6098,20 @@
             resultsCard.style.display = 'none';
             loader.style.display = 'block';
             runOcrBtn.setAttribute('disabled', 'true');
-            statusMsg.innerText = "Inicializando motor OCR local...";
 
-            // Timeout de 15 segundos para evitar que la UI quede congelada de forma indefinida
+            // Timeout ampliado a 20 segundos para la primera inicialización lenta (luego es inmediato)
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error("Timeout de inicialización de OCR (15 segundos superado)")), 15000);
+                setTimeout(() => reject(new Error("Timeout de digitalización OCR (20 segundos superado)")), 20000);
             });
 
             const ocrPromise = (async () => {
-                const worker = await Tesseract.createWorker('spa');
-                statusMsg.innerText = "Analizando caracteres e interpretando texto...";
+                const worker = await getOcrWorker(statusMsg);
+                statusMsg.innerText = "Analizando caracteres e interpretando texto del panel...";
                 
                 const ret = await worker.recognize(scannerImageBase64);
                 const text = ret.data.text;
                 console.log("Texto extraído por OCR del panel:", text);
                 
-                statusMsg.innerText = "Liberando recursos de memoria local...";
-                await worker.terminate();
                 return text;
             })();
 
