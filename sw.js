@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vitrodiag-cache-v41';
+const CACHE_NAME = 'vitrodiag-cache-v42';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -37,38 +37,59 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Intercepción de peticiones (Estrategia Cache First con red de respaldo)
+// Intercepción de peticiones con estrategias diferenciadas por tipo de recurso (v42)
 self.addEventListener('fetch', event => {
-  // Ignorar peticiones que no sean GET o que tengan esquemas no soportados (ej. chrome-extension://)
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        
-        // Si no está en cache, ir a la red
-        return fetch(event.request)
-          .then(networkResponse => {
-            // Guardar en cache para la próxima vez
-            if (networkResponse.status === 200) {
-              const responseClone = networkResponse.clone();
-              caches.open(CACHE_NAME).then(cache => {
-                cache.put(event.request, responseClone);
-              });
-            }
-            return networkResponse;
-          })
-          .catch(() => {
-            // Offline fallback
-            console.log('[Service Worker] Petición fallida y sin cache para:', event.request.url);
-          });
-      })
-  );
+  const url = new URL(event.request.url);
+  const isCdn = url.hostname.includes('cdn.jsdelivr.net') || url.hostname.includes('img.icons8.com');
+
+  if (isCdn) {
+    // ESTRATEGIA A: Cache-First para librerías pesadas CDN externas (cero latencia y offline asegurado en planta)
+    event.respondWith(
+      caches.match(event.request)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          
+          return fetch(event.request)
+            .then(networkResponse => {
+              if (networkResponse.status === 200) {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then(cache => {
+                  cache.put(event.request, responseClone);
+                });
+              }
+              return networkResponse;
+            })
+            .catch(() => {
+              console.log('[Service Worker] Falló descarga de recurso CDN offline:', event.request.url);
+            });
+        })
+    );
+  } else {
+    // ESTRATEGIA B: Network-First para archivos locales de la app (index.html, manifest.json)
+    // Permite descargar actualizaciones instantáneas si hay red, con respaldo en caché offline si no hay señal.
+    event.respondWith(
+      fetch(event.request)
+        .then(networkResponse => {
+          if (networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          console.log('[Service Worker] Modo Offline. Recuperando de caché local:', event.request.url);
+          return caches.match(event.request);
+        })
+    );
+  }
 });
 
 
