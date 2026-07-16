@@ -1401,7 +1401,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span style="font-size: 0.8rem; vertical-align: middle; padding: 2px 6px; border-radius: 6px; background: rgba(6, 182, 212, 0.2); color: #06b6d4; margin-left: 6px; font-weight: normal; border: 1px solid rgba(6, 182, 212, 0.3);">v44</span></h1>
+        <h1>VitroDiag <span style="font-size: 0.8rem; vertical-align: middle; padding: 2px 6px; border-radius: 6px; background: rgba(6, 182, 212, 0.2); color: #06b6d4; margin-left: 6px; font-weight: normal; border: 1px solid rgba(6, 182, 212, 0.3);">v45</span></h1>
         <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
     </header>
 
@@ -5273,11 +5273,13 @@
                 // Gestión y liberación cruzada de hardware de cámaras para evitar congelamiento
                 if (viewName === 'live') {
                     window.stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
+                    await new Promise(resolve => setTimeout(resolve, 350)); // Delay para asegurar liberacion de hardware
                     await startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
                     if (toggle.checked) startProcessing();
                 } else if (viewName === 'scanner') {
                     stopProcessing(); 
                     stopDiagnosticCamera(); // Apagar cámara de diagnóstico al entrar a Escáner
+                    await new Promise(resolve => setTimeout(resolve, 350)); // Delay para asegurar liberacion de hardware
                     // Encender la cámara del escáner si está en modo cámara activo
                     const btnCam = document.getElementById('btnScannerUseCam');
                     if (btnCam && btnCam.classList.contains('active')) {
