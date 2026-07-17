@@ -73,6 +73,11 @@ function stopProcessing() {
 function processFrame() {
             if (!state.streamActive) return;
             
+            if (!video || video.readyState < 2 || video.videoWidth === 0) {
+                state.animationFrameId = requestAnimationFrame(processFrame);
+                return;
+            }
+            
             try {
                 // Ajustar dinámicamente el tamaño del canvas según la relación de aspecto real de la cámara
                 if (video.videoWidth > 0) {
@@ -434,7 +439,7 @@ function processFrame() {
         }
 
 export function setVisionMode(mode) {
-    state.state.currentVisionMode = mode;
+    state.currentVisionMode = mode;
     const tabFine = document.getElementById('tabModeFine');
     const tabSobel = document.getElementById('tabModeSobel');
     const tabThermal = document.getElementById('tabModeThermal');
