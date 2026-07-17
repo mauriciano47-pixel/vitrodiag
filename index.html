@@ -7,8 +7,26 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <link rel="manifest" href="./manifest.json">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>VitroDiag v9.0 - Operador IS</title>
+    
+    <script>
+    window.onerror = function(msg, url, line, col, error) {
+        fetch('http://localhost:8098', { method: 'POST', body: 'ERROR: ' + msg + ' at ' + line + ':' + col });
+    };
+    window.addEventListener('unhandledrejection', function(event) {
+        fetch('http://localhost:8098', { method: 'POST', body: 'UNHANDLED PROMISE: ' + event.reason });
+    });
+    const originalConsoleError = console.error;
+    console.error = function(...args) {
+        fetch('http://localhost:8098', { method: 'POST', body: 'CONSOLE ERROR: ' + args.join(' ') });
+        originalConsoleError.apply(console, args);
+    };
+    </script>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
     <style>
         /* Sistema de diseño industrial y moderno (Tema de vidrio fundido y grafito) */

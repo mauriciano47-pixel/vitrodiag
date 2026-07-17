@@ -3,6 +3,8 @@ import { ARTICULOS_DEFAULT, DEFECTOS_DB, renderDefectsList, generateDefectIllust
 import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera } from './camera.js';
 import { startProcessing, stopProcessing } from './vision.js';
 
+const toggle = document.getElementById('silhouetteToggle');
+
 function showToast(message, type = 'info', duration = 3000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
@@ -253,7 +255,7 @@ function filterDefects() {
             renderDefectsList(filtered);
         }
 
-function switchView(viewName) {
+async function switchView(viewName) {
             if (state.isCameraTransitioning) {
                 console.log("Cámara ocupada liberando/adquiriendo hardware. Ignorando cambio de pestaña.");
                 return;

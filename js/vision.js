@@ -1,6 +1,17 @@
 import { state } from './state.js';
 import { mostrarResultadoDefecto } from './geometry.js';
 
+const video = document.getElementById('webcam');
+const canvas = document.getElementById('canvasOutput');
+const ctx = canvas.getContext('2d');
+const offscreenCanvas = document.createElement('canvas');
+const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+const sliderContrast = document.getElementById('sliderContrast');
+const sliderBrightness = document.getElementById('sliderBrightness');
+const sliderCanny = document.getElementById('sliderCanny');
+const sliderTolerance = document.getElementById('sliderTolerance');
+const sliderTemplateScale = document.getElementById('sliderTemplateScale');
+
 function startProcessing() {
             state.streamActive = true;
             
@@ -431,3 +442,18 @@ export function setVisionMode(mode) {
 }
 
 export { startProcessing, stopProcessing, processFrame };
+
+export function setupCalibrationSliders() {
+    const bindSlider = (sliderId, valId) => {
+        const slider = document.getElementById(sliderId);
+        const val = document.getElementById(valId);
+        if(slider && val) {
+            slider.addEventListener('input', () => { val.innerText = slider.value; });
+        }
+    };
+    bindSlider('sliderContrast', 'valContrast');
+    bindSlider('sliderBrightness', 'valBrightness');
+    bindSlider('sliderCanny', 'valCanny');
+    bindSlider('sliderTolerance', 'valTolerance');
+    bindSlider('sliderTemplateScale', 'valTemplateScale');
+}

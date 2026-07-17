@@ -26,7 +26,8 @@ import {
 import { 
     startProcessing, 
     stopProcessing, 
-    setVisionMode 
+    setVisionMode,
+    setupCalibrationSliders
 } from './vision.js';
 import { 
     calculateSopMs, 
@@ -46,7 +47,8 @@ import {
 } from './ocr.js';
 import { 
     updateConfidenceThresholdDisplay, 
-    loadCustomUploadedModel 
+    loadCustomUploadedModel,
+    setupAiEventListeners
 } from './ai.js';
 import { 
     populateLogDefectSelect, 
@@ -105,7 +107,11 @@ window.addEventListener('DOMContentLoaded', () => {
     // 5. Encender la cámara de diagnóstico en vivo en la carga inicial (pestaña live activa por defecto)
     startDiagnosticCamera();
     
-    // 6. Registrar Service Worker para PWA Offline con autodetección y recarga automática
+    // 6. Configurar listeners de interfaz de IA y calibración visual que se perdieron en la refactorización
+    setupCalibrationSliders();
+    setupAiEventListeners();
+    
+    // 7. Registrar Service Worker para PWA Offline con autodetección y recarga automática
     if ('serviceWorker' in navigator) {
         let refreshing = false;
         

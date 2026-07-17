@@ -1,7 +1,18 @@
 import { state } from './state.js';
 import { showToast } from './ui.js';
 
-function startDiagnosticCamera() {
+const video = document.getElementById('webcam');
+const status = document.getElementById('opencvStatus');
+const cameraConstraints = {
+    video: { 
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+    }, 
+    audio: false 
+};
+
+async function startDiagnosticCamera() {
             if (state.diagnosticStream) return;
             
             status.innerText = "Iniciando cámara...";
