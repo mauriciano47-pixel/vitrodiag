@@ -111,10 +111,11 @@ window.addEventListener('DOMContentLoaded', () => {
     setupCalibrationSliders();
     setupAiEventListeners();
     
-    // 7. Registrar Service Worker para PWA Offline con autodetección y recarga automática
+    // 7. Registrar Service Worker para PWA Offline con actualización agresiva garantizada
     if ('serviceWorker' in navigator) {
         let refreshing = false;
-        
+
+        // Cuando el nuevo SW toma el control, recargar la página para aplicar los cambios
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (!refreshing) {
                 refreshing = true;
@@ -123,23 +124,31 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Registrar directamente sin query string para evitar conflictos MIME de servidores estáticos
         navigator.serviceWorker.register('./sw.js')
         .then(reg => {
-            console.log('Service Worker de VitroDiag registrado con éxito.', reg);
-            
+            console.log('[PWA] Service Worker registrado. Estado:', reg.active ? 'Activo' : 'Instalando...');
+
+            // CLAVE: Forzar verificación activa de actualización en cada carga de la app.
+            // Sin esto, el browser puede esperar hasta 24h para revisar si el SW cambió.
+            reg.update().then(() => {
+                console.log("[PWA] Verificación de actualizaciones forzada con éxito.");
+            }).catch(err => console.warn("[PWA] No se pudo verificar actualización:", err));
+
+            // Si ya hay un SW nuevo esperando activación (sesión anterior dejó uno pendiente), activarlo ya
             if (reg.waiting) {
-                console.log("[PWA] Encontrado Service Worker en espera (waiting). Forzando activación...");
+                console.log("[PWA] SW nuevo en cola (waiting). Activando inmediatamente...");
                 reg.waiting.postMessage({ type: 'SKIP_WAITING' });
             }
-            
+
+            // Escuchar nuevas instalaciones durante la sesión actual
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 if (newWorker) {
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed') {
                             if (navigator.serviceWorker.controller) {
-                                console.log("[PWA] Nueva actualización del Service Worker instalada. Solicitando activación inmediata...");
+                                // Ya existe un SW activo controlando la página → activar la nueva versión
+                                console.log("[PWA] Nueva versión instalada. Forzando activación inmediata...");
                                 newWorker.postMessage({ type: 'SKIP_WAITING' });
                             }
                         }
@@ -147,6 +156,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             });
         })
-        .catch(err => console.error('Error al registrar Service Worker: ', err));
+        .catch(err => console.error('[PWA] Error al registrar Service Worker:', err));
     }
 });

@@ -1,4 +1,5 @@
-const CACHE_NAME = 'vitrodiag-cache-v49';
+// VitroDiag SW — Build: 2026-07-17T02:00:00Z
+const CACHE_NAME = 'vitrodiag-cache-v50';
 const ASSETS = [
   './index.html',
   './manifest.json',
