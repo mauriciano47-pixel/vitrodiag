@@ -15,6 +15,22 @@ function updateConfidenceThresholdDisplay(val) {
             if (badge) badge.innerText = `Filtro: >${state.confidenceThreshold}%`;
         }
 
+async function warmUpModel(model) {
+    if (!model || typeof tf === 'undefined') return;
+    try {
+        tfjsStatus.innerText = "Motor IA: Compilando shaders (Warm-up)...";
+        tfjsStatus.style.color = "#fbbf24";
+        const dummy = tf.tidy(() => tf.zeros([1, 224, 224, 3]));
+        const prediction = model.predict(dummy);
+        prediction.dataSync(); // Fuerza la ejecución sincrona para compilar shaders
+        dummy.dispose();
+        prediction.dispose();
+        console.log("TFJS: Warm-up completado.");
+    } catch (e) {
+        console.warn("TFJS: Warm-up omitido o fallido: ", e);
+    }
+}
+
 async function loadCustomUploadedModel() {
             const jsonInput = document.getElementById('uploadModelJson');
             const binInput = document.getElementById('uploadModelBin');
@@ -33,6 +49,7 @@ async function loadCustomUploadedModel() {
             try {
                 // Carga dinámica local usando IndexedDB y FileReader en TF.js
                 state.tfModel = await tf.loadLayersModel(tf.io.browserFiles([modelJsonFile, ...weightsFiles]));
+                await warmUpModel(state.tfModel);
                 tfjsStatus.innerText = "Motor IA: Red Neuronal Personalizada cargada con éxito";
                 tfjsStatus.style.color = "#10b981";
                 showToast("Modelo de IA personalizado conectado con éxito", "success");
@@ -51,9 +68,17 @@ async function loadTensorFlowModel() {
                 return;
             }
             try {
+                await tf.setBackend('webgl'); // Forzar explícitamente backend de GPU si está disponible
+                console.log("Backend TFJS activo:", tf.getBackend());
+            } catch (e) {
+                console.warn("Backend WebGL no disponible, usando defecto:", e);
+            }
+
+            try {
                 tfjsStatus.innerText = "Buscando modelo CNN en ./model/model.json...";
                 // Carga asíncrona del modelo guardado localmente en la PWA
                 state.tfModel = await tf.loadLayersModel('./model/model.json');
+                await warmUpModel(state.tfModel);
                 tfjsStatus.innerText = "Motor IA: Red Neuronal CNN cargada offline";
                 tfjsStatus.style.color = "#10b981"; // Verde (Success)
             } catch (err) {

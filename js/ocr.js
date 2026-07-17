@@ -364,7 +364,7 @@ function captureScannerSnapshot() {
     previewArea.style.display = 'block';
     window.stopScannerCamera(); // <- Bug corregido: usa window. para acceder correctamente
 
-    runOcrBtn.style.display = 'block';
+    runOcrBtn.classList.remove('d-none');
     runScannerOcr();
 }
 
@@ -383,7 +383,7 @@ function handleScannerFileSelect(input) {
         previewImg.src = state.scannerImageBase64;
         previewArea.style.display = 'block';
 
-        runOcrBtn.style.display = 'block';
+        runOcrBtn.classList.remove('d-none');
         runScannerOcr();
     };
 
@@ -405,7 +405,7 @@ function resetScannerImage() {
     document.getElementById('scannerResultsCard').style.display = 'none';
 
     if (runOcrBtn) {
-        runOcrBtn.style.display = 'none';
+        runOcrBtn.classList.add('d-none');
     }
 
     if (btnCam && btnCam.classList.contains('active')) {

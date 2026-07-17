@@ -3,7 +3,7 @@ import { mostrarResultadoDefecto } from './geometry.js';
 
 const video = document.getElementById('webcam');
 const canvas = document.getElementById('canvasOutput');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
 const offscreenCanvas = document.createElement('canvas');
 const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
 const sliderContrast = document.getElementById('sliderContrast');
@@ -11,6 +11,27 @@ const sliderBrightness = document.getElementById('sliderBrightness');
 const sliderCanny = document.getElementById('sliderCanny');
 const sliderTolerance = document.getElementById('sliderTolerance');
 const sliderTemplateScale = document.getElementById('sliderTemplateScale');
+
+// Buffers reusables para evitar alojamiento de memoria por frame
+let grayBuffer = null;
+let bordersBuffer = null;
+let blurredBuffer = null;
+let magBuffer = null;
+let angleBuffer = null;
+let binaryBuffer = null;
+let dilatedBuffer = null;
+
+function ensureBuffers(size) {
+    if (!grayBuffer || grayBuffer.length !== size) {
+        grayBuffer = new Uint8ClampedArray(size);
+        bordersBuffer = new Uint8ClampedArray(size);
+        blurredBuffer = new Uint8ClampedArray(size);
+        magBuffer = new Float32Array(size);
+        angleBuffer = new Float32Array(size);
+        binaryBuffer = new Uint8ClampedArray(size);
+        dilatedBuffer = new Uint8ClampedArray(size);
+    }
+}
 
 function startProcessing() {
             state.streamActive = true;
@@ -79,17 +100,23 @@ function processFrame() {
                 const beta = parseInt(sliderBrightness.value);       // Brillo (-50 - 50)
                 const threshold = parseInt(sliderCanny.value);       // Umbral de detección
 
-                // Crear escala de grises preprocesada
-                const gray = new Uint8ClampedArray(width * height);
-                for (let i = 0; i < data.length; i += 4) {
-                    let r = data[i];
-                    let g = data[i+1];
-                    let b = data[i+2];
+                // Precalcular LUT (Look-Up Table) para contraste y brillo (256 operaciones vs ~230,000 por frame)
+                const lut = new Uint8Array(256);
+                for (let i = 0; i < 256; i++) {
+                    lut[i] = Math.min(255, Math.max(0, alpha * i + beta));
+                }
 
-                    // Ajuste de contraste y brillo
-                    r = Math.min(255, Math.max(0, alpha * r + beta));
-                    g = Math.min(255, Math.max(0, alpha * g + beta));
-                    b = Math.min(255, Math.max(0, alpha * b + beta));
+                const size = width * height;
+                ensureBuffers(size);
+
+                const gray = grayBuffer;
+                const borders = bordersBuffer;
+                borders.fill(0); // Limpiar para el análisis de simetría de este frame
+
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = lut[data[i]];
+                    let g = lut[data[i+1]];
+                    let b = lut[data[i+2]];
 
                     gray[i / 4] = 0.299 * r + 0.587 * g + 0.114 * b;
                 }
@@ -100,9 +127,6 @@ function processFrame() {
                 
                 const scaleX = canvas.width / width;
                 const scaleY = canvas.height / height;
-
-                // Estructuras para el análisis de simetría
-                const borders = new Uint8ClampedArray(width * height);
 
                 // --- MODO 3: SIMULACIÓN TÉRMICA (MAPA DE CALOR) ---
                 if (state.currentVisionMode === 'thermal') {
@@ -162,7 +186,7 @@ function processFrame() {
                     // --- MODOS DE CONTORNO (FINE O SOBEL) ---
 
                     // 1. Si es modo 'backlight' (Mesa de Luz), aplicamos binarización adaptativa y compensación morfológica
-                    const blurred = new Uint8ClampedArray(width * height);
+                    const blurred = blurredBuffer;
                     const isBacklight = document.getElementById('backlightToggle') && document.getElementById('backlightToggle').checked;
                     
                     if (isBacklight) {
@@ -202,13 +226,13 @@ function processFrame() {
                         
                         // B. Binarización Adaptativa (Filtro Contraluz)
                         const bThreshold = Math.max(120, backlightLevel - 50);
-                        const binary = new Uint8ClampedArray(width * height);
+                        const binary = binaryBuffer;
                         for (let i = 0; i < width * height; i++) {
                             binary[i] = gray[i] < bThreshold ? 255 : 0;
                         }
                         
                         // C. Filtro Morfológico de Dilatación (Compensación de Silueta ante sobreexposición)
-                        const dilated = new Uint8ClampedArray(width * height);
+                        const dilated = dilatedBuffer;
                         dilated.set(binary);
                         if (backlightLevel > 230) {
                             for (let y = 1; y < height - 1; y++) {
@@ -248,8 +272,8 @@ function processFrame() {
                     }
 
                     // Buffers de gradiente
-                    const mag = new Float32Array(width * height);
-                    const angle = new Float32Array(width * height);
+                    const mag = magBuffer;
+                    const angle = angleBuffer;
 
                     // 2. Ejecutar convolución de Sobel
                     for (let y = 1; y < height - 1; y++) {
