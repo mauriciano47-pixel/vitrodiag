@@ -1,5 +1,5 @@
-// VitroDiag SW — Build: 2026-07-17T02:00:00Z
-const CACHE_NAME = 'vitrodiag-cache-v50';
+// VitroDiag SW — Build: 2026-07-17T02:06:00Z
+const CACHE_NAME = 'vitrodiag-cache-v51';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -22,35 +22,45 @@ const ASSETS = [
   'https://img.icons8.com/neon/512/glass-bottle.png'
 ];
 
+// URLs que NUNCA deben ser cacheadas (siempre van a la red para detectar versiones nuevas)
+const NEVER_CACHE = [
+  'version.json',
+  'sw.js'
+];
+
 // Instalación: Cachear recursos estáticos y de visión artificial
 self.addEventListener('install', event => {
+  // skipWaiting() inmediato en install para no quedarse en "waiting" nunca
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('[Service Worker] Cacheando assets para uso offline en planta...');
+        console.log('[SW v51] Cacheando assets para uso offline...');
         return cache.addAll(ASSETS);
       })
-      .then(() => self.skipWaiting())
   );
 });
 
-// Activación: Limpieza de caches antiguos
+// Activación: Limpiar caches viejos y tomar el control de todos los clientes abiertos
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
-            console.log('[Service Worker] Eliminando cache antiguo:', key);
+            console.log('[SW v51] Eliminando cache antiguo:', key);
             return caches.delete(key);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('[SW v51] Tomando control de todos los clientes abiertos...');
+      return self.clients.claim(); // Toma el control de pestañas abiertas sin esperar recarga
+    })
   );
 });
 
-// Intercepción de peticiones con estrategias diferenciadas por tipo de recurso (v42)
+// Intercepción de peticiones con estrategias diferenciadas por tipo de recurso
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
     return;
@@ -59,34 +69,38 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   const isCdn = url.hostname.includes('cdn.jsdelivr.net') || url.hostname.includes('img.icons8.com');
 
+  // ESTRATEGIA 0: Network-Only para archivos críticos que nunca deben ser cacheados
+  // Esto garantiza que version.json y sw.js siempre vengan frescos del servidor
+  const isNeverCache = NEVER_CACHE.some(nc => url.pathname.endsWith(nc));
+  if (isNeverCache) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' })
+        .catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } }))
+    );
+    return;
+  }
+
   if (isCdn) {
-    // ESTRATEGIA A: Cache-First para librerías pesadas CDN externas (cero latencia y offline asegurado en planta)
+    // ESTRATEGIA A: Cache-First para librerías pesadas CDN externas
     event.respondWith(
       caches.match(event.request)
         .then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          
+          if (cachedResponse) return cachedResponse;
           return fetch(event.request)
             .then(networkResponse => {
               if (networkResponse.status === 200) {
                 const responseClone = networkResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                  cache.put(event.request, responseClone);
-                });
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
               }
               return networkResponse;
             })
             .catch(() => {
-              console.log('[Service Worker] Falló descarga de recurso CDN offline:', event.request.url);
+              console.log('[SW v51] Falló descarga CDN offline:', event.request.url);
             });
         })
     );
   } else {
-    // ESTRATEGIA B: Stale-While-Revalidate para archivos locales de la app (index.html, manifest.json, js/*.js)
-    // Devuelve instantáneamente desde el caché para máxima velocidad y uso offline,
-    // y actualiza el caché en segundo plano si hay red disponible.
+    // ESTRATEGIA B: Stale-While-Revalidate para archivos locales de la app
     event.respondWith(
       caches.match(event.request)
         .then(cachedResponse => {
@@ -94,27 +108,23 @@ self.addEventListener('fetch', event => {
             .then(networkResponse => {
               if (networkResponse.status === 200) {
                 const responseClone = networkResponse.clone();
-                caches.open(CACHE_NAME).then(cache => {
-                  cache.put(event.request, responseClone);
-                });
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
               }
               return networkResponse;
             })
             .catch(() => {
-              console.log('[Service Worker] Falló la revalidación en red de:', event.request.url);
+              console.log('[SW v51] Offline - sirviendo desde caché:', event.request.url);
             });
-            
           return cachedResponse || fetchPromise;
         })
     );
   }
 });
 
-
 // Escuchar el mensaje para forzar la activación de la versión nueva de inmediato
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('[Service Worker] Activando versión nueva inmediatamente...');
+    console.log('[SW v51] Activando versión nueva inmediatamente...');
     self.skipWaiting();
   }
 });
