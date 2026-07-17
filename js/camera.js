@@ -21,6 +21,8 @@ async function startDiagnosticCamera() {
             try {
                 state.diagnosticStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
                 video.srcObject = state.diagnosticStream;
+                video.setAttribute('playsinline', '');
+                video.play();
                 status.innerText = "Motor Visión: Activo (Nativo)";
                 status.style.color = "#10b981";
             } catch (err) {
@@ -28,6 +30,8 @@ async function startDiagnosticCamera() {
                 try {
                     state.diagnosticStream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = state.diagnosticStream;
+                    video.setAttribute('playsinline', '');
+                    video.play();
                     status.innerText = "Motor Visión: Activo (Nativo)";
                     status.style.color = "#10b981";
                 } catch (fallbackErr) {
