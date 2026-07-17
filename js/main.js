@@ -113,81 +113,88 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 7. Sistema de actualización forzada y registro del Service Worker
     if ('serviceWorker' in navigator) {
-        let refreshing = false;
+        const isDev = location.hostname === 'localhost' || 
+                      location.hostname === '127.0.0.1' || 
+                      location.search.includes('dev=true') || 
+                      location.search.includes('nosw');
 
-        // Cuando el nuevo SW toma el control, recargar para aplicar los cambios
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (!refreshing) {
-                refreshing = true;
-                console.log("[PWA] Nuevo SW activo. Recargando...");
-                window.location.reload();
-            }
-        });
-
-        // ─── SISTEMA DE DETECCIÓN DE VERSIÓN (bypasea el caché del SW) ───────────
-        // Busca version.json DIRECTAMENTE en el servidor (no pasa por el SW).
-        // Si la versión del servidor es distinta a la guardada localmente,
-        // limpia TODOS los caches y fuerza una recarga completa.
-        const checkAndForceUpdate = async () => {
-            try {
-                const res = await fetch('./version.json', { cache: 'no-store' });
-                if (!res.ok) return;
-                const data = await res.json();
-                const serverVersion = data.v;
-                const localVersion = localStorage.getItem('vitrodiag-version');
-
-                console.log(`[PWA] Versión local: ${localVersion} | Versión servidor: ${serverVersion}`);
-
-                if (serverVersion && serverVersion !== localVersion) {
-                    console.log('[PWA] ¡Nueva versión detectada! Borrando caches y recargando...');
-                    // Borrar absolutamente todos los caches del SW
-                    const cacheKeys = await caches.keys();
-                    await Promise.all(cacheKeys.map(key => caches.delete(key)));
-                    // Desregistrar el SW viejo para que se instale el nuevo limpiamente
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    await Promise.all(registrations.map(r => r.unregister()));
-                    // Guardar la nueva versión
-                    localStorage.setItem('vitrodiag-version', serverVersion);
-                    // Recargar la página forzando descarga desde servidor
-                    window.location.reload(true);
-                } else if (!localVersion && serverVersion) {
-                    // Primera vez que se instala: guardar la versión actual
-                    localStorage.setItem('vitrodiag-version', serverVersion);
-                }
-            } catch (e) {
-                console.log('[PWA] Sin conexión o error al verificar versión:', e.message);
-            }
-        };
-
-        // Ejecutar la verificación de versión inmediatamente
-        checkAndForceUpdate();
-
-        // ─── REGISTRO DEL SERVICE WORKER ──────────────────────────────────────────
-        navigator.serviceWorker.register('./sw.js')
-        .then(reg => {
-            console.log('[PWA] Service Worker registrado. Estado:', reg.active ? 'Activo' : 'Instalando...');
-
-            // Forzar verificación de actualización del SW en cada carga
-            reg.update().catch(err => console.warn("[PWA] No se pudo verificar actualización del SW:", err));
-
-            // Si ya hay un SW nuevo esperando (sesión anterior), activarlo ya
-            if (reg.waiting) {
-                console.log("[PWA] SW nuevo en cola. Activando inmediatamente...");
-                reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }
-
-            reg.addEventListener('updatefound', () => {
-                const newWorker = reg.installing;
-                if (newWorker) {
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log("[PWA] Nueva versión del SW instalada. Activando...");
-                            newWorker.postMessage({ type: 'SKIP_WAITING' });
-                        }
-                    });
+        if (isDev) {
+            console.log("[Dev] Modo desarrollo activo. Desregistrando Service Workers y limpiando caché...");
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (let r of registrations) {
+                    r.unregister();
                 }
             });
-        })
-        .catch(err => console.error('[PWA] Error al registrar Service Worker:', err));
+            if (window.caches) {
+                caches.keys().then(keys => {
+                    keys.forEach(key => caches.delete(key));
+                });
+            }
+        } else {
+            let refreshing = false;
+
+            // Cuando el nuevo SW toma el control, recargar para aplicar los cambios
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    console.log("[PWA] Nuevo SW activo. Recargando...");
+                    window.location.reload();
+                }
+            });
+
+            // ─── SISTEMA DE DETECCIÓN DE VERSIÓN (bypasea el caché del SW) ───────────
+            const checkAndForceUpdate = async () => {
+                try {
+                    const res = await fetch('./version.json', { cache: 'no-store' });
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const serverVersion = data.v;
+                    const localVersion = localStorage.getItem('vitrodiag-version');
+
+                    console.log(`[PWA] Versión local: ${localVersion} | Versión servidor: ${serverVersion}`);
+
+                    if (serverVersion && serverVersion !== localVersion) {
+                        console.log('[PWA] ¡Nueva versión detectada! Borrando caches y recargando...');
+                        const cacheKeys = await caches.keys();
+                        await Promise.all(cacheKeys.map(key => caches.delete(key)));
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(registrations.map(r => r.unregister()));
+                        localStorage.setItem('vitrodiag-version', serverVersion);
+                        window.location.reload(true);
+                    } else if (!localVersion && serverVersion) {
+                        localStorage.setItem('vitrodiag-version', serverVersion);
+                    }
+                } catch (e) {
+                    console.log('[PWA] Sin conexión o error al verificar versión:', e.message);
+                }
+            };
+
+            checkAndForceUpdate();
+
+            // ─── REGISTRO DEL SERVICE WORKER ──────────────────────────────────────────
+            navigator.serviceWorker.register('./sw.js')
+            .then(reg => {
+                console.log('[PWA] Service Worker registrado. Estado:', reg.active ? 'Activo' : 'Instalando...');
+                reg.update().catch(err => console.warn("[PWA] No se pudo verificar actualización del SW:", err));
+
+                if (reg.waiting) {
+                    console.log("[PWA] SW nuevo en cola. Activando inmediatamente...");
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log("[PWA] Nueva versión del SW instalada. Activando...");
+                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                        });
+                    }
+                });
+            })
+            .catch(err => console.error('[PWA] Error al registrar Service Worker:', err));
+        }
     }
 });
