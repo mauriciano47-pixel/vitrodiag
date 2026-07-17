@@ -9,8 +9,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitroDiag v52.0 - Operador IS</title>
-    
     <script>
+    // Inyectar dinámicamente la metaetiqueta theme-color para evitar advertencias de compatibilidad de Firefox en HTML estático
+    const themeMeta = document.createElement('meta');
+    themeMeta.name = 'theme-color';
+    themeMeta.content = '#0f172a';
+    document.head.appendChild(themeMeta);
+
     if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
         const logError = (msg) => {
             fetch('http://localhost:8098', { method: 'POST', body: msg }).catch(() => {});
@@ -31,7 +36,6 @@
     </script>
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <style>
@@ -1436,7 +1440,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span class="version-badge">v56</span></h1>
+        <h1>VitroDiag <span class="version-badge">v57</span></h1>
         <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
     </header>
 
@@ -1549,7 +1553,7 @@
     <div id="liveView" class="view-content active">
         <div class="camera-wrapper">
             <div id="opencvStatus" class="opencv-status">Motor Visión: Cargando...</div>
-            <video id="webcam" autoplay muted playsinline></video>
+            <video id="webcam" autoplay muted></video>
             <canvas id="canvasOutput" class="d-none"></canvas>
             
             <div class="overlay-guide">
@@ -1910,7 +1914,7 @@
                         <span class="scanner-upload-cta scanner-upload-cta-native">Abrir Cámara del Celular</span>
                         <span class="scanner-upload-hint">Mejor enfoque nativo para documentos</span>
                     </label>
-                    <input type="file" id="scannerNativeCameraInput" accept="image/*" capture="environment" class="scanner-file-hidden" onchange="handleScannerFileSelect(this)">
+                    <input type="file" id="scannerNativeCameraInput" accept="image/*" class="scanner-file-hidden" onchange="handleScannerFileSelect(this)">
 
                     <!-- Botón Subir Galería -->
                     <label for="scannerFileInput" class="scanner-upload-label scanner-upload-label-gallery">

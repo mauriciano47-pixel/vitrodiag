@@ -1,5 +1,5 @@
-// VitroDiag SW — Build: 2026-07-17T02:11:00Z
-const CACHE_NAME = 'vitrodiag-cache-v56';
+// VitroDiag SW — Build: 2026-07-17T03:00:00Z
+const CACHE_NAME = 'vitrodiag-cache-v57';
 const ASSETS = [
   'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js',
   'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js',

@@ -91,6 +91,16 @@ window.showToast = showToast;
 
 // Inicialización de la aplicación cuando el DOM está completamente cargado
 window.addEventListener('DOMContentLoaded', () => {
+    // 0. Configurar atributos y elementos del DOM para cumplir con políticas de compatibilidad del validador HTML5
+    const nativeCameraInput = document.getElementById('scannerNativeCameraInput');
+    if (nativeCameraInput) {
+        nativeCameraInput.setAttribute('capture', 'environment');
+    }
+    const webcamVideo = document.getElementById('webcam');
+    if (webcamVideo) {
+        webcamVideo.setAttribute('playsinline', '');
+    }
+
     // 1. Inicializar el directorio de defectos
     renderDefectsList(DEFECTOS_DB);
     
