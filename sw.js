@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vitrodiag-cache-v48';
+const CACHE_NAME = 'vitrodiag-cache-v49';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -83,22 +83,27 @@ self.addEventListener('fetch', event => {
         })
     );
   } else {
-    // ESTRATEGIA B: Network-First para archivos locales de la app (index.html, manifest.json)
-    // Permite descargar actualizaciones instantáneas si hay red, con respaldo en caché offline si no hay señal.
+    // ESTRATEGIA B: Stale-While-Revalidate para archivos locales de la app (index.html, manifest.json, js/*.js)
+    // Devuelve instantáneamente desde el caché para máxima velocidad y uso offline,
+    // y actualiza el caché en segundo plano si hay red disponible.
     event.respondWith(
-      fetch(event.request)
-        .then(networkResponse => {
-          if (networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseClone);
+      caches.match(event.request)
+        .then(cachedResponse => {
+          const fetchPromise = fetch(event.request)
+            .then(networkResponse => {
+              if (networkResponse.status === 200) {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then(cache => {
+                  cache.put(event.request, responseClone);
+                });
+              }
+              return networkResponse;
+            })
+            .catch(() => {
+              console.log('[Service Worker] Falló la revalidación en red de:', event.request.url);
             });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          console.log('[Service Worker] Modo Offline. Recuperando de caché local:', event.request.url);
-          return caches.match(event.request);
+            
+          return cachedResponse || fetchPromise;
         })
     );
   }

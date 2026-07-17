@@ -123,34 +123,28 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Desregistrar workers antiguos de forma transparente para forzar la actualización limpia
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-            for (let registration of registrations) {
-                registration.unregister().then(() => {
-                    console.log("[PWA] Service Worker antiguo removido.");
-                });
-            }
-        }).catch(err => console.warn("Error al limpiar workers previos:", err));
-
         // Registrar directamente sin query string para evitar conflictos MIME de servidores estáticos
         navigator.serviceWorker.register('./sw.js')
         .then(reg => {
             console.log('Service Worker de VitroDiag registrado con éxito.', reg);
             
             if (reg.waiting) {
+                console.log("[PWA] Encontrado Service Worker en espera (waiting). Forzando activación...");
                 reg.waiting.postMessage({ type: 'SKIP_WAITING' });
             }
             
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed') {
-                        if (navigator.serviceWorker.controller) {
-                            console.log("[PWA] Actualización detectada. Activando...");
-                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                console.log("[PWA] Nueva actualización del Service Worker instalada. Solicitando activación inmediata...");
+                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                            }
                         }
-                    }
-                });
+                    });
+                }
             });
         })
         .catch(err => console.error('Error al registrar Service Worker: ', err));
