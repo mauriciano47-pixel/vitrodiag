@@ -261,6 +261,7 @@ async function switchView(viewName) {
                 return;
             }
             state.isCameraTransitioning = true;
+            let activeViewId;
 
             try {
                 // Ocultar todas las vistas
