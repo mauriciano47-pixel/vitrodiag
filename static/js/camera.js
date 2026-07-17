@@ -51,36 +51,42 @@ function stopDiagnosticCamera() {
             video.srcObject = null;
         }
 
-window.startScannerCamera = async function() {
+async function startScannerCamera() {
             const video = document.getElementById('scannerVideo');
             if (!video) return;
 
-            if (state.scannerStream) window.stopScannerCamera();
+            if (state.scannerStream) stopScannerCamera();
 
             try {
-                state.scannerStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { ideal: "environment" } },
+                const scannerConstraints = {
+                    video: { 
+                        facingMode: { ideal: "environment" },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
                     audio: false
-                });
+                };
+                state.scannerStream = await navigator.mediaDevices.getUserMedia(scannerConstraints);
                 video.srcObject = state.scannerStream;
                 video.setAttribute('playsinline', '');
                 video.play();
+                showToast("Cámara de escáner iniciada.", "success");
             } catch (err) {
-                console.warn("Fallo al iniciar cámara de escáner con environment. Probando fallback...", err);
+                console.warn("Fallo al iniciar cámara de escáner con constraints. Usando fallback...", err);
                 try {
-                    state.scannerStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    state.scannerStream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = state.scannerStream;
                     video.setAttribute('playsinline', '');
                     video.play();
+                    showToast("Cámara de escáner iniciada (fallback).", "success");
                 } catch (fallbackErr) {
-                    console.error("Error crítico al iniciar cámara del escáner:", fallbackErr);
-                    showToast("No se pudo acceder a la cámara. Prueba a subir una foto.", "warning");
-                    window.setScannerSource('file');
+                    console.error("No se pudo iniciar la cámara de escáner: ", fallbackErr);
+                    showToast("No se pudo iniciar la cámara del escáner.", "error");
                 }
             }
         }
 
-window.stopScannerCamera = function() {
+function stopScannerCamera() {
             if (state.scannerStream) {
                 state.scannerStream.getTracks().forEach(track => track.stop());
                 state.scannerStream = null;
@@ -88,5 +94,8 @@ window.stopScannerCamera = function() {
             const video = document.getElementById('scannerVideo');
             if (video) video.srcObject = null;
         }
+
+window.startScannerCamera = startScannerCamera;
+window.stopScannerCamera = stopScannerCamera;
 
 export { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera };
