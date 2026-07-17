@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+db.sqlite3
+.venv/
+pages_config.json
+browser_logs.txt
