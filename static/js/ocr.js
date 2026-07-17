@@ -131,6 +131,7 @@ function parseScannerOcrText(text) {
     document.getElementById('ocrValBlowClose').value = state.scannerParsedValues.blowClose;
     document.getElementById('ocrValNeckRingOpen').value = state.scannerParsedValues.neckRingOpen;
     document.getElementById('ocrValBlowOn').value = state.scannerParsedValues.blowOn;
+    document.getElementById('ocrValBlowOff').value = state.scannerParsedValues.blowOff;
 
     // Mostrar el panel de confirmación y ocultar loader/tarjeta de resultados previa
     document.getElementById('ocrLoader').style.display = 'none';
