@@ -57,6 +57,7 @@ import {
 } from './log.js';
 
 // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
+window.DEFECTOS_DB = DEFECTOS_DB;
 window.switchView = switchView;
 window.changeActiveArticle = changeActiveArticle;
 window.openArticlesModal = openArticlesModal;
