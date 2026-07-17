@@ -89,35 +89,34 @@ async function loadTensorFlowModel() {
         }
 
 function fallbackAlgorithmicDiagnosis() {
-    tfjsStatus.innerText = "Motor IA: Emulando diagnóstico basado en asimetría OpenCV...";
-    tfjsStatus.style.color = "rgba(255, 111, 0, 0.7)";
-    setTimeout(() => {
-        const threshold = parseInt(document.getElementById('sliderTolerance').value);
-        if (state.lastProcessedBorders && state.lastProcessedBorders > (3000 - (threshold * 50))) {
-            document.getElementById('diagTitulo').innerText = "❌ Defecto Crítico (Algorítmico): Cuello Torcido";
-            document.getElementById('diagGravedad').className = "status-alert status-danger";
-            document.getElementById('diagGravedad').style.display = "inline-block";
-            document.getElementById('diagGravedad').innerText = "Rechazo Inmediato";
-            document.getElementById('diagEstado').innerText = "La asimetría de contornos superó el umbral de tolerancia estructural (Opencv Canny/Sobel).";
-            document.getElementById('diagAcciones').innerHTML = `
-                <li><strong>Motor IS:</strong> Revisar alineación de mecanismos de cuello.</li>
-                <li><strong>Molde:</strong> Inspeccionar estado de los anillos de cuello.</li>
-            `;
-            tfjsStatus.innerText = "Motor OpenCV: Defecto Estructural Detectado";
-            tfjsStatus.style.color = "#ef4444";
-        } else {
-            document.getElementById('diagTitulo').innerText = "✅ Silueta dentro de tolerancias (Algorítmico)";
-            document.getElementById('diagGravedad').className = "status-alert status-success";
-            document.getElementById('diagGravedad').style.display = "inline-block";
-            document.getElementById('diagGravedad').innerText = "Aceptable";
-            document.getElementById('diagEstado').innerText = "El análisis algorítmico no detectó anomalías severas en la geometría actual.";
-            document.getElementById('diagAcciones').innerHTML = `
-                <li>El envase cumple con la simetría básica estructural.</li>
-            `;
-            tfjsStatus.innerText = "Motor OpenCV: Envase Aceptable";
-            tfjsStatus.style.color = "#10b981";
-        }
-    }, 1000);
+    tfjsStatus.innerText = "Motor IA: Analizando contorno de la silueta...";
+    tfjsStatus.style.color = "#10b981";
+    
+    const threshold = parseInt(document.getElementById('sliderTolerance').value);
+    if (state.lastProcessedBorders && state.lastProcessedBorders > (3000 - (threshold * 50))) {
+        document.getElementById('diagTitulo').innerText = "❌ Defecto Crítico (Algorítmico): Cuello Torcido";
+        document.getElementById('diagGravedad').className = "status-alert status-danger";
+        document.getElementById('diagGravedad').style.display = "inline-block";
+        document.getElementById('diagGravedad').innerText = "Rechazo Inmediato";
+        document.getElementById('diagEstado').innerText = "La asimetría de contornos superó el umbral de tolerancia estructural (Opencv Canny/Sobel).";
+        document.getElementById('diagAcciones').innerHTML = `
+            <li><strong>Motor IS:</strong> Revisar alineación de mecanismos de cuello.</li>
+            <li><strong>Molde:</strong> Inspeccionar estado de los anillos de cuello.</li>
+        `;
+        tfjsStatus.innerText = "Motor OpenCV: Defecto Estructural Detectado";
+        tfjsStatus.style.color = "#ef4444";
+    } else {
+        document.getElementById('diagTitulo').innerText = "✅ Silueta dentro de tolerancias (Algorítmico)";
+        document.getElementById('diagGravedad').className = "status-alert status-success";
+        document.getElementById('diagGravedad').style.display = "inline-block";
+        document.getElementById('diagGravedad').innerText = "Aceptable";
+        document.getElementById('diagEstado').innerText = "El análisis algorítmico no detectó anomalías severas en la geometría actual.";
+        document.getElementById('diagAcciones').innerHTML = `
+            <li>El envase cumple con la simetría básica estructural.</li>
+        `;
+        tfjsStatus.innerText = "Motor OpenCV: Envase Aceptable";
+        tfjsStatus.style.color = "#10b981";
+    }
 }
 
 function setupAiEventListeners() {
