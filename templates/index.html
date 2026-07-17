@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" defer></script>
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VitroDiag v52.0 - Operador IS</title>
@@ -2169,6 +2170,6 @@
         <div class="footer-subtext">PLANO DE CONTROL ÓPTICO - MÁQUINA I.S. CALIENTE</div>
     </footer>
 
-    <script type="module" src="./js/main.js"></script>
+    <script type="module" src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
