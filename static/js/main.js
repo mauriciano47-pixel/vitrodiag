@@ -43,7 +43,7 @@ import {
     runScannerOcr, 
     confirmOcrAndCompare, 
     applyScannerValuesToCalculator, 
-    resetScannerReport 
+    resetScannerReport
 } from './ocr.js';
 import { 
     updateConfidenceThresholdDisplay, 
@@ -53,8 +53,10 @@ import {
 import { 
     populateLogDefectSelect, 
     loadBitacoraFromStorage, 
-    renderBitacoraList 
+    renderBitacoraList,
+    setupLogEventListeners
 } from './log.js';
+import { initSwabModule } from './swab.js';
 
 // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
 window.DEFECTOS_DB = DEFECTOS_DB;
@@ -101,6 +103,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if (webcamVideo) {
         webcamVideo.setAttribute('playsinline', '');
     }
+
+    // Inicializar listeners de módulos
+    setupAiEventListeners();
+    setupLogEventListeners();
+    initSwabModule();
 
     // 1. Inicializar el directorio de defectos
     renderDefectsList(DEFECTOS_DB);

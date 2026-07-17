@@ -25,8 +25,9 @@
             logError('ERROR: ' + msg + ' at ' + line + ':' + col);
         };
         window.addEventListener('unhandledrejection', function(event) {
-            if (String(event.reason).includes('Failed to fetch')) return;
-            logError('UNHANDLED PROMISE: ' + event.reason);
+            const reasonStr = String(event.reason && event.reason.message || event.reason);
+            if (reasonStr.includes('Failed to fetch')) return;
+            logError('UNHANDLED PROMISE: ' + (event.reason && event.reason.stack || event.reason));
         });
         const originalConsoleError = console.error;
         console.error = function(...args) {

@@ -1,6 +1,7 @@
 import { state } from './state.js';
 import { showToast } from './ui.js';
 import { validateBdfTiming } from './timing.js';
+import { startScannerCamera, stopScannerCamera } from './camera.js';
 
 // ─── Scanner OCR (Tesseract.js directo, sin Worker persistente) ───────────────
 
@@ -28,6 +29,9 @@ async function runScannerOcr() {
         console.log("Texto extraído por OCR del panel:", text);
         return text;
     })();
+
+    // Evitar que el error interno del OCR quede sin atrapar si ocurre después del timeout
+    ocrPromise.catch(() => {});
 
     try {
         // Competencia entre el OCR y el Timeout
@@ -317,7 +321,7 @@ function setScannerSource(source) {
         uploadArea.style.display = 'none';
         manualArea.style.display = 'none';
 
-        window.startScannerCamera();
+        startScannerCamera();
     } else if (source === 'file') {
         btnCam.classList.remove('active');
         btnFile.classList.add('active');
@@ -327,7 +331,7 @@ function setScannerSource(source) {
         uploadArea.style.display = 'block';
         manualArea.style.display = 'none';
 
-        window.stopScannerCamera();
+        stopScannerCamera();
     } else {
         // Modo Manual
         btnCam.classList.remove('active');
@@ -338,7 +342,7 @@ function setScannerSource(source) {
         uploadArea.style.display = 'none';
         manualArea.style.display = 'block';
 
-        window.stopScannerCamera();
+        stopScannerCamera();
     }
 }
 
@@ -363,7 +367,7 @@ function captureScannerSnapshot() {
 
     camArea.style.display = 'none';
     previewArea.style.display = 'block';
-    window.stopScannerCamera(); // <- Bug corregido: usa window. para acceder correctamente
+    stopScannerCamera();
 
     runOcrBtn.classList.remove('d-none');
     runScannerOcr();
@@ -411,7 +415,7 @@ function resetScannerImage() {
 
     if (btnCam && btnCam.classList.contains('active')) {
         camArea.style.display = 'flex';
-        window.startScannerCamera();
+        startScannerCamera();
     }
 }
 

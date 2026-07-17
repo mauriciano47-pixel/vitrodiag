@@ -1,52 +1,79 @@
 import { state } from './state.js';
+import { showToast } from './ui.js';
+
+let swabEndTime = 0;
+let swabTimer = null;
+let alarmInterval = null;
+const swabWidget = document.getElementById('swabWidget');
+const swabWidgetTime = document.getElementById('swabWidgetTime');
 
 function updateSwabCountdown() {
-            const diff = swabEndTime - Date.now();
-            
-            if (diff <= 0) {
-                clearInterval(swabTimer);
-                swabWidgetTime.innerText = "0s";
-                triggerSwabAlarm();
-                return;
-            }
+    const diff = swabEndTime - Date.now();
+    
+    if (diff <= 0) {
+        clearInterval(swabTimer);
+        if (swabWidgetTime) swabWidgetTime.innerText = "0s";
+        triggerSwabAlarm();
+        return;
+    }
 
-            const totalSeconds = Math.floor(diff / 1000);
-            const mins = Math.floor(totalSeconds / 60);
-            const secs = totalSeconds % 60;
-            
-            // Actualizar widget
-            swabWidgetTime.innerText = `${mins}m ${secs}s`;
-        }
+    const totalSeconds = Math.floor(diff / 1000);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    
+    if (swabWidgetTime) swabWidgetTime.innerText = `${mins}m ${secs}s`;
+}
 
 function triggerSwabAlarm() {
-            swabWidget.classList.add('alarm-active');
-            
-            // Generar pitido agudo periódico usando Web Audio API (funciona 100% offline sin archivos de red)
-            if (!state.audioCtx) {
-                state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            
-            alarmInterval = setInterval(() => {
-                if (state.audioCtx.state === 'suspended') {
-                    state.audioCtx.resume();
-                }
-                
-                // Sintetizar tono
-                let osc = state.audioCtx.createOscillator();
-                let gain = state.audioCtx.createGain();
-                
-                osc.type = 'sine';
-                osc.frequency.value = 1600; // Pitido agudo industrial
-                
-                gain.gain.setValueAtTime(0.3, state.audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, state.audioCtx.currentTime + 0.4);
-                
-                osc.connect(gain);
-                gain.connect(state.audioCtx.destination);
-                
-                osc.start();
-                osc.stop(state.audioCtx.currentTime + 0.4);
-            }, 1000);
+    if (swabWidget) swabWidget.classList.add('alarm-active');
+    
+    // Alarma solo visual a petición del usuario.
+    showToast("¡Tiempo de Swabbing alcanzado! Por favor, lubrique el equipo.", "danger");
+    
+    alarmInterval = setInterval(() => {
+        if (swabWidget) {
+            swabWidget.classList.toggle('alarm-active');
         }
+    }, 500);
+}
 
-export { updateSwabCountdown, triggerSwabAlarm };
+function stopSwabAlarm() {
+    if (alarmInterval) clearInterval(alarmInterval);
+    if (swabWidget) {
+        swabWidget.classList.remove('alarm-active');
+        swabWidget.classList.add('d-none');
+    }
+}
+
+export function initSwabModule() {
+    const btnStartSwab = document.getElementById('btnStartSwab');
+    const swabInterval = document.getElementById('swabInterval');
+    const swabLastTime = document.getElementById('swabLastTime');
+    
+    if (swabWidget) {
+        swabWidget.addEventListener('click', () => {
+            stopSwabAlarm();
+            showToast("Alarma de swabbing silenciada y detenida.", "success");
+        });
+    }
+
+    if (btnStartSwab && swabInterval) {
+        btnStartSwab.addEventListener('click', () => {
+            const minutes = parseInt(swabInterval.value) || 15;
+            swabEndTime = Date.now() + (minutes * 60 * 1000);
+            
+            if (swabTimer) clearInterval(swabTimer);
+            stopSwabAlarm();
+            
+            if (swabWidget) swabWidget.classList.remove('d-none');
+            
+            swabTimer = setInterval(updateSwabCountdown, 1000);
+            updateSwabCountdown();
+            
+            const now = new Date();
+            if (swabLastTime) swabLastTime.innerText = `Último Swabbing registrado: ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            showToast(`Temporizador de swabbing iniciado por ${minutes} minutos.`, "success");
+        });
+    }
+}

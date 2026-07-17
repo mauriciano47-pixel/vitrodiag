@@ -75,15 +75,15 @@ async function loadTensorFlowModel() {
             }
 
             try {
-                tfjsStatus.innerText = "Buscando modelo CNN en ./model/model.json...";
+                tfjsStatus.innerText = "Buscando modelo CNN en /static/model/model.json...";
                 // Carga asíncrona del modelo guardado localmente en la PWA
-                state.tfModel = await tf.loadLayersModel('./model/model.json');
+                state.tfModel = await tf.loadLayersModel('/static/model/model.json');
                 await warmUpModel(state.tfModel);
                 tfjsStatus.innerText = "Motor IA: Red Neuronal CNN cargada offline";
                 tfjsStatus.style.color = "#10b981"; // Verde (Success)
             } catch (err) {
-                console.log("No se encontró un modelo entrenado en ./model/model.json. Usando emulador de tensores.");
-                tfjsStatus.innerText = "Motor IA: Modo Emulación (Listo para ./model/model.json)";
+                console.log("No se encontró un modelo entrenado en /static/model/model.json. Usando emulador de tensores.");
+                tfjsStatus.innerText = "Motor IA: Modo Emulación (Listo para /static/model/model.json)";
                 tfjsStatus.style.color = "rgba(255, 111, 0, 0.7)"; // Naranja
             }
         }

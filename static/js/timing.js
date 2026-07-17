@@ -1,4 +1,5 @@
 import { state } from './state.js';
+import { DEFECTOS_DB } from './db.js';
 
 function calculateSopMs() {
             // Adaptador para mantener compatibilidad con otras llamadas externas
@@ -6,9 +7,9 @@ function calculateSopMs() {
         }
 
 function validateBdfTiming() {
-            const bpm = parseFloat(calcBpm.value) || 396;
-            const sections = parseInt(calcSections.value) || 11;
-            const cavity = parseInt(calcCavities.value) || 3;
+            const bpm = parseFloat(document.getElementById('calcBpm').value) || 396;
+            const sections = parseInt(document.getElementById('calcSections').value) || 11;
+            const cavity = parseInt(document.getElementById('calcCavities').value) || 3;
 
             // FÓRMULA DE RELACIÓN: CPM de sección = BPM / (Secciones * Cavidades)
             const cpmSec = (bpm > 0) ? (bpm / (sections * cavity)) : 0;

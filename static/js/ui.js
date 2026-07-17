@@ -289,7 +289,7 @@ async function switchView(viewName) {
 
                 // Gestión y liberación cruzada de hardware de cámaras para evitar congelamiento
                 if (viewName === 'live') {
-                    window.stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
+                    stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
                     await new Promise(resolve => setTimeout(resolve, 350)); // Delay para asegurar liberacion de hardware
                     await startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
                     if (toggle.checked) startProcessing();
@@ -300,13 +300,13 @@ async function switchView(viewName) {
                     // Encender la cámara del escáner si está en modo cámara activo
                     const btnCam = document.getElementById('btnScannerUseCam');
                     if (btnCam && btnCam.classList.contains('active')) {
-                        await window.startScannerCamera();
+                        await startScannerCamera();
                     }
                 } else {
                     // Detener ambas cámaras para ahorrar CPU y RAM en el móvil
                     stopProcessing();
                     stopDiagnosticCamera();
-                    window.stopScannerCamera();
+                    stopScannerCamera();
                 }
 
                 // Al cambiar a directorio, renderizar la lista completa
