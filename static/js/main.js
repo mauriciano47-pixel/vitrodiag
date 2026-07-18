@@ -43,7 +43,8 @@ import {
     runScannerOcr, 
     confirmOcrAndCompare, 
     applyScannerValuesToCalculator, 
-    resetScannerReport
+    resetScannerReport,
+    cancelOcrConfirm
 } from './ocr.js';
 import { 
     updateConfidenceThresholdDisplay, 
@@ -85,6 +86,7 @@ window.runScannerOcr = runScannerOcr;
 window.confirmOcrAndCompare = confirmOcrAndCompare;
 window.applyScannerValuesToCalculator = applyScannerValuesToCalculator;
 window.resetScannerReport = resetScannerReport;
+window.cancelOcrConfirm = cancelOcrConfirm;
 
 window.updateConfidenceThresholdDisplay = updateConfidenceThresholdDisplay;
 window.loadCustomUploadedModel = loadCustomUploadedModel;
