@@ -10,12 +10,60 @@ function populateLogDefectSelect() {
     ).join('');
 }
 
-function loadBitacoraFromStorage() {
-    const saved = localStorage.getItem('vitrodiag_bitacora');
-    if (saved) {
-        state.bitacoraList = JSON.parse(saved);
-        renderBitacoraList();
+let db = null;
+
+function initLogDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('VitroDiagDB', 1);
+        request.onupgradeneeded = function(e) {
+            const tempDb = e.target.result;
+            if (!tempDb.objectStoreNames.contains('bitacora')) {
+                tempDb.createObjectStore('bitacora', { keyPath: 'id' });
+            }
+        };
+        request.onsuccess = function(e) {
+            db = e.target.result;
+            resolve(db);
+        };
+        request.onerror = function(e) {
+            console.error("Error al abrir IndexedDB:", e);
+            reject(e);
+        };
+    });
+}
+
+async function loadBitacoraFromStorage() {
+    try {
+        if (!db) await initLogDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['bitacora'], 'readonly');
+            const store = transaction.objectStore('bitacora');
+            const request = store.getAll();
+            
+            request.onsuccess = function(e) {
+                const data = e.target.result || [];
+                // Ordenar descendente para que lo más nuevo salga primero
+                data.sort((a, b) => b.id - a.id);
+                state.bitacoraList = data;
+                renderBitacoraList();
+                resolve();
+            };
+            request.onerror = reject;
+        });
+    } catch (err) {
+        console.error("Fallo al cargar bitácora de IndexedDB:", err);
     }
+}
+
+async function saveLogItemToDB(item) {
+    if (!db) await initLogDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['bitacora'], 'readwrite');
+        const store = transaction.objectStore('bitacora');
+        const request = store.put(item);
+        request.onsuccess = resolve;
+        request.onerror = reject;
+    });
 }
 
 function renderBitacoraList() {
@@ -40,11 +88,25 @@ function renderBitacoraList() {
     `).join('');
 }
 
-function deleteLogItem(id) {
-    state.bitacoraList = state.bitacoraList.filter(item => item.id !== id);
-    localStorage.setItem('vitrodiag_bitacora', JSON.stringify(state.bitacoraList));
-    renderBitacoraList();
-    showToast("Incidencia eliminada de la bitácora.", "info");
+async function deleteLogItem(id) {
+    try {
+        if (!db) await initLogDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(['bitacora'], 'readwrite');
+            const store = transaction.objectStore('bitacora');
+            const request = store.delete(id);
+            
+            request.onsuccess = function() {
+                state.bitacoraList = state.bitacoraList.filter(item => item.id !== id);
+                renderBitacoraList();
+                showToast("Incidencia eliminada de la bitácora.", "info");
+                resolve();
+            };
+            request.onerror = reject;
+        });
+    } catch (err) {
+        console.error("Error eliminando registro:", err);
+    }
 }
 
 function setupLogEventListeners() {
@@ -55,7 +117,7 @@ function setupLogEventListeners() {
     const logDefectSelect = document.getElementById('logDefectSelect');
 
     if (btnAddLog) {
-        btnAddLog.addEventListener('click', () => {
+        btnAddLog.addEventListener('click', async () => {
             const defectId = logDefectSelect.value;
             const defectObj = DEFECTOS_DB.find(d => d.id === defectId);
             
@@ -69,11 +131,15 @@ function setupLogEventListeners() {
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
-            state.bitacoraList.unshift(newItem); // Añadir al inicio
-            localStorage.setItem('vitrodiag_bitacora', JSON.stringify(state.bitacoraList));
-            renderBitacoraList();
-            
-            showToast(`Registrado en sección ${newItem.section} - Gota ${newItem.cavity}: ${newItem.defectName}`, 'success');
+            try {
+                await saveLogItemToDB(newItem);
+                state.bitacoraList.unshift(newItem); // Añadir al inicio visualmente
+                renderBitacoraList();
+                showToast(`Registrado en sección ${newItem.section} - Gota ${newItem.cavity}: ${newItem.defectName}`, 'success');
+            } catch (err) {
+                console.error("Error guardando en IndexedDB:", err);
+                showToast("Error al guardar la incidencia.", "danger");
+            }
         });
     }
 

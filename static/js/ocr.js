@@ -1,9 +1,22 @@
 import { state } from './state.js';
-import { showToast } from './ui.js';
+import { showToast, switchView } from './ui.js';
 import { validateBdfTiming } from './timing.js';
 import { startScannerCamera, stopScannerCamera } from './camera.js';
 
 // ─── Scanner OCR (Tesseract.js con pre-procesamiento de imagen optimizado) ────
+let tesseractWorker = null;
+let isWorkerReady = false;
+
+async function initTesseractWorker() {
+    if (tesseractWorker) return;
+    try {
+        tesseractWorker = await Tesseract.createWorker('eng');
+        isWorkerReady = true;
+        console.log("Tesseract Worker persistente inicializado con éxito.");
+    } catch (err) {
+        console.error("Fallo al inicializar Tesseract Worker:", err);
+    }
+}
 
 /**
  * Pre-procesar la imagen del panel BDF para mejorar la precisión del OCR.
@@ -132,20 +145,27 @@ async function runScannerOcr() {
         statusMsg.innerText = "Preprocesando imagen (contraste, binarización)...";
         const processedImage = await preprocessImageForOcr(state.scannerImageBase64);
 
+        if (!isWorkerReady || !tesseractWorker) {
+            statusMsg.innerText = "Inicializando motor OCR persistente...";
+            await initTesseractWorker();
+        }
+
         // Paso 2: OCR con idioma inglés (paneles BDF usan texto en inglés)
         statusMsg.innerText = "Digitalizando caracteres del panel...";
-        const ret = await Tesseract.recognize(processedImage, 'eng', {
+        await tesseractWorker.setParameters({
             tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.:° -/',
             tessedit_pageseg_mode: '6' // Bloque de texto uniforme
         });
+        const ret = await tesseractWorker.recognize(processedImage);
         const text = ret.data.text;
         console.log("OCR texto crudo extraído:", text);
 
         // Paso 3: Segundo intento solo con dígitos si el primero falló
-        const digitRet = await Tesseract.recognize(processedImage, 'eng', {
+        await tesseractWorker.setParameters({
             tessedit_char_whitelist: '0123456789.:° ',
             tessedit_pageseg_mode: '6'
         });
+        const digitRet = await tesseractWorker.recognize(processedImage);
         const digitText = digitRet.data.text;
         console.log("OCR solo dígitos extraído:", digitText);
 
@@ -538,7 +558,7 @@ function applyScannerValuesToCalculator() {
 
     validateBdfTiming();
 
-    window.switchView('sop');
+    switchView('sop');
 }
 
 function resetScannerReport() {
@@ -570,6 +590,9 @@ function setScannerSource(source) {
         manualArea.style.display = 'none';
 
         startScannerCamera();
+        
+        // Pre-calentar el worker mientras el usuario enfoca la cámara
+        if (!isWorkerReady) initTesseractWorker();
     } else if (source === 'file') {
         btnCam.classList.remove('active');
         btnFile.classList.add('active');

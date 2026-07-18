@@ -75,9 +75,11 @@ async function loadTensorFlowModel() {
             }
 
             try {
-                tfjsStatus.innerText = "Buscando modelo CNN en /static/model/model.json...";
+                const isGithubPages = window.location.hostname.includes('github.io') || window.location.pathname.includes('/vitrodiag');
+                const modelPath = isGithubPages ? 'model/model.json' : '/static/model/model.json';
+                tfjsStatus.innerText = `Buscando modelo CNN en ${modelPath}...`;
                 // Carga asíncrona del modelo guardado localmente en la PWA
-                state.tfModel = await tf.loadLayersModel('/static/model/model.json');
+                state.tfModel = await tf.loadLayersModel(modelPath);
                 await warmUpModel(state.tfModel);
                 tfjsStatus.innerText = "Motor IA: Red Neuronal CNN cargada offline";
                 tfjsStatus.style.color = "#10b981"; // Verde (Success)
@@ -92,13 +94,27 @@ function fallbackAlgorithmicDiagnosis() {
     tfjsStatus.innerText = "Motor IA: Analizando contorno de la silueta...";
     tfjsStatus.style.color = "#10b981";
     
-    const threshold = parseInt(document.getElementById('sliderTolerance').value);
-    if (state.lastProcessedBorders && state.lastProcessedBorders > (3000 - (threshold * 50))) {
+    let activePixels = 0;
+    if (state.lastProcessedBorders) {
+        // Contar la cantidad de píxeles que forman parte del contorno detectado
+        for (let i = 0; i < state.lastProcessedBorders.length; i++) {
+            if (state.lastProcessedBorders[i] > 128) activePixels++;
+        }
+    }
+    
+    // Obtener tolerancia
+    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 8;
+    const threshold = parseInt(sliderVal) || 8;
+    
+    // Umbral empírico: 3000 es la base ideal, reducimos tolerancia según el slider
+    const thresholdVal = Math.max(100, 3000 - (threshold * 100));
+
+    if (activePixels > thresholdVal) {
         document.getElementById('diagTitulo').innerText = "❌ Defecto Crítico (Algorítmico): Cuello Torcido";
         document.getElementById('diagGravedad').className = "status-alert status-danger";
         document.getElementById('diagGravedad').style.display = "inline-block";
         document.getElementById('diagGravedad').innerText = "Rechazo Inmediato";
-        document.getElementById('diagEstado').innerText = "La asimetría de contornos superó el umbral de tolerancia estructural (Opencv Canny/Sobel).";
+        document.getElementById('diagEstado').innerText = `Asimetría detectada: ${activePixels} puntos anómalos (Límite: ${thresholdVal}).`;
         document.getElementById('diagAcciones').innerHTML = `
             <li><strong>Motor IS:</strong> Revisar alineación de mecanismos de cuello.</li>
             <li><strong>Molde:</strong> Inspeccionar estado de los anillos de cuello.</li>
@@ -110,7 +126,7 @@ function fallbackAlgorithmicDiagnosis() {
         document.getElementById('diagGravedad').className = "status-alert status-success";
         document.getElementById('diagGravedad').style.display = "inline-block";
         document.getElementById('diagGravedad').innerText = "Aceptable";
-        document.getElementById('diagEstado').innerText = "El análisis algorítmico no detectó anomalías severas en la geometría actual.";
+        document.getElementById('diagEstado').innerText = `Análisis algorítmico superado: ${activePixels} puntos de desviación (Límite: ${thresholdVal}).`;
         document.getElementById('diagAcciones').innerHTML = `
             <li>El envase cumple con la simetría básica estructural.</li>
         `;

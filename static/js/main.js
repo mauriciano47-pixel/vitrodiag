@@ -15,7 +15,8 @@ import {
     toggleDefectCard, 
     setFilter, 
     filterDefects, 
-    switchView 
+    switchView,
+    setupSilhouetteToggleListener
 } from './ui.js';
 import { 
     startDiagnosticCamera, 
@@ -130,6 +131,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // 6. Configurar listeners de interfaz de IA y calibración visual que se perdieron en la refactorización
     setupCalibrationSliders();
     setupAiEventListeners();
+    setupSilhouetteToggleListener();
 
     // 7. Desregistrar Service Workers activos (para evitar caching y bloqueos)
     if ('serviceWorker' in navigator) {

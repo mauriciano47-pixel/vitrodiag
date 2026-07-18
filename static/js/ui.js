@@ -323,4 +323,28 @@ async function switchView(viewName) {
             }
         }
 
+export function setupSilhouetteToggleListener() {
+    const toggle = document.getElementById('silhouetteToggle');
+    const webcamVideo = document.getElementById('webcam');
+    const canvasOutput = document.getElementById('canvasOutput');
+    const calibrationPanel = document.getElementById('calibrationPanel');
+
+    if (toggle && webcamVideo && canvasOutput) {
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                canvasOutput.classList.remove('d-none');
+                webcamVideo.classList.add('d-none');
+                if (calibrationPanel) calibrationPanel.style.display = 'flex';
+                startProcessing();
+            } else {
+                canvasOutput.classList.add('d-none');
+                webcamVideo.classList.remove('d-none');
+                if (calibrationPanel) calibrationPanel.style.display = 'none';
+                stopProcessing();
+            }
+        });
+    }
+}
+
 export { showToast, initArticles, populateArticleSelects, applyActiveArticleParams, changeActiveArticle, openArticlesModal, closeArticlesModal, loadArticleInModal, saveActiveArticleForm, resetArticlesDefault, toggleDefectCard, setFilter, filterDefects, switchView };
+
