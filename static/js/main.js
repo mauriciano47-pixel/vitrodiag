@@ -50,6 +50,7 @@ import {
 import { 
     updateConfidenceThresholdDisplay, 
     loadCustomUploadedModel,
+    loadTensorFlowModel,
     setupAiEventListeners
 } from './ai.js';
 import { 
@@ -109,6 +110,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Inicializar listeners de módulos
     setupAiEventListeners();
+    loadTensorFlowModel();
     setupLogEventListeners();
     initSwabModule();
 
