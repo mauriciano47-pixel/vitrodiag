@@ -133,19 +133,35 @@ window.addEventListener('DOMContentLoaded', () => {
     setupCalibrationSliders();
     setupSilhouetteToggleListener();
 
-    // 7. Desregistrar Service Workers activos (para evitar caching y bloqueos)
+    // 7. Registrar Service Worker con Auto-Actualización Instantánea (Estrategia Network-First)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-            for (let r of registrations) {
-                r.unregister().then(() => {
-                    console.log("[PWA] Service Worker desregistrado con éxito.");
-                });
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            console.log("[PWA] Service Worker registrado correctamente.");
+            
+            // Comprobar si hay actualizaciones disponibles en el servidor
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (newWorker) {
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log("[PWA] Nueva versión detectada. Actualizando de inmediato...");
+                            newWorker.postMessage({ action: 'skipWaiting' });
+                        }
+                    });
+                }
+            });
+        }).catch(err => {
+            console.warn("[PWA] Error al registrar el Service Worker:", err);
+        });
+
+        // Recargar la página automáticamente cuando el nuevo Service Worker toma el control
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                console.log("[PWA] Nuevo controlador activo. Recargando interfaz...");
+                window.location.reload();
+                refreshing = true;
             }
         });
-        if (window.caches) {
-            caches.keys().then(keys => {
-                keys.forEach(key => caches.delete(key));
-            });
-        }
     }
 });
