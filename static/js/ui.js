@@ -4,7 +4,7 @@ import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopSc
 import { startProcessing, stopProcessing } from './vision.js';
 import { calculateSopMs } from './timing.js';
 
-const toggle = document.getElementById('silhouetteToggle');
+
 
 function showToast(message, type = 'info', duration = 3000) {
             const container = document.getElementById('toastContainer');
@@ -293,7 +293,8 @@ async function switchView(viewName) {
                     stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
                     await new Promise(resolve => setTimeout(resolve, 350)); // Delay para asegurar liberacion de hardware
                     await startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
-                    if (toggle.checked) startProcessing();
+                    const silhouetteToggle = document.getElementById('silhouetteToggle');
+                    if (silhouetteToggle && silhouetteToggle.checked) startProcessing();
                 } else if (viewName === 'scanner') {
                     stopProcessing(); 
                     stopDiagnosticCamera(); // Apagar cámara de diagnóstico al entrar a Escáner

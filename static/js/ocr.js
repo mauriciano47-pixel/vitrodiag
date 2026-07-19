@@ -9,12 +9,16 @@ let isWorkerReady = false;
 
 async function initTesseractWorker() {
     if (tesseractWorker) return;
+    if (typeof Tesseract === 'undefined') {
+        throw new Error("Librería Tesseract.js no está cargada. Verifica tu conexión de red.");
+    }
     try {
         tesseractWorker = await Tesseract.createWorker('eng');
         isWorkerReady = true;
         console.log("Tesseract Worker persistente inicializado con éxito.");
     } catch (err) {
         console.error("Fallo al inicializar Tesseract Worker:", err);
+        throw err;
     }
 }
 
@@ -150,6 +154,10 @@ async function runScannerOcr() {
             await initTesseractWorker();
         }
 
+        if (!tesseractWorker) {
+            throw new Error("Librería Tesseract.js no inicializada. Verifica tu conexión de red.");
+        }
+
         // Paso 2: OCR con idioma inglés (paneles BDF usan texto en inglés)
         statusMsg.innerText = "Digitalizando caracteres del panel...";
         await tesseractWorker.setParameters({
@@ -189,8 +197,12 @@ async function runScannerOcr() {
         if (runOcrBtn) runOcrBtn.removeAttribute('disabled');
 
         let errorMsg = "Error al digitalizar imagen. Intenta con mejor enfoque o luz.";
-        if (err.message && err.message.includes("Timeout")) {
-            errorMsg = "Tiempo de espera agotado. Verifica tu conexión de red para la primera carga de OCR o re-intenta.";
+        if (err.message) {
+            if (err.message.includes("Timeout")) {
+                errorMsg = "Tiempo de espera agotado. Verifica tu conexión de red para la primera carga de OCR o re-intenta.";
+            } else if (err.message.includes("Tesseract.js") || err.message.includes("no inicializada")) {
+                errorMsg = err.message;
+            }
         }
         showToast(errorMsg, "danger");
     }

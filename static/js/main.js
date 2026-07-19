@@ -1,4 +1,4 @@
-// Punto de Entrada y Coordinador Principal (VitroDiag v47)
+// Punto de Entrada y Coordinador Principal — Versión centralizada en VERSION.txt
 import { state } from './state.js';
 import { DEFECTOS_DB, renderDefectsList } from './db.js';
 import { 

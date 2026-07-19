@@ -1,5 +1,8 @@
 import { state } from './state.js';
 import { mostrarResultadoDefecto } from './geometry.js';
+import { showToast } from './ui.js';
+
+let consecutiveErrors = 0;
 
 // ⚠️ FIX #3: NO acceder al DOM en tiempo de módulo — puede ser null antes de DOMContentLoaded.
 // Todas las refs se inicializan de forma lazy en initDOMRefs().
@@ -457,10 +460,21 @@ function processFrame() {
                     ctx.stroke();
                 }
 
+                consecutiveErrors = 0; // Resetear contador al procesar correctamente un frame
                 state.animationFrameId = requestAnimationFrame(processFrame);
             } catch (err) {
-                // ⚠️ FIX #14: Limitar reintentos en error persistente para evitar loop infinito
-                console.error("Error en frame de vision nativa mejorada: ", err);
+                consecutiveErrors++;
+                console.error(`Error en frame de vision nativa mejorada [Consecutivo: ${consecutiveErrors}]: `, err);
+                
+                if (consecutiveErrors >= 10) {
+                    console.error("[Vision] Demasiados errores consecutivos. Deteniendo motor de visión por estabilidad.");
+                    showToast("El motor de visión se ha detenido debido a múltiples fallos de renderizado. Intente reactivar el contorno.", "danger");
+                    state.streamActive = false;
+                    state.animationFrameId = null;
+                    consecutiveErrors = 0;
+                    return;
+                }
+
                 // Solo continuar si el stream sigue activo y el canvas sigue disponible
                 if (state.streamActive && canvas && ctx) {
                     state.animationFrameId = requestAnimationFrame(processFrame);
