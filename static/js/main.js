@@ -130,9 +130,8 @@ window.addEventListener('DOMContentLoaded', () => {
     // 5. Encender la cámara de diagnóstico en vivo en la carga inicial (pestaña live activa por defecto)
     startDiagnosticCamera();
     
-    // 6. Configurar listeners de interfaz de IA y calibración visual que se perdieron en la refactorización
+    // 6. Configurar calibración visual y toggle de silueta
     setupCalibrationSliders();
-    setupAiEventListeners();
     setupSilhouetteToggleListener();
 
     // 7. Desregistrar Service Workers activos (para evitar caching y bloqueos)

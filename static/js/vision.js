@@ -1,16 +1,36 @@
 import { state } from './state.js';
 import { mostrarResultadoDefecto } from './geometry.js';
 
-const video = document.getElementById('webcam');
-const canvas = document.getElementById('canvasOutput');
-const ctx = canvas.getContext('2d', { willReadFrequently: true });
+// ⚠️ FIX #3: NO acceder al DOM en tiempo de módulo — puede ser null antes de DOMContentLoaded.
+// Todas las refs se inicializan de forma lazy en initDOMRefs().
+let video = null;
+let canvas = null;
+let ctx = null;
 const offscreenCanvas = document.createElement('canvas');
 const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
-const sliderContrast = document.getElementById('sliderContrast');
-const sliderBrightness = document.getElementById('sliderBrightness');
-const sliderCanny = document.getElementById('sliderCanny');
-const sliderTolerance = document.getElementById('sliderTolerance');
-const sliderTemplateScale = document.getElementById('sliderTemplateScale');
+let sliderContrast = null;
+let sliderBrightness = null;
+let sliderCanny = null;
+let sliderTolerance = null;
+let sliderTemplateScale = null;
+
+// Bandera para saber si las refs ya fueron inicializadas
+let _domRefsInit = false;
+
+function initDOMRefs() {
+    if (_domRefsInit) return true;
+    video = document.getElementById('webcam');
+    canvas = document.getElementById('canvasOutput');
+    if (!canvas) return false; // DOM aún no disponible
+    ctx = canvas.getContext('2d', { willReadFrequently: true });
+    sliderContrast = document.getElementById('sliderContrast');
+    sliderBrightness = document.getElementById('sliderBrightness');
+    sliderCanny = document.getElementById('sliderCanny');
+    sliderTolerance = document.getElementById('sliderTolerance');
+    sliderTemplateScale = document.getElementById('sliderTemplateScale');
+    _domRefsInit = true;
+    return true;
+}
 
 // Buffers reusables para evitar alojamiento de memoria por frame
 let grayBuffer = null;
@@ -34,6 +54,12 @@ function ensureBuffers(size) {
 }
 
 function startProcessing() {
+            // Inicializar refs DOM de forma lazy antes de procesar
+            if (!initDOMRefs()) {
+                console.warn('[Vision] DOM no disponible aún. Reintentando...');
+                setTimeout(startProcessing, 100);
+                return;
+            }
             state.streamActive = true;
             
             const initCanvasSize = () => {
@@ -433,8 +459,16 @@ function processFrame() {
 
                 state.animationFrameId = requestAnimationFrame(processFrame);
             } catch (err) {
+                // ⚠️ FIX #14: Limitar reintentos en error persistente para evitar loop infinito
                 console.error("Error en frame de vision nativa mejorada: ", err);
-                state.animationFrameId = requestAnimationFrame(processFrame);
+                // Solo continuar si el stream sigue activo y el canvas sigue disponible
+                if (state.streamActive && canvas && ctx) {
+                    state.animationFrameId = requestAnimationFrame(processFrame);
+                } else {
+                    console.warn('[Vision] Loop de frames detenido por error persistente.');
+                    state.streamActive = false;
+                    state.animationFrameId = null;
+                }
             }
         }
 

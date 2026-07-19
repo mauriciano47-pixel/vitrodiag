@@ -104,7 +104,4 @@ function stopScannerCamera() {
     }
 }
 
-window.startScannerCamera = startScannerCamera;
-window.stopScannerCamera = stopScannerCamera;
-
 export { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera };

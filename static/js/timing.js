@@ -203,29 +203,6 @@ function validateBdfTiming() {
             updateGanttBar(barFinalBlow, labelFinalBlow, blowOn, blowOff, '#eab308');
         }
 
-function getDegDiff(start, end) {
-                if (end >= start) return end - start;
-                return (360 - start) + end;
-            }
-
-function updateGanttBar(bar, label, start, end, color) {
-                if (!bar || !label) return;
-                let leftPercent = (start / 360) * 100;
-                let widthPercent = 0;
-                if (end >= start) {
-                    widthPercent = ((end - start) / 360) * 100;
-                    bar.style.left = `${leftPercent}%`;
-                    bar.style.width = `${widthPercent}%`;
-                    bar.style.background = color;
-                } else {
-                    widthPercent = (((360 - start) + end) / 360) * 100;
-                    bar.style.left = `${leftPercent}%`;
-                    bar.style.width = `${widthPercent}%`;
-                    bar.style.background = `linear-gradient(to right, ${color}, rgba(255,255,255,0.15))`;
-                }
-                label.innerText = `${start.toFixed(0)}°-${end.toFixed(0)}°`;
-            }
-
 function populateDefectSelector() {
             const selector = document.getElementById('defectSelector');
             if (!selector) return;
@@ -255,4 +232,5 @@ function populateDefectSelector() {
             selector.innerHTML = html;
         }
 
-export { calculateSopMs, validateBdfTiming, getDegDiff, updateGanttBar, populateDefectSelector };
+export { calculateSopMs, validateBdfTiming, populateDefectSelector };
+

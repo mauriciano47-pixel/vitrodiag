@@ -2,6 +2,7 @@ import { state } from './state.js';
 import { ARTICULOS_DEFAULT, DEFECTOS_DB, renderDefectsList, generateDefectIllustration } from './db.js';
 import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera } from './camera.js';
 import { startProcessing, stopProcessing } from './vision.js';
+import { calculateSopMs } from './timing.js';
 
 const toggle = document.getElementById('silhouetteToggle');
 

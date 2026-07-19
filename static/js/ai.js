@@ -2,8 +2,9 @@ import { state } from './state.js';
 import { showToast } from './ui.js';
 import { processFrame } from './vision.js';
 
+// ⚠️ FIX #4: Referencias DOM obtenidas de forma lazy dentro de las funciones
+// para evitar crash cuando el módulo se importa antes de DOMContentLoaded.
 const tfjsStatus = document.getElementById('tfjsStatus');
-const toggle = document.getElementById('silhouetteToggle');
 const btn = document.getElementById('btnDiagnosticar');
 const btnReanudar = document.getElementById('btnReanudarCamara');
 const card = document.getElementById('resultadoCard');
@@ -192,9 +193,12 @@ function fallbackAlgorithmicDiagnosis() {
 
 
 function setupAiEventListeners() {
+    // ⚠️ FIX #4: toggle resuelto aquí — el DOM está garantizado por DOMContentLoaded
+    const toggle = document.getElementById('silhouetteToggle');
+
     if(btn) {
         btn.addEventListener('click', () => {
-            if (!toggle.checked) {
+            if (!toggle || !toggle.checked) {
                 showToast("Por favor, activa el 'Modo Contorno / Silueta' para congelar y diagnosticar el envase.", "warning");
                 return;
             }
