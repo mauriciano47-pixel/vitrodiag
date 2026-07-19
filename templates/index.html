@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag v57 - Operador IS</title>
+    <title>VitroDiag v1.0.48 - Operador IS</title>
     <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" defer></script>
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
@@ -195,6 +195,25 @@
             overflow: hidden;
             border: 1px solid var(--border-color);
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .scan-laser {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--primary), transparent);
+            box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+            z-index: 10;
+            animation: scanLaser 2.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanLaser {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
         }
 
         video, canvas {
@@ -1442,7 +1461,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span class="version-badge">v57</span></h1>
+        <h1>VitroDiag <span class="version-badge">v1.0.48</span></h1>
         <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
     </header>
 
@@ -1562,6 +1581,7 @@
                 <div class="guide-neck"></div>
                 <div class="guide-body"></div>
             </div>
+            <div class="scan-laser"></div>
         </div>
 
         <div class="toggle-container">
@@ -1571,13 +1591,23 @@
                 <span class="slider round"></span>
             </label>
         </div>
-
         <div class="toggle-container toggle-extra">
             <span class="toggle-label">Optimizar para Pantalla de Luz (Backlight)</span>
             <label class="switch">
                 <input type="checkbox" id="backlightToggle" title="Optimizar para pantalla de luz" aria-label="Optimizar para pantalla de luz">
                 <span class="slider round"></span>
             </label>
+        </div>
+
+        <div class="diagnostic-card" id="resultadoCard">
+            <div class="card-title" id="diagTitulo">Analizando...</div>
+            <div class="diag-status-row">
+                <span id="diagGravedad" class="status-alert"></span>
+            </div>
+            <div id="diagEstado" class="diag-state"></div>
+            
+            <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
+            <ol class="actions-list" id="diagAcciones"></ol>
         </div>
 
         <!-- PANEL DE CALIBRACIÓN ÓPTICA PARA LA PLANTA -->
@@ -1688,17 +1718,6 @@
                     <input type="range" id="confidenceThreshold" min="50" max="95" value="75" title="Umbral de confianza" aria-label="Umbral de confianza de detección" oninput="updateConfidenceThresholdDisplay(this.value)" class="ia-threshold-slider">
                 </div>
             </div>
-        </div>
-
-        <div class="diagnostic-card" id="resultadoCard">
-            <div class="card-title" id="diagTitulo">Analizando...</div>
-            <div class="diag-status-row">
-                <span id="diagGravedad" class="status-alert"></span>
-            </div>
-            <div id="diagEstado" class="diag-state"></div>
-            
-            <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
-            <ol class="actions-list" id="diagAcciones"></ol>
         </div>
     </div>
 

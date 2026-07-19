@@ -1,4 +1,4 @@
-# VitroDiag v1.0.47
+# VitroDiag v1.0.48
 
 **Muestreo Rápido NNPB para Operador**
 
@@ -15,7 +15,7 @@ VitroDiag es una aplicación web para análisis de botellas de vidrio en tiempo 
 1. Abre la app en tu celular desde: https://mauriciano47-pixel.github.io/vitrodiag/
 2. Permite acceso a la cámara
 3. Alinea el envase según las guías
-4. Haz clic en "DIAGNOSTICAR ENVASE"
+4. El diagnóstico se ejecutará automáticamente en tiempo real sin requerir clicks.
 
 ## Defectos detectados
 - 🚨 REBABA EN LA BOCA (OVERPRESSED)
