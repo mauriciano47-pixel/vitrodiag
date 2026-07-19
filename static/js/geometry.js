@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { showToast } from './ui.js';
+
 
 function mostrarResultadoDefecto(defect) {
             document.getElementById('diagTitulo').innerText = `🚨 ${defect.nombre.toUpperCase()}`;
