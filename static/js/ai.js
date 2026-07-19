@@ -113,8 +113,8 @@ async function loadTensorFlowModel() {
 function fallbackAlgorithmicDiagnosis() {
     const tfjsStatus = getTfjsStatus();
     if (tfjsStatus) {
-        tfjsStatus.innerText = "Motor OpenCV: Analizando contorno de la silueta...";
-        tfjsStatus.style.color = "#10b981";
+        tfjsStatus.innerText = "Motor OpenCV: Analizando eje geométrico del cuello...";
+        tfjsStatus.style.color = "#06b6d4";
     }
     
     const borders = state.lastProcessedBorders;
@@ -143,23 +143,176 @@ function fallbackAlgorithmicDiagnosis() {
         return;
     }
 
+    // Algoritmo de Eje de Simetría por Capas Horizontales (Seguimiento de Centroide Relativo)
+    // 1. Analizar filas del cuerpo (zona inferior: 60% a 85% de altura) para establecer el eje de referencia
+    const bodyCenters = [];
+    const bodyWidths = [];
+    const startBodyY = Math.floor(height * 0.60);
+    const endBodyY = Math.floor(height * 0.85);
+
+    for (let y = startBodyY; y < endBodyY; y += 4) { // Saltos de 4px para velocidad
+        let leftX = -1;
+        let rightX = -1;
+
+        // Buscar borde izquierdo (hacia la derecha)
+        for (let x = 0; x < width; x++) {
+            if (borders[y * width + x] > 128) {
+                leftX = x;
+                break;
+            }
+        }
+
+        // Buscar borde derecho (hacia la izquierda)
+        for (let x = width - 1; x >= 0; x--) {
+            if (borders[y * width + x] > 128) {
+                rightX = x;
+                break;
+            }
+        }
+
+        // Si se encontraron ambos contornos de la botella y el ancho es coherente (> 15% del frame)
+        if (leftX !== -1 && rightX !== -1 && (rightX - leftX) > (width * 0.15)) {
+            bodyCenters.push((leftX + rightX) / 2);
+            bodyWidths.push(rightX - leftX);
+        }
+    }
+
+    // Si no logramos definir el cuerpo de la botella, alertar
+    if (bodyCenters.length < 5) {
+        if (diagTitulo) diagTitulo.innerText = "⚠️ DETECCIÓN INESTABLE";
+        if (diagGravedad) {
+            diagGravedad.className = "status-alert status-danger";
+            diagGravedad.style.display = "inline-block";
+            diagGravedad.innerText = "Alineando";
+        }
+        if (diagEstado) diagEstado.innerText = "Asegúrese de que la botella esté bien contrastada respecto al fondo. Detectando bordes insuficientes.";
+        if (diagAcciones) {
+            diagAcciones.innerHTML = `
+                <li>Prueba activar el 'Modo Contorno / Silueta' para verificar qué bordes ve la cámara.</li>
+                <li>Asegúrese de evitar reflejos brillantes detrás de la botella.</li>
+            `;
+        }
+        return;
+    }
+
+    // Promedio del eje central del cuerpo y ancho promedio
+    const avgBodyCenter = bodyCenters.reduce((sum, val) => sum + val, 0) / bodyCenters.length;
+    const avgBodyWidth = bodyWidths.reduce((sum, val) => sum + val, 0) / bodyWidths.length;
+
+    // 2. Analizar filas de la zona del cuello (zona superior: 15% a 50% de altura)
+    const neckDeviations = [];
+    const startNeckY = Math.floor(height * 0.15);
+    const endNeckY = Math.floor(height * 0.50);
+    let validNeckLayers = 0;
+
+    for (let y = startNeckY; y < endNeckY; y += 4) {
+        let leftX = -1;
+        let rightX = -1;
+
+        for (let x = 0; x < width; x++) {
+            if (borders[y * width + x] > 128) {
+                leftX = x;
+                break;
+            }
+        }
+
+        for (let x = width - 1; x >= 0; x--) {
+            if (borders[y * width + x] > 128) {
+                rightX = x;
+                break;
+            }
+        }
+
+        // Para el cuello, el ancho debe ser menor que en el cuerpo pero mayor a 5% del frame
+        if (leftX !== -1 && rightX !== -1 && (rightX - leftX) > (width * 0.05)) {
+            const neckCenter = (leftX + rightX) / 2;
+            const deviation = Math.abs(neckCenter - avgBodyCenter);
+            neckDeviations.push(deviation);
+            validNeckLayers++;
+        }
+    }
+
+    // Si no logramos definir el cuello, advertir o caer en fallback
+    if (validNeckLayers < 3) {
+        runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter);
+        return;
+    }
+
+    // Encontrar la desviación máxima del cuello respecto al eje del cuerpo
+    const maxDeviation = Math.max(...neckDeviations);
+    
+    // Asimetría porcentual real = (Desviación máxima / Ancho de la base) * 100
+    const percentDeviation = (maxDeviation / avgBodyWidth) * 100;
+
+    // Leer el slider de tolerancia (2% - 15%)
+    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 8;
+    const toleranceLimit = parseInt(sliderVal) || 8;
+
+    console.log(`[Eje Simetría] Desviación Máxima: ${maxDeviation.toFixed(1)}px | Ancho Cuerpo: ${avgBodyWidth.toFixed(1)}px | Eje Cuerpo: ${avgBodyCenter.toFixed(1)} | Desvío Porcentual: ${percentDeviation.toFixed(2)}% | Límite Tolerancia: ${toleranceLimit}%`);
+
+    if (percentDeviation > toleranceLimit) {
+        // Cuello torcido confirmado
+        if (diagTitulo) diagTitulo.innerText = "❌ Defecto Crítico: Cuello Torcido / Deformado";
+        if (diagGravedad) {
+            diagGravedad.className = "status-alert status-danger";
+            diagGravedad.style.display = "inline-block";
+            diagGravedad.innerText = "Rechazo Inmediato";
+        }
+        if (diagEstado) diagEstado.innerText = `Desviación del eje del cuello detectada: ${percentDeviation.toFixed(1)}% (Tolerancia máxima permitida: ${toleranceLimit}%).`;
+        if (diagAcciones) {
+            diagAcciones.innerHTML = `
+                <li><strong>Mecanismo IS:</strong> Ajustar alineación de la pinza de transferencia y brazo de soplado.</li>
+                <li><strong>Moldería:</strong> Inspeccionar corona y encaje del anillo de cuello.</li>
+                <li><strong>Proceso:</strong> Revisar distribución de vidrio en el parison y enfriamiento del macho.</li>
+            `;
+        }
+        if (tfjsStatus) {
+            tfjsStatus.innerText = `Motor OpenCV: Cuello Desviado (${percentDeviation.toFixed(1)}% / Límite ${toleranceLimit}%)`;
+            tfjsStatus.style.color = "#ef4444";
+        }
+    } else {
+        // Aceptable
+        if (diagTitulo) diagTitulo.innerText = "✅ Silueta dentro de tolerancias";
+        if (diagGravedad) {
+            diagGravedad.className = "status-alert status-success";
+            diagGravedad.style.display = "inline-block";
+            diagGravedad.innerText = "Aceptable";
+        }
+        if (diagEstado) diagEstado.innerText = `Simetría dentro de los parámetros: ${percentDeviation.toFixed(1)}% de desvío (Límite: ${toleranceLimit}%).`;
+        if (diagAcciones) {
+            diagAcciones.innerHTML = `
+                <li>El envase cumple con los parámetros geométricos del artículo.</li>
+                <li>Mantener velocidad nominal de producción.</li>
+            `;
+        }
+        if (tfjsStatus) {
+            tfjsStatus.innerText = `Motor OpenCV: Envase Aceptable (Desvío: ${percentDeviation.toFixed(1)}%)`;
+            tfjsStatus.style.color = "#10b981";
+        }
+    }
+}
+
+function runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter) {
+    const tfjsStatus = getTfjsStatus();
+    const diagTitulo = document.getElementById('diagTitulo');
+    const diagGravedad = document.getElementById('diagGravedad');
+    const diagEstado = document.getElementById('diagEstado');
+    const diagAcciones = document.getElementById('diagAcciones');
+    
     let leftCount = 0;
     let rightCount = 0;
     let totalPixels = 0;
 
-    // Escanear la región de interés central (20% a 80% de altura, 10% a 90% de ancho)
-    const startY = Math.floor(height * 0.2);
-    const endY = Math.floor(height * 0.8);
-    const startX = Math.floor(width * 0.1);
-    const endX = Math.floor(width * 0.9);
-    const midX = Math.floor(width / 2);
+    const startY = Math.floor(height * 0.25);
+    const endY = Math.floor(height * 0.75);
+    const startX = Math.floor(width * 0.15);
+    const endX = Math.floor(width * 0.85);
 
     for (let y = startY; y < endY; y++) {
         for (let x = startX; x < endX; x++) {
-            const pixelVal = borders[y * width + x];
-            if (pixelVal > 128) {
+            if (borders[y * width + x] > 128) {
                 totalPixels++;
-                if (x < midX) {
+                if (x < avgBodyCenter) {
                     leftCount++;
                 } else {
                     rightCount++;
@@ -168,75 +321,36 @@ function fallbackAlgorithmicDiagnosis() {
         }
     }
 
-    // Si detectamos menos de 100 píxeles de bordes, no es una silueta válida
-    if (totalPixels < 100) {
-        if (diagTitulo) diagTitulo.innerText = "⚠️ SILUETA NO DETECTADA";
-        if (diagGravedad) {
-            diagGravedad.className = "status-alert status-danger";
-            diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = "Inconcluso";
-        }
-        if (diagEstado) diagEstado.innerText = "El sistema detecta una cantidad de bordes demasiado baja (" + totalPixels + ") para comparación.";
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `
-                <li>Intenta incrementar el 'Filtro de Contraste' o ajustar el 'Umbral Canny'.</li>
-                <li>Verificar que haya suficiente contraste detrás de la botella.</li>
-            `;
-        }
-        return;
-    }
-
-    // Medimos la asimetría horizontal (desvío porcentual)
     const pixelDiff = Math.abs(leftCount - rightCount) / (totalPixels || 1);
-    
-    // Obtener la tolerancia recomendada (porcentaje de desvío aceptable)
     const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 8;
-    const tolerancePercent = (parseInt(sliderVal) || 8) / 100; // Ej: 8% (0.08)
-
-    console.log(`[OpenCV] Izquierda: ${leftCount} | Derecha: ${rightCount} | Total: ${totalPixels} | Asimetría: ${(pixelDiff * 100).toFixed(2)}% | Tolerancia: ${(tolerancePercent * 100).toFixed(1)}%`);
+    const tolerancePercent = (parseInt(sliderVal) || 8) / 100;
 
     if (pixelDiff > tolerancePercent) {
-        // Asimetría superior a la tolerancia: Defecto detectado
-        if (diagTitulo) diagTitulo.innerText = "❌ Defecto Crítico (Algorítmico): Cuello Torcido / Deformado";
+        if (diagTitulo) diagTitulo.innerText = "❌ Defecto Crítico (Algorítmico): Cuello Torcido";
         if (diagGravedad) {
             diagGravedad.className = "status-alert status-danger";
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Rechazo Inmediato";
         }
-        if (diagEstado) diagEstado.innerText = `Asimetría geométrica detectada: ${(pixelDiff * 100).toFixed(1)}% (Tolerancia máxima permitida: ${(tolerancePercent * 100).toFixed(1)}%).`;
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `
-                <li><strong>Mecanismo IS:</strong> Ajustar alineación de la pinza de transferencia y brazo de soplado.</li>
-                <li><strong>Moldería:</strong> Inspeccionar corona y encaje del anillo de cuello.</li>
-                <li><strong>Proceso:</strong> Revisar distribución de vidrio en el parison.</li>
-            `;
-        }
+        if (diagEstado) diagEstado.innerText = `Asimetría geométrica por densidad: ${(pixelDiff * 100).toFixed(1)}% (Límite: ${(tolerancePercent * 100).toFixed(1)}%).`;
         if (tfjsStatus) {
-            tfjsStatus.innerText = `Motor de Visión: Defecto detectado (Desvío: ${(pixelDiff * 100).toFixed(1)}%)`;
+            tfjsStatus.innerText = `Motor OpenCV: Defecto detectado (Desvío: ${(pixelDiff * 100).toFixed(1)}%)`;
             tfjsStatus.style.color = "#ef4444";
         }
     } else {
-        // Simétrico: Botella conforme
         if (diagTitulo) diagTitulo.innerText = "✅ Silueta dentro de tolerancias";
         if (diagGravedad) {
             diagGravedad.className = "status-alert status-success";
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Aceptable";
         }
-        if (diagEstado) diagEstado.innerText = `Simetría dentro de los parámetros: ${(pixelDiff * 100).toFixed(1)}% de desvío (Límite: ${(tolerancePercent * 100).toFixed(1)}%).`;
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `
-                <li>El envase cumple con los parámetros básicos de simetría estructural.</li>
-                <li>Mantener velocidad nominal de producción.</li>
-            `;
-        }
+        if (diagEstado) diagEstado.innerText = `Simetría dentro de tolerancias por densidad: ${(pixelDiff * 100).toFixed(1)}% (Límite: ${(tolerancePercent * 100).toFixed(1)}%).`;
         if (tfjsStatus) {
-            tfjsStatus.innerText = `Motor de Visión: Envase Aceptable (Desvío: ${(pixelDiff * 100).toFixed(1)}%)`;
+            tfjsStatus.innerText = `Motor OpenCV: Envase Aceptable (Desvío: ${(pixelDiff * 100).toFixed(1)}%)`;
             tfjsStatus.style.color = "#10b981";
         }
     }
 }
-
 
 export function runLiveDiagnosis() {
     const canvas = getCanvas();
