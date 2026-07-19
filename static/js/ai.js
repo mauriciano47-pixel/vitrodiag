@@ -238,133 +238,89 @@ function fallbackAlgorithmicDiagnosis() {
 }
 
 
-function setupAiEventListeners() {
-    const toggle = document.getElementById('silhouetteToggle');
-    const btn = getBtnDiagnosticar();
-    const btnReanudar = getBtnReanudar();
-    const card = getCard();
+export function runLiveDiagnosis() {
     const canvas = getCanvas();
     const tfjsStatus = getTfjsStatus();
-
     const diagTitulo = document.getElementById('diagTitulo');
     const diagGravedad = document.getElementById('diagGravedad');
     const diagEstado = document.getElementById('diagEstado');
     const diagAcciones = document.getElementById('diagAcciones');
 
-    if(btn) {
-        btn.addEventListener('click', () => {
-            if (!toggle || !toggle.checked) {
-                showToast("Por favor, activa el 'Modo Contorno / Silueta' para congelar y diagnosticar el envase.", "warning");
-                return;
-            }
-
-            if (!state.lastProcessedBorders) {
-                showToast("Esperando a que la cámara detecte los bordes del envase...", "warning");
-                return;
-            }
-
-            // 1. Congelar el frame actual
-            state.streamActive = false; // Detiene la animación de processFrame
-
-            // 2. Alternar visibilidad de botones
-            btn.style.display = 'none';
-            if (btnReanudar) btnReanudar.style.display = 'block';
-
-            // 3. Mostrar tarjeta en análisis
-            if (card) card.style.display = 'block';
-            if (diagTitulo) diagTitulo.innerText = "🤖 VitroDiag: Analizando Silueta...";
-            if (diagGravedad) {
-                diagGravedad.className = "status-alert";
-                diagGravedad.style.display = "none";
-            }
-            if (diagEstado) diagEstado.innerText = "Analizando distribución de bordes y asimetría de la botella congelada...";
-            if (diagAcciones) diagAcciones.innerHTML = "<li>Procesando algoritmos de visión...</li>";
-            
-            if (typeof tf !== 'undefined') {
-                console.log("TensorFlow.js activo. Tensores iniciales en GPU:", tf.memory().numTensors);
-                if (state.tfModel && canvas) {
-                    if (tfjsStatus) {
-                        tfjsStatus.innerText = "Motor IA: Ejecutando predicción en GPU (WebGL)...";
-                    }
-                    try {
-                        const inputTensor = tf.tidy(() => {
-                            const img = tf.browser.fromPixels(canvas);
-                            const resized = tf.image.resizeBilinear(img, [224, 224]);
-                            const normalized = resized.div(255.0);
-                            return normalized.expandDims(0);
-                        });
-
-                        const prediction = state.tfModel.predict(inputTensor);
-                        const data = prediction.dataSync();
-                        const prob = data[0];
-                        console.log(`[TF.JS] Confianza de Defecto: ${(prob*100).toFixed(2)}%`);
-                        
-                        inputTensor.dispose();
-                        prediction.dispose();
-
-                        const confThreshold = state.confidenceThreshold / 100;
-
-                        if (prob > confThreshold) {
-                            if (tfjsStatus) {
-                                tfjsStatus.innerText = `⚠️ Motor IA: Defecto Confirmado (Confianza ${(prob*100).toFixed(1)}%)`;
-                                tfjsStatus.style.color = "#ef4444";
-                            }
-                            
-                            if (diagTitulo) diagTitulo.innerText = "❌ Defecto Crítico: Cuello Torcido";
-                            if (diagGravedad) {
-                                diagGravedad.className = "status-alert status-danger";
-                                diagGravedad.style.display = "inline-block";
-                                diagGravedad.innerText = "Rechazo Inmediato";
-                            }
-                            if (diagEstado) diagEstado.innerText = "El motor de visión artificial ha detectado una asimetría estructural grave.";
-                            if (diagAcciones) {
-                                diagAcciones.innerHTML = `
-                                    <li><strong>Motor IS:</strong> Revisar alineación de mecanismos de cuello.</li>
-                                    <li><strong>Molde:</strong> Inspeccionar estado de los anillos de cuello.</li>
-                                    <li><strong>Preforma:</strong> Verificar distribución de masa en zona superior.</li>
-                                `;
-                            }
-                        } else {
-                            if (tfjsStatus) {
-                                tfjsStatus.innerText = `✅ Motor IA: Silueta Normal (Confianza ${(prob*100).toFixed(1)}%)`;
-                                tfjsStatus.style.color = "#10b981";
-                            }
-                            
-                            if (diagTitulo) diagTitulo.innerText = "✅ Silueta dentro de tolerancias";
-                            if (diagGravedad) {
-                                diagGravedad.className = "status-alert status-success";
-                                diagGravedad.style.display = "inline-block";
-                                diagGravedad.innerText = "Aceptable";
-                            }
-                            if (diagEstado) diagEstado.innerText = "El modelo no ha detectado malformaciones críticas.";
-                            if (diagAcciones) {
-                                diagAcciones.innerHTML = `
-                                    <li>El envase cumple con la simetría básica estructural.</li>
-                                `;
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Error en inferencia TFJS:", e);
-                        if (tfjsStatus) tfjsStatus.innerText = "Error: Fallo durante inferencia neuronal";
-                    }
-                } else {
-                    fallbackAlgorithmicDiagnosis();
-                }
-            } else {
-                fallbackAlgorithmicDiagnosis();
-            }
-        });
+    if (!state.lastProcessedBorders) {
+        if (diagTitulo) diagTitulo.innerText = "📷 Alineando Botella...";
+        if (diagGravedad) {
+            diagGravedad.style.display = "none";
+        }
+        if (diagEstado) diagEstado.innerText = "Esperando que el envase se alinee con las guías de la cámara.";
+        if (diagAcciones) diagAcciones.innerHTML = "<li>Alinea el cuello y cuerpo de la botella dentro de las guías verdes de alineación.</li>";
+        return;
     }
 
-    if(btnReanudar) {
-        btnReanudar.addEventListener('click', () => {
-            if (btn) btn.style.display = 'block';
-            btnReanudar.style.display = 'none';
-            if (card) card.style.display = 'none';
-            state.streamActive = true;
-            processFrame(); // Reanuda la captura continua de frames
-        });
+    // Ejecutar diagnóstico en caliente
+    if (typeof tf !== 'undefined' && state.tfModel && canvas) {
+        try {
+            const inputTensor = tf.tidy(() => {
+                const img = tf.browser.fromPixels(canvas);
+                const resized = tf.image.resizeBilinear(img, [224, 224]);
+                const normalized = resized.div(255.0);
+                return normalized.expandDims(0);
+            });
+
+            const prediction = state.tfModel.predict(inputTensor);
+            const data = prediction.dataSync();
+            const prob = data[0];
+            
+            inputTensor.dispose();
+            prediction.dispose();
+
+            const confThreshold = state.confidenceThreshold / 100;
+
+            if (prob > confThreshold) {
+                if (tfjsStatus) {
+                    tfjsStatus.innerText = `⚠️ Motor IA: Defecto Confirmado (Confianza ${(prob*100).toFixed(1)}%)`;
+                    tfjsStatus.style.color = "#ef4444";
+                }
+                
+                if (diagTitulo) diagTitulo.innerText = "❌ Defecto Crítico: Cuello Torcido";
+                if (diagGravedad) {
+                    diagGravedad.className = "status-alert status-danger";
+                    diagGravedad.style.display = "inline-block";
+                    diagGravedad.innerText = "Rechazo Inmediato";
+                }
+                if (diagEstado) diagEstado.innerText = "El motor de visión artificial ha detectado una asimetría estructural grave.";
+                if (diagAcciones) {
+                    diagAcciones.innerHTML = `
+                        <li><strong>Motor IS:</strong> Revisar alineación de mecanismos de cuello.</li>
+                        <li><strong>Molde:</strong> Inspeccionar estado de los anillos de cuello.</li>
+                        <li><strong>Preforma:</strong> Verificar distribución de masa en zona superior.</li>
+                    `;
+                }
+            } else {
+                if (tfjsStatus) {
+                    tfjsStatus.innerText = `✅ Motor IA: Silueta Normal (Confianza ${(prob*100).toFixed(1)}%)`;
+                    tfjsStatus.style.color = "#10b981";
+                }
+                
+                if (diagTitulo) diagTitulo.innerText = "✅ Silueta dentro de tolerancias";
+                if (diagGravedad) {
+                    diagGravedad.className = "status-alert status-success";
+                    diagGravedad.style.display = "inline-block";
+                    diagGravedad.innerText = "Aceptable";
+                }
+                if (diagEstado) diagEstado.innerText = "El modelo no ha detectado malformaciones críticas.";
+                if (diagAcciones) {
+                    diagAcciones.innerHTML = `
+                        <li>El envase cumple con la simetría básica estructural.</li>
+                    `;
+                }
+            }
+        } catch (e) {
+            console.error("Error en inferencia TFJS en tiempo real:", e);
+            fallbackAlgorithmicDiagnosis();
+        }
+    } else {
+        fallbackAlgorithmicDiagnosis();
     }
 }
 
-export { updateConfidenceThresholdDisplay, loadCustomUploadedModel, loadTensorFlowModel, setupAiEventListeners };
+export { updateConfidenceThresholdDisplay, loadCustomUploadedModel, loadTensorFlowModel };

@@ -50,8 +50,7 @@ import {
 import { 
     updateConfidenceThresholdDisplay, 
     loadCustomUploadedModel,
-    loadTensorFlowModel,
-    setupAiEventListeners
+    loadTensorFlowModel
 } from './ai.js';
 import { 
     populateLogDefectSelect, 
@@ -109,7 +108,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // Inicializar listeners de módulos
-    setupAiEventListeners();
     loadTensorFlowModel();
     setupLogEventListeners();
     initSwabModule();
@@ -129,6 +127,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // 5. Encender la cámara de diagnóstico en vivo en la carga inicial (pestaña live activa por defecto)
     startDiagnosticCamera();
+    startProcessing(); // Iniciar procesamiento de visión para auto-diagnóstico continuo
     
     // 6. Configurar calibración visual y toggle de silueta
     setupCalibrationSliders();

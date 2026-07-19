@@ -1,8 +1,10 @@
 import { state } from './state.js';
 import { mostrarResultadoDefecto } from './geometry.js';
 import { showToast } from './ui.js';
+import { runLiveDiagnosis } from './ai.js';
 
 let consecutiveErrors = 0;
+let frameCounter = 0;
 
 // ⚠️ FIX #3: NO acceder al DOM en tiempo de módulo — puede ser null antes de DOMContentLoaded.
 // Todas las refs se inicializan de forma lazy en initDOMRefs().
@@ -458,6 +460,15 @@ function processFrame() {
                     ctx.moveTo(midX, 0);
                     ctx.lineTo(midX, h);
                     ctx.stroke();
+                }
+
+                frameCounter++;
+                if (frameCounter % 8 === 0) {
+                    try {
+                        runLiveDiagnosis();
+                    } catch (diagErr) {
+                        console.error("Error al ejecutar diagnóstico en tiempo real:", diagErr);
+                    }
                 }
 
                 consecutiveErrors = 0; // Resetear contador al procesar correctamente un frame

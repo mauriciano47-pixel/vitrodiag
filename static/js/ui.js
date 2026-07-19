@@ -293,8 +293,7 @@ async function switchView(viewName) {
                     stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
                     await new Promise(resolve => setTimeout(resolve, 350)); // Delay para asegurar liberacion de hardware
                     await startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
-                    const silhouetteToggle = document.getElementById('silhouetteToggle');
-                    if (silhouetteToggle && silhouetteToggle.checked) startProcessing();
+                    startProcessing(); // Iniciar procesamiento de visión para auto-diagnóstico continuo
                 } else if (viewName === 'scanner') {
                     stopProcessing(); 
                     stopDiagnosticCamera(); // Apagar cámara de diagnóstico al entrar a Escáner
@@ -337,12 +336,10 @@ export function setupSilhouetteToggleListener() {
                 canvasOutput.classList.remove('d-none');
                 webcamVideo.classList.add('d-none');
                 if (calibrationPanel) calibrationPanel.style.display = 'flex';
-                startProcessing();
             } else {
                 canvasOutput.classList.add('d-none');
                 webcamVideo.classList.remove('d-none');
                 if (calibrationPanel) calibrationPanel.style.display = 'none';
-                stopProcessing();
             }
         });
     }
