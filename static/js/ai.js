@@ -110,10 +110,69 @@ async function loadTensorFlowModel() {
             }
         }
 
+let lastDiagStatus = 'alineando'; // Estado de diagnóstico anterior: 'alineando', 'aceptable', 'rechazo'
+
+function playBeep(type) {
+    if (typeof AudioContext === 'undefined' && typeof webkitAudioContext === 'undefined') return;
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'success') {
+            // Tono corto y agudo (Aceptable)
+            osc.frequency.setValueAtTime(900, ctx.currentTime);
+            gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.15);
+        } else if (type === 'danger') {
+            // Tono doble de advertencia (Rechazo)
+            osc.frequency.setValueAtTime(500, ctx.currentTime);
+            gain.gain.setValueAtTime(0.35, ctx.currentTime);
+            osc.start(ctx.currentTime);
+            
+            setTimeout(() => {
+                try {
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.frequency.setValueAtTime(700, ctx.currentTime);
+                    gain2.gain.setValueAtTime(0.35, ctx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                    osc2.start(ctx.currentTime);
+                    osc2.stop(ctx.currentTime + 0.25);
+                } catch(e){}
+            }, 120);
+
+            osc.stop(ctx.currentTime + 0.1);
+        }
+    } catch (e) {
+        console.warn("Fallo al reproducir audio web:", e);
+    }
+}
+
+function triggerVibration(type) {
+    if ('vibrate' in navigator) {
+        try {
+            if (type === 'success') {
+                navigator.vibrate(150);
+            } else if (type === 'danger') {
+                navigator.vibrate([150, 80, 150]);
+            }
+        } catch(e){}
+    }
+}
+
 function fallbackAlgorithmicDiagnosis() {
     const tfjsStatus = getTfjsStatus();
     if (tfjsStatus) {
-        tfjsStatus.innerText = "Motor OpenCV: Analizando eje geométrico del cuello...";
+        tfjsStatus.innerText = "Motor OpenCV: Analizando eje dinámico del cuello...";
         tfjsStatus.style.color = "#06b6d4";
     }
     
@@ -127,6 +186,7 @@ function fallbackAlgorithmicDiagnosis() {
     const diagAcciones = document.getElementById('diagAcciones');
 
     if (!borders || width === 0 || height === 0) {
+        lastDiagStatus = 'alineando';
         if (diagTitulo) diagTitulo.innerText = "⚠️ SILUETA NO DETECTADA";
         if (diagGravedad) {
             diagGravedad.className = "status-alert status-danger";
@@ -143,18 +203,55 @@ function fallbackAlgorithmicDiagnosis() {
         return;
     }
 
-    // Algoritmo de Eje de Simetría por Capas Horizontales (Seguimiento de Centroide Relativo)
-    // 1. Analizar filas del cuerpo (zona inferior: 60% a 85% de altura) para establecer el eje de referencia
+    // 1. Localización Altitudinal Dinámica (Buscar dónde empieza y termina la botella en el eje vertical)
+    const rowCounts = new Array(height).fill(0);
+    const validRows = [];
+
+    for (let y = 0; y < height; y++) {
+        let count = 0;
+        for (let x = 0; x < width; x++) {
+            if (borders[y * width + x] > 128) {
+                count++;
+            }
+        }
+        rowCounts[y] = count;
+        if (count >= 3) { // Al menos 3 píxeles de contorno en la fila
+            validRows.push(y);
+        }
+    }
+
+    // Si la botella no ocupa al menos un 15% del visor vertical, se considera alineando
+    if (validRows.length < (height * 0.15)) {
+        lastDiagStatus = 'alineando';
+        if (diagTitulo) diagTitulo.innerText = "📷 Alineando Envase...";
+        if (diagGravedad) {
+            diagGravedad.style.display = "none";
+        }
+        if (diagEstado) diagEstado.innerText = "Buscando envase... Coloca el cuerpo y cuello de la botella en las guías.";
+        if (diagAcciones) {
+            diagAcciones.innerHTML = `
+                <li>Centra la botella en la pantalla.</li>
+                <li>Verifica que el contraste sea suficiente para delimitar los bordes.</li>
+            `;
+        }
+        return;
+    }
+
+    const bottleTopY = validRows[0];
+    const bottleBottomY = validRows[validRows.length - 1];
+    const bottleHeight = bottleBottomY - bottleTopY;
+
+    // 2. Segmentación Relativa
+    // Cuerpo (Base): del 55% al 85% de la botella real
     const bodyCenters = [];
     const bodyWidths = [];
-    const startBodyY = Math.floor(height * 0.60);
-    const endBodyY = Math.floor(height * 0.85);
+    const startBodyY = Math.floor(bottleTopY + bottleHeight * 0.55);
+    const endBodyY = Math.min(height - 1, Math.floor(bottleTopY + bottleHeight * 0.85));
 
-    for (let y = startBodyY; y < endBodyY; y += 4) { // Saltos de 4px para velocidad
+    for (let y = startBodyY; y < endBodyY; y += 3) {
         let leftX = -1;
         let rightX = -1;
 
-        // Buscar borde izquierdo (hacia la derecha)
         for (let x = 0; x < width; x++) {
             if (borders[y * width + x] > 128) {
                 leftX = x;
@@ -162,7 +259,6 @@ function fallbackAlgorithmicDiagnosis() {
             }
         }
 
-        // Buscar borde derecho (hacia la izquierda)
         for (let x = width - 1; x >= 0; x--) {
             if (borders[y * width + x] > 128) {
                 rightX = x;
@@ -170,42 +266,34 @@ function fallbackAlgorithmicDiagnosis() {
             }
         }
 
-        // Si se encontraron ambos contornos de la botella y el ancho es coherente (> 15% del frame)
-        if (leftX !== -1 && rightX !== -1 && (rightX - leftX) > (width * 0.15)) {
+        if (leftX !== -1 && rightX !== -1 && (rightX - leftX) > (width * 0.12)) {
             bodyCenters.push((leftX + rightX) / 2);
             bodyWidths.push(rightX - leftX);
         }
     }
 
-    // Si no logramos definir el cuerpo de la botella, alertar
-    if (bodyCenters.length < 5) {
+    if (bodyCenters.length < 4) {
+        lastDiagStatus = 'alineando';
         if (diagTitulo) diagTitulo.innerText = "⚠️ DETECCIÓN INESTABLE";
         if (diagGravedad) {
             diagGravedad.className = "status-alert status-danger";
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Alineando";
         }
-        if (diagEstado) diagEstado.innerText = "Asegúrese de que la botella esté bien contrastada respecto al fondo. Detectando bordes insuficientes.";
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `
-                <li>Prueba activar el 'Modo Contorno / Silueta' para verificar qué bordes ve la cámara.</li>
-                <li>Asegúrese de evitar reflejos brillantes detrás de la botella.</li>
-            `;
-        }
+        if (diagEstado) diagEstado.innerText = "No se puede establecer el eje central del cuerpo de la botella. Evita reflejos.";
         return;
     }
 
-    // Promedio del eje central del cuerpo y ancho promedio
     const avgBodyCenter = bodyCenters.reduce((sum, val) => sum + val, 0) / bodyCenters.length;
     const avgBodyWidth = bodyWidths.reduce((sum, val) => sum + val, 0) / bodyWidths.length;
 
-    // 2. Analizar filas de la zona del cuello (zona superior: 15% a 50% de altura)
+    // Cuello: del 5% al 42% de la botella real (excluye la boca que puede tener rebabas)
     const neckDeviations = [];
-    const startNeckY = Math.floor(height * 0.15);
-    const endNeckY = Math.floor(height * 0.50);
+    const startNeckY = Math.floor(bottleTopY + bottleHeight * 0.05);
+    const endNeckY = Math.floor(bottleTopY + bottleHeight * 0.42);
     let validNeckLayers = 0;
 
-    for (let y = startNeckY; y < endNeckY; y += 4) {
+    for (let y = startNeckY; y < endNeckY; y += 3) {
         let leftX = -1;
         let rightX = -1;
 
@@ -223,8 +311,7 @@ function fallbackAlgorithmicDiagnosis() {
             }
         }
 
-        // Para el cuello, el ancho debe ser menor que en el cuerpo pero mayor a 5% del frame
-        if (leftX !== -1 && rightX !== -1 && (rightX - leftX) > (width * 0.05)) {
+        if (leftX !== -1 && rightX !== -1 && (rightX - leftX) > (width * 0.04)) {
             const neckCenter = (leftX + rightX) / 2;
             const deviation = Math.abs(neckCenter - avgBodyCenter);
             neckDeviations.push(deviation);
@@ -232,23 +319,18 @@ function fallbackAlgorithmicDiagnosis() {
         }
     }
 
-    // Si no logramos definir el cuello, advertir o caer en fallback
     if (validNeckLayers < 3) {
         runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter);
         return;
     }
 
-    // Encontrar la desviación máxima del cuello respecto al eje del cuerpo
     const maxDeviation = Math.max(...neckDeviations);
-    
-    // Asimetría porcentual real = (Desviación máxima / Ancho de la base) * 100
     const percentDeviation = (maxDeviation / avgBodyWidth) * 100;
 
-    // Leer el slider de tolerancia (2% - 15%)
     const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 8;
     const toleranceLimit = parseInt(sliderVal) || 8;
 
-    console.log(`[Eje Simetría] Desviación Máxima: ${maxDeviation.toFixed(1)}px | Ancho Cuerpo: ${avgBodyWidth.toFixed(1)}px | Eje Cuerpo: ${avgBodyCenter.toFixed(1)} | Desvío Porcentual: ${percentDeviation.toFixed(2)}% | Límite Tolerancia: ${toleranceLimit}%`);
+    console.log(`[Eje Dinámico v1.0.49] Altura: ${bottleHeight}px | Top: ${bottleTopY} | Base: ${bottleBottomY} | Desvío: ${percentDeviation.toFixed(2)}% | Límite: ${toleranceLimit}%`);
 
     if (percentDeviation > toleranceLimit) {
         // Cuello torcido confirmado
@@ -258,7 +340,7 @@ function fallbackAlgorithmicDiagnosis() {
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Rechazo Inmediato";
         }
-        if (diagEstado) diagEstado.innerText = `Desviación del eje del cuello detectada: ${percentDeviation.toFixed(1)}% (Tolerancia máxima permitida: ${toleranceLimit}%).`;
+        if (diagEstado) diagEstado.innerText = `Desviación del eje del cuello detectada: ${percentDeviation.toFixed(1)}% (Límite: ${toleranceLimit}%).`;
         if (diagAcciones) {
             diagAcciones.innerHTML = `
                 <li><strong>Mecanismo IS:</strong> Ajustar alineación de la pinza de transferencia y brazo de soplado.</li>
@@ -269,6 +351,13 @@ function fallbackAlgorithmicDiagnosis() {
         if (tfjsStatus) {
             tfjsStatus.innerText = `Motor OpenCV: Cuello Desviado (${percentDeviation.toFixed(1)}% / Límite ${toleranceLimit}%)`;
             tfjsStatus.style.color = "#ef4444";
+        }
+
+        // Tono y vibración de aviso "Diagnóstico Listo - Rechazo"
+        if (lastDiagStatus !== 'rechazo') {
+            playBeep('danger');
+            triggerVibration('danger');
+            lastDiagStatus = 'rechazo';
         }
     } else {
         // Aceptable
@@ -288,6 +377,13 @@ function fallbackAlgorithmicDiagnosis() {
         if (tfjsStatus) {
             tfjsStatus.innerText = `Motor OpenCV: Envase Aceptable (Desvío: ${percentDeviation.toFixed(1)}%)`;
             tfjsStatus.style.color = "#10b981";
+        }
+
+        // Tono y vibración de aviso "Diagnóstico Listo - Aceptable"
+        if (lastDiagStatus !== 'aceptable') {
+            playBeep('success');
+            triggerVibration('success');
+            lastDiagStatus = 'aceptable';
         }
     }
 }
