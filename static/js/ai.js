@@ -374,12 +374,17 @@ function fallbackAlgorithmicDiagnosis() {
     }
 
     const maxDeviation = Math.max(...neckDeviations);
-    const percentDeviation = (maxDeviation / avgBodyWidth) * 100;
+    // Multiplicamos por 200 en lugar de 100 para duplicar la sensibilidad, ya que el cuello torcido simple a veces no se detectaba
+    const percentDeviation = (maxDeviation / avgBodyWidth) * 200;
 
-    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 8;
-    const toleranceLimit = parseInt(sliderVal) || 8;
+    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 5;
+    const toleranceLimit = parseInt(sliderVal) || 5;
 
-    console.log(`[Eje Dinámico v1.0.49] Altura: ${bottleHeight}px | Top: ${bottleTopY} | Base: ${bottleBottomY} | Desvío: ${percentDeviation.toFixed(2)}% | Límite: ${toleranceLimit}%`);
+    console.log(`[Eje Dinámico v1.0.51] Altura: ${bottleHeight}px | Top: ${bottleTopY} | Base: ${bottleBottomY} | Desvío: ${percentDeviation.toFixed(2)}% | Límite: ${toleranceLimit}%`);
+
+    const cursorText = document.querySelector('.cursor-text');
+    const crosshairX = document.querySelector('.crosshair-x');
+    const crosshairY = document.querySelector('.crosshair-y');
 
     if (percentDeviation > toleranceLimit) {
         // Cuello torcido confirmado
@@ -400,6 +405,14 @@ function fallbackAlgorithmicDiagnosis() {
         if (tfjsStatus) {
             tfjsStatus.innerText = `Motor OpenCV: Cuello Desviado (${percentDeviation.toFixed(1)}% / Límite ${toleranceLimit}%)`;
             tfjsStatus.style.color = "#ef4444";
+        }
+        
+        // Actualizar cursor visual
+        if (cursorText) {
+            cursorText.innerText = 'RECHAZO: CUELLO TORCIDO';
+            cursorText.style.color = '#ef4444';
+            if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
+            if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';
         }
 
         // Tono y vibración de aviso "Diagnóstico Listo - Rechazo"
@@ -426,6 +439,14 @@ function fallbackAlgorithmicDiagnosis() {
         if (tfjsStatus) {
             tfjsStatus.innerText = `Motor OpenCV: Envase Aceptable (Desvío: ${percentDeviation.toFixed(1)}%)`;
             tfjsStatus.style.color = "#10b981";
+        }
+
+        // Actualizar cursor visual
+        if (cursorText) {
+            cursorText.innerText = 'ACEPTABLE';
+            cursorText.style.color = '#10b981';
+            if (crosshairX) crosshairX.style.backgroundColor = '#10b981';
+            if (crosshairY) crosshairY.style.backgroundColor = '#10b981';
         }
 
         // Tono y vibración de aviso "Diagnóstico Listo - Aceptable"
@@ -470,6 +491,10 @@ function runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter) {
     const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 8;
     const tolerancePercent = (parseInt(sliderVal) || 8) / 100;
 
+    const cursorText = document.querySelector('.cursor-text');
+    const crosshairX = document.querySelector('.crosshair-x');
+    const crosshairY = document.querySelector('.crosshair-y');
+
     if (pixelDiff > tolerancePercent) {
         if (diagTitulo) diagTitulo.innerText = "❌ Defecto Crítico (Algorítmico): Cuello Torcido";
         if (diagGravedad) {
@@ -477,10 +502,23 @@ function runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter) {
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Rechazo Inmediato";
         }
-        if (diagEstado) diagEstado.innerText = `Asimetría geométrica por densidad: ${(pixelDiff * 100).toFixed(1)}% (Límite: ${(tolerancePercent * 100).toFixed(1)}%).`;
+        if (diagEstado) diagEstado.innerText = `Asimetría geométrica por densidad: ${(pixelDiff * 200).toFixed(1)}% (Límite: ${(tolerancePercent * 200).toFixed(1)}%).`;
         if (tfjsStatus) {
-            tfjsStatus.innerText = `Motor OpenCV: Defecto detectado (Desvío: ${(pixelDiff * 100).toFixed(1)}%)`;
+            tfjsStatus.innerText = `Motor OpenCV: Defecto detectado (Desvío: ${(pixelDiff * 200).toFixed(1)}%)`;
             tfjsStatus.style.color = "#ef4444";
+        }
+
+        if (cursorText) {
+            cursorText.innerText = 'RECHAZO: ASIMETRÍA';
+            cursorText.style.color = '#ef4444';
+            if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
+            if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';
+        }
+
+        if (lastDiagStatus !== 'rechazo') {
+            playBeep('danger');
+            triggerVibration('danger');
+            lastDiagStatus = 'rechazo';
         }
     } else {
         if (diagTitulo) diagTitulo.innerText = "✅ Silueta dentro de tolerancias";
@@ -489,10 +527,23 @@ function runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter) {
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Aceptable";
         }
-        if (diagEstado) diagEstado.innerText = `Simetría dentro de tolerancias por densidad: ${(pixelDiff * 100).toFixed(1)}% (Límite: ${(tolerancePercent * 100).toFixed(1)}%).`;
+        if (diagEstado) diagEstado.innerText = `Simetría dentro de tolerancias por densidad: ${(pixelDiff * 200).toFixed(1)}% (Límite: ${(tolerancePercent * 200).toFixed(1)}%).`;
         if (tfjsStatus) {
-            tfjsStatus.innerText = `Motor OpenCV: Envase Aceptable (Desvío: ${(pixelDiff * 100).toFixed(1)}%)`;
+            tfjsStatus.innerText = `Motor OpenCV: Envase Aceptable (Desvío: ${(pixelDiff * 200).toFixed(1)}%)`;
             tfjsStatus.style.color = "#10b981";
+        }
+
+        if (cursorText) {
+            cursorText.innerText = 'ACEPTABLE';
+            cursorText.style.color = '#10b981';
+            if (crosshairX) crosshairX.style.backgroundColor = '#10b981';
+            if (crosshairY) crosshairY.style.backgroundColor = '#10b981';
+        }
+
+        if (lastDiagStatus !== 'aceptable') {
+            playBeep('success');
+            triggerVibration('success');
+            lastDiagStatus = 'aceptable';
         }
     }
 }

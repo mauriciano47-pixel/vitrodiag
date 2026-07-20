@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag v1.0.51 - Operador IS</title>
+    <title>VitroDiag v1.0.52 - Operador IS</title>
     <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" defer></script>
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
@@ -214,6 +214,55 @@
             0% { top: 0%; }
             50% { top: 100%; }
             100% { top: 0%; }
+        }
+
+        .diag-cursor {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            pointer-events: none;
+            z-index: 15;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+        
+        .diag-cursor .crosshair {
+            position: absolute;
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+        
+        .diag-cursor .crosshair-x {
+            width: 100%;
+            height: 2px;
+        }
+        
+        .diag-cursor .crosshair-y {
+            width: 2px;
+            height: 100%;
+        }
+        
+        .diag-cursor .cursor-text {
+            position: absolute;
+            top: -25px;
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px #000;
+            letter-spacing: 1px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
 
         video, canvas {
@@ -1464,7 +1513,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span class="version-badge">v1.0.51</span></h1>
+        <h1>VitroDiag <span class="version-badge">v1.0.52</span></h1>
         <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
     </header>
 
@@ -1585,6 +1634,24 @@
                 <div class="guide-body"></div>
             </div>
             <div class="scan-laser"></div>
+            <!-- Nuevo indicador visual de escaneo activo -->
+            <div id="diagCursor" class="diag-cursor">
+                <div class="crosshair crosshair-x"></div>
+                <div class="crosshair crosshair-y"></div>
+                <div class="cursor-text">ANALIZANDO...</div>
+            </div>
+        </div>
+
+        <!-- REUBICADO: Panel de Diagnóstico más cerca de la cámara -->
+        <div class="diagnostic-card" id="resultadoCard">
+            <div class="card-title" id="diagTitulo">Iniciando motor...</div>
+            <div class="diag-status-row">
+                <span id="diagGravedad" class="status-alert"></span>
+            </div>
+            <div id="diagEstado" class="diag-state"></div>
+            
+            <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
+            <ol class="actions-list" id="diagAcciones"></ol>
         </div>
 
         <div class="toggle-container">
@@ -1602,16 +1669,7 @@
             </label>
         </div>
 
-        <div class="diagnostic-card" id="resultadoCard">
-            <div class="card-title" id="diagTitulo">Analizando...</div>
-            <div class="diag-status-row">
-                <span id="diagGravedad" class="status-alert"></span>
-            </div>
-            <div id="diagEstado" class="diag-state"></div>
-            
-            <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
-            <ol class="actions-list" id="diagAcciones"></ol>
-        </div>
+
 
         <!-- PANEL DE CALIBRACIÓN ÓPTICA PARA LA PLANTA -->
         <div class="calibration-panel visible" id="calibrationPanel">
