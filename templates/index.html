@@ -605,6 +605,9 @@
             max-width: 480px;
             box-sizing: border-box;
             display: none; /* Se muestra con JS cuando silueta está activa */
+        }
+        .calibration-panel.visible {
+            display: flex; /* Clase controlada por JS en lugar de inline style */
             flex-direction: column;
             gap: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -1611,7 +1614,7 @@
         </div>
 
         <!-- PANEL DE CALIBRACIÓN ÓPTICA PARA LA PLANTA -->
-        <div class="calibration-panel" id="calibrationPanel" style="display: flex;">
+        <div class="calibration-panel visible" id="calibrationPanel">
             <div class="calibration-title">⚙️ Calibración Óptica (Anti-Reflejos de Planta)</div>
             
             <div class="slider-group">
@@ -1619,7 +1622,7 @@
                     <span>Filtro de Contraste (Ganancia)</span>
                     <span class="slider-value" id="valContrast">1.5x</span>
                 </div>
-                <input type="range" id="sliderContrast" class="range-input" min="1.0" max="3.0" step="0.1" value="1.5">
+                <input type="range" id="sliderContrast" class="range-input" min="1.0" max="3.0" step="0.1" value="1.5" title="Filtro de Contraste" aria-label="Filtro de Contraste">
             </div>
 
             <div class="slider-group">
@@ -1627,7 +1630,7 @@
                     <span>Compensación de Brillo</span>
                     <span class="slider-value" id="valBrightness">+10</span>
                 </div>
-                <input type="range" id="sliderBrightness" class="range-input" min="-50" max="50" step="5" value="10">
+                <input type="range" id="sliderBrightness" class="range-input" min="-50" max="50" step="5" value="10" title="Compensación de Brillo" aria-label="Compensación de Brillo">
             </div>
 
             <div class="slider-group">
@@ -1635,7 +1638,7 @@
                     <span>Sensibilidad / Umbral Canny</span>
                     <span class="slider-value" id="valCanny">50</span>
                 </div>
-                <input type="range" id="sliderCanny" class="range-input" min="20" max="150" step="5" value="50">
+                <input type="range" id="sliderCanny" class="range-input" min="20" max="150" step="5" value="50" title="Sensibilidad Canny" aria-label="Sensibilidad Canny">
             </div>
 
             <div class="slider-group">
@@ -1643,7 +1646,7 @@
                     <span>Tolerancia de Asimetría (Sensibilidad)</span>
                     <span class="slider-value" id="valTolerance">5%</span>
                 </div>
-                <input type="range" id="sliderTolerance" class="range-input" min="2" max="15" step="1" value="5">
+                <input type="range" id="sliderTolerance" class="range-input" min="2" max="15" step="1" value="5" title="Tolerancia de Asimetría" aria-label="Tolerancia de Asimetría">
             </div>
             
             <div class="slider-group">
@@ -1651,7 +1654,7 @@
                     <span>Escala de Plantilla Guía</span>
                     <span class="slider-value" id="valTemplateScale">1.0x</span>
                 </div>
-                <input type="range" id="sliderTemplateScale" class="range-input" min="0.5" max="1.5" step="0.05" value="1.0">
+                <input type="range" id="sliderTemplateScale" class="range-input" min="0.5" max="1.5" step="0.05" value="1.0" title="Escala de Plantilla Guía" aria-label="Escala de Plantilla Guía">
             </div>
             <div class="slider-group slider-group-spaced">
                 <div class="slider-header slider-header-spaced">

@@ -335,11 +335,11 @@ export function setupSilhouetteToggleListener() {
             if (toggle.checked) {
                 canvasOutput.classList.remove('d-none');
                 webcamVideo.classList.add('d-none');
-                if (calibrationPanel) calibrationPanel.style.display = 'flex';
+                if (calibrationPanel) calibrationPanel.classList.add('visible');
             } else {
                 canvasOutput.classList.add('d-none');
                 webcamVideo.classList.remove('d-none');
-                if (calibrationPanel) calibrationPanel.style.display = 'none';
+                if (calibrationPanel) calibrationPanel.classList.remove('visible');
             }
         });
     }
