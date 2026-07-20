@@ -1,4 +1,4 @@
-# VitroDiag v1.0.50
+# VitroDiag v1.0.51
 
 **Muestreo Rápido NNPB para Operador**
 

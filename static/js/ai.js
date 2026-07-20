@@ -107,7 +107,10 @@ async function loadTensorFlowModel() {
                     tfjsStatus.innerText = "Motor de Visión: Análisis de Contornos Activo (Algorítmico)";
                     tfjsStatus.style.color = "#06b6d4"; // Cyan
                 }
-       let lastDiagStatus = 'alineando'; // Estado de diagnóstico anterior: 'alineando', 'aceptable', 'rechazo'
+            }
+        }
+
+let lastDiagStatus = 'alineando'; // Estado de diagnóstico anterior: 'alineando', 'aceptable', 'rechazo'
 let audioCtx = null;
 
 // Inicializa o reanuda el AudioContext global de forma controlada
