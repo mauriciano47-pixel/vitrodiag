@@ -107,16 +107,62 @@ async function loadTensorFlowModel() {
                     tfjsStatus.innerText = "Motor de Visión: Análisis de Contornos Activo (Algorítmico)";
                     tfjsStatus.style.color = "#06b6d4"; // Cyan
                 }
-            }
+       let lastDiagStatus = 'alineando'; // Estado de diagnóstico anterior: 'alineando', 'aceptable', 'rechazo'
+let audioCtx = null;
+
+// Inicializa o reanuda el AudioContext global de forma controlada
+function initAudioContext() {
+    if (audioCtx) {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(e => console.log("Error al reanudar AudioContext:", e));
         }
-
-let lastDiagStatus = 'alineando'; // Estado de diagnóstico anterior: 'alineando', 'aceptable', 'rechazo'
-
-function playBeep(type) {
-    if (typeof AudioContext === 'undefined' && typeof webkitAudioContext === 'undefined') return;
+        return audioCtx;
+    }
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
+        audioCtx = new AudioCtx();
+        console.log("[Audio] AudioContext global instanciado.");
+    } catch (e) {
+        console.warn("[Audio] Navegador no soporta Web Audio API:", e);
+    }
+    return audioCtx;
+}
+
+// Desbloquear audio con el primer toque en pantalla
+function unlockAudio() {
+    const ctx = initAudioContext();
+    if (ctx && ctx.state === 'suspended') {
+        ctx.resume().then(() => {
+            console.log("[Audio] AudioContext desbloqueado y reanudado.");
+        });
+    }
+    // Confirmar audio en Safari con un pulso silencioso
+    if (ctx) {
+        try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            gain.gain.value = 0;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(0);
+            osc.stop(0.05);
+        } catch(e){}
+    }
+    document.removeEventListener('click', unlockAudio);
+    document.removeEventListener('touchstart', unlockAudio);
+}
+document.addEventListener('click', unlockAudio);
+document.addEventListener('touchstart', unlockAudio);
+
+function playBeep(type) {
+    const ctx = initAudioContext();
+    if (!ctx) return;
+    
+    if (ctx.state === 'suspended') {
+        ctx.resume().catch(e => console.log("Error reanudando en play:", e));
+    }
+
+    try {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
