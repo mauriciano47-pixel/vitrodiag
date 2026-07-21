@@ -548,6 +548,35 @@ function runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter) {
     }
 }
 
+export function isBottlePresent(borders, width, height) {
+    if (!borders || width === 0 || height === 0) return false;
+
+    let edgePixelCount = 0;
+    const validRows = [];
+    const minX = Math.floor(width * 0.08);
+    const maxX = Math.floor(width * 0.92);
+    const minY = Math.floor(height * 0.05);
+    const maxY = Math.floor(height * 0.95);
+
+    for (let y = minY; y < maxY; y++) {
+        let rowEdges = 0;
+        for (let x = minX; x < maxX; x++) {
+            if (borders[y * width + x] > 128) {
+                rowEdges++;
+                edgePixelCount++;
+            }
+        }
+        if (rowEdges >= 3) {
+            validRows.push(y);
+        }
+    }
+
+    const minVerticalSpan = Math.floor(height * 0.15); // Al menos 15% de la altura de la imagen
+    const minEdgePixels = 50; // Al menos 50 píxeles de contorno acumulado
+
+    return (validRows.length >= minVerticalSpan && edgePixelCount >= minEdgePixels);
+}
+
 export function runLiveDiagnosis() {
     const canvas = getCanvas();
     const tfjsStatus = getTfjsStatus();
@@ -555,14 +584,41 @@ export function runLiveDiagnosis() {
     const diagGravedad = document.getElementById('diagGravedad');
     const diagEstado = document.getElementById('diagEstado');
     const diagAcciones = document.getElementById('diagAcciones');
+    const cursorText = document.querySelector('.cursor-text');
+    const crosshairX = document.querySelector('.crosshair-x');
+    const crosshairY = document.querySelector('.crosshair-y');
 
-    if (!state.lastProcessedBorders) {
-        if (diagTitulo) diagTitulo.innerText = "📷 Alineando Botella...";
+    const borders = state.lastProcessedBorders;
+    const width = state.lastBordersWidth;
+    const height = state.lastBordersHeight;
+
+    // 🛑 FILTRO ANTI-FALSAS LECTURAS:
+    // Verificar rigurosamente la presencia física del envase dentro de la retícula antes de calificar la silueta.
+    if (!borders || width === 0 || height === 0 || !isBottlePresent(borders, width, height)) {
+        lastDiagStatus = 'alineando';
+        if (diagTitulo) diagTitulo.innerText = "📷 Buscando Envase...";
         if (diagGravedad) {
-            diagGravedad.style.display = "none";
+            diagGravedad.className = "status-alert status-warning";
+            diagGravedad.style.display = "inline-block";
+            diagGravedad.innerText = "Sin Envase";
         }
-        if (diagEstado) diagEstado.innerText = "Esperando que el envase se alinee con las guías de la cámara.";
-        if (diagAcciones) diagAcciones.innerHTML = "<li>Alinea el cuello y cuerpo de la botella dentro de las guías verdes de alineación.</li>";
+        if (diagEstado) diagEstado.innerText = "Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.";
+        if (diagAcciones) {
+            diagAcciones.innerHTML = `
+                <li>Alinee el cuello y cuerpo de la botella dentro de la retícula de disparo.</li>
+                <li>Asegúrese de contar con iluminación o contraste adecuados.</li>
+            `;
+        }
+        if (tfjsStatus) {
+            tfjsStatus.innerText = "Motor de Visión: Esperando Envase en Guías...";
+            tfjsStatus.style.color = "#fbbf24";
+        }
+        if (cursorText) {
+            cursorText.innerText = 'ESPERANDO ENVASE';
+            cursorText.style.color = '#fbbf24';
+            if (crosshairX) crosshairX.style.backgroundColor = '#fbbf24';
+            if (crosshairY) crosshairY.style.backgroundColor = '#fbbf24';
+        }
         return;
     }
 
