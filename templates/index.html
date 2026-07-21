@@ -1579,11 +1579,11 @@
                 <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="artSwab">Swabbing (min)</label>
-                        <input type="number" id="artSwab" class="input-number" min="5" max="120">
+                        <input type="number" id="artSwab" class="input-number" min="5" max="120" title="Frecuencia Swabbing" aria-label="Frecuencia Swabbing">
                     </div>
                     <div class="form-group">
                         <label for="artProceso">Proceso</label>
-                        <select id="artProceso" class="select-input">
+                        <select id="artProceso" class="select-input" title="Proceso I.S." aria-label="Proceso I.S.">
                             <option value="NNPB">NNPB (Prensado)</option>
                             <option value="Blow-Blow">Soplo-Soplo</option>
                             <option value="Press-Blow">Prensado-Soplo</option>
@@ -1594,15 +1594,15 @@
                 <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="artAltura">Altura (mm)</label>
-                        <input type="number" id="artAltura" class="input-number" min="20" max="600">
+                        <input type="number" id="artAltura" class="input-number" min="20" max="600" title="Altura envase" aria-label="Altura envase">
                     </div>
                     <div class="form-group">
                         <label for="artCuerpo">Ø Cuerpo (mm)</label>
-                        <input type="number" id="artCuerpo" class="input-number" min="10" max="300">
+                        <input type="number" id="artCuerpo" class="input-number" min="10" max="300" title="Diámetro cuerpo" aria-label="Diámetro cuerpo">
                     </div>
                     <div class="form-group">
                         <label for="artBoca">Ø Boca (mm)</label>
-                        <input type="number" id="artBoca" class="input-number" min="5" max="150">
+                        <input type="number" id="artBoca" class="input-number" min="5" max="150" title="Diámetro boca" aria-label="Diámetro boca">
                     </div>
                 </div>
 
@@ -1790,15 +1790,15 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="calcBpm">Velocidad (BPM)</label>
-                    <input type="number" id="calcBpm" class="input-number" min="30" max="1000" value="396" oninput="validateBdfTiming()">
+                    <input type="number" id="calcBpm" class="input-number" min="30" max="1000" value="396" oninput="validateBdfTiming()" title="Botellas por minuto" aria-label="Botellas por minuto">
                 </div>
                 <div class="form-group">
                     <label for="calcSections">Secciones</label>
-                    <input type="number" id="calcSections" class="input-number" min="4" max="20" value="11" readonly>
+                    <input type="number" id="calcSections" class="input-number" min="4" max="20" value="11" readonly title="Número de secciones" aria-label="Número de secciones">
                 </div>
                 <div class="form-group">
                     <label for="calcCavities">Gota (Cavidad)</label>
-                    <input type="number" id="calcCavities" class="input-number" min="1" max="4" value="3" readonly>
+                    <input type="number" id="calcCavities" class="input-number" min="1" max="4" value="3" readonly title="Número de cavidades" aria-label="Número de cavidades">
                 </div>
             </div>
 
@@ -1809,44 +1809,44 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="valPlungerUp">Macho Arriba (Plunger Up)</label>
-                        <input type="number" id="valPlungerUp" class="input-number" min="0" max="360" value="80" oninput="validateBdfTiming()">
+                        <input type="number" id="valPlungerUp" class="input-number" min="0" max="360" value="80" oninput="validateBdfTiming()" title="Macho arriba grados" aria-label="Macho arriba grados">
                     </div>
                     <div class="form-group">
                         <label for="valPlungerDown">Macho Abajo (Plunger Down)</label>
-                        <input type="number" id="valPlungerDown" class="input-number" min="0" max="360" value="150" oninput="validateBdfTiming()">
+                        <input type="number" id="valPlungerDown" class="input-number" min="0" max="360" value="150" oninput="validateBdfTiming()" title="Macho abajo grados" aria-label="Macho abajo grados">
                     </div>
                 </div>
 
                 <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="valBlankOpen">Apertura Preforma (Blank Open)</label>
-                        <input type="number" id="valBlankOpen" class="input-number" min="0" max="360" value="190" oninput="validateBdfTiming()">
+                        <input type="number" id="valBlankOpen" class="input-number" min="0" max="360" value="190" oninput="validateBdfTiming()" title="Apertura preforma grados" aria-label="Apertura preforma grados">
                     </div>
                     <div class="form-group">
                         <label for="valInvertStart">Inicio Inversión (Invert Start)</label>
-                        <input type="number" id="valInvertStart" class="input-number" min="0" max="360" value="195" oninput="validateBdfTiming()">
+                        <input type="number" id="valInvertStart" class="input-number" min="0" max="360" value="195" oninput="validateBdfTiming()" title="Inicio inversión grados" aria-label="Inicio inversión grados">
                     </div>
                 </div>
 
                 <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="valBlowClose">Cierre Molde Final (Blow Close)</label>
-                        <input type="number" id="valBlowClose" class="input-number" min="0" max="360" value="240" oninput="validateBdfTiming()">
+                        <input type="number" id="valBlowClose" class="input-number" min="0" max="360" value="240" oninput="validateBdfTiming()" title="Cierre soplo grados" aria-label="Cierre soplo grados">
                     </div>
                     <div class="form-group">
                         <label for="valNeckOpen">Apertura Anillo (Neck Ring Open)</label>
-                        <input type="number" id="valNeckOpen" class="input-number" min="0" max="360" value="245" oninput="validateBdfTiming()">
+                        <input type="number" id="valNeckOpen" class="input-number" min="0" max="360" value="245" oninput="validateBdfTiming()" title="Apertura anillo grados" aria-label="Apertura anillo grados">
                     </div>
                 </div>
 
                 <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="valBlowOn">Soplado Final ON (Blow ON)</label>
-                        <input type="number" id="valBlowOn" class="input-number" min="0" max="360" value="270" oninput="validateBdfTiming()">
+                        <input type="number" id="valBlowOn" class="input-number" min="0" max="360" value="270" oninput="validateBdfTiming()" title="Soplado final on grados" aria-label="Soplado final on grados">
                     </div>
                     <div class="form-group">
                         <label for="valBlowOff">Soplado Final OFF (Blow OFF)</label>
-                        <input type="number" id="valBlowOff" class="input-number" min="0" max="360" value="325" oninput="validateBdfTiming()">
+                        <input type="number" id="valBlowOff" class="input-number" min="0" max="360" value="325" oninput="validateBdfTiming()" title="Soplado final off grados" aria-label="Soplado final off grados">
                     </div>
                 </div>
             </div>
@@ -2012,31 +2012,31 @@
                 <div class="scanner-manual-grid">
                     <div>
                         <label class="scanner-manual-label">Macho Arriba (Plunger Up) °</label>
-                        <input type="number" id="manualPlungerUp" min="0" max="360" placeholder="Ej: 80" class="calc-input scanner-manual-input">
+                        <input type="number" id="manualPlungerUp" min="0" max="360" placeholder="Ej: 80" class="calc-input scanner-manual-input" title="Manual Plunger Up" aria-label="Manual Plunger Up">
                     </div>
                     <div>
                         <label class="scanner-manual-label">Macho Abajo (Plunger Down) °</label>
-                        <input type="number" id="manualPlungerDown" min="0" max="360" placeholder="Ej: 150" class="calc-input scanner-manual-input">
+                        <input type="number" id="manualPlungerDown" min="0" max="360" placeholder="Ej: 150" class="calc-input scanner-manual-input" title="Manual Plunger Down" aria-label="Manual Plunger Down">
                     </div>
                     <div>
                         <label class="scanner-manual-label">Abre Anillo (Neck Ring Open) °</label>
-                        <input type="number" id="manualNeckOpen" min="0" max="360" placeholder="Ej: 245" class="calc-input scanner-manual-input">
+                        <input type="number" id="manualNeckOpen" min="0" max="360" placeholder="Ej: 245" class="calc-input scanner-manual-input" title="Manual Neck Open" aria-label="Manual Neck Open">
                     </div>
                     <div>
                         <label class="scanner-manual-label">Inicio Inversión (Invert) °</label>
-                        <input type="number" id="manualInvertStart" min="0" max="360" placeholder="Ej: 190" class="calc-input scanner-manual-input">
+                        <input type="number" id="manualInvertStart" min="0" max="360" placeholder="Ej: 190" class="calc-input scanner-manual-input" title="Manual Invert Start" aria-label="Manual Invert Start">
                     </div>
                     <div>
                         <label class="scanner-manual-label">Cierre Molde (Blow Close) °</label>
-                        <input type="number" id="manualBlowClose" min="0" max="360" placeholder="Ej: 240" class="calc-input scanner-manual-input">
+                        <input type="number" id="manualBlowClose" min="0" max="360" placeholder="Ej: 240" class="calc-input scanner-manual-input" title="Manual Blow Close" aria-label="Manual Blow Close">
                     </div>
                     <div>
                         <label class="scanner-manual-label">Soplado Final ON (Blow ON) °</label>
-                        <input type="number" id="manualBlowOn" min="0" max="360" placeholder="Ej: 270" class="calc-input scanner-manual-input">
+                        <input type="number" id="manualBlowOn" min="0" max="360" placeholder="Ej: 270" class="calc-input scanner-manual-input" title="Manual Blow ON" aria-label="Manual Blow ON">
                     </div>
                     <div>
                         <label class="scanner-manual-label">Soplado Final OFF (Blow OFF) °</label>
-                        <input type="number" id="manualBlowOff" min="0" max="360" placeholder="Ej: 325" class="calc-input scanner-manual-input">
+                        <input type="number" id="manualBlowOff" min="0" max="360" placeholder="Ej: 325" class="calc-input scanner-manual-input" title="Manual Blow OFF" aria-label="Manual Blow OFF">
                     </div>
                 </div>
                 <button class="btn-action btn-compare-manual" onclick="runScannerManualComparison()">Comparar Datos del Panel</button>
@@ -2069,31 +2069,31 @@
                 <div class="ocr-confirm-grid">
                     <div>
                         <label class="ocr-field-label">Macho Arriba (Plunger Up)</label>
-                        <input type="number" id="ocrValPlungerUp" class="form-control ocr-field-input" min="0" max="360">
+                        <input type="number" id="ocrValPlungerUp" class="form-control ocr-field-input" min="0" max="360" title="OCR Plunger Up" aria-label="OCR Plunger Up">
                     </div>
                     <div>
                         <label class="ocr-field-label">Macho Abajo (Plunger Down)</label>
-                        <input type="number" id="ocrValPlungerDown" class="form-control ocr-field-input" min="0" max="360">
+                        <input type="number" id="ocrValPlungerDown" class="form-control ocr-field-input" min="0" max="360" title="OCR Plunger Down" aria-label="OCR Plunger Down">
                     </div>
                     <div>
                         <label class="ocr-field-label">Inversión (Invert Start)</label>
-                        <input type="number" id="ocrValInvertStart" class="form-control ocr-field-input" min="0" max="360">
+                        <input type="number" id="ocrValInvertStart" class="form-control ocr-field-input" min="0" max="360" title="OCR Invert Start" aria-label="OCR Invert Start">
                     </div>
                     <div>
                         <label class="ocr-field-label">Cierre Molde (Blow Close)</label>
-                        <input type="number" id="ocrValBlowClose" class="form-control ocr-field-input" min="0" max="360">
+                        <input type="number" id="ocrValBlowClose" class="form-control ocr-field-input" min="0" max="360" title="OCR Blow Close" aria-label="OCR Blow Close">
                     </div>
                     <div>
                         <label class="ocr-field-label">Abre Anillo (Neck Ring Open)</label>
-                        <input type="number" id="ocrValNeckRingOpen" class="form-control ocr-field-input" min="0" max="360">
+                        <input type="number" id="ocrValNeckRingOpen" class="form-control ocr-field-input" min="0" max="360" title="OCR Neck Ring Open" aria-label="OCR Neck Ring Open">
                     </div>
                     <div>
                         <label class="ocr-field-label">Soplado ON (Blow ON)</label>
-                        <input type="number" id="ocrValBlowOn" class="form-control ocr-field-input" min="0" max="360">
+                        <input type="number" id="ocrValBlowOn" class="form-control ocr-field-input" min="0" max="360" title="OCR Blow ON" aria-label="OCR Blow ON">
                     </div>
                     <div>
                         <label class="ocr-field-label">Fin Soplado (Blow OFF)</label>
-                        <input type="number" id="ocrValBlowOff" class="form-control ocr-field-input" min="0" max="360">
+                        <input type="number" id="ocrValBlowOff" class="form-control ocr-field-input" min="0" max="360" title="OCR Blow OFF" aria-label="OCR Blow OFF">
                     </div>
                 </div>
                 
@@ -2148,7 +2148,7 @@
             
             <div class="form-group">
                 <label for="logSection">Sección de la Máquina IS</label>
-                <select id="logSection" class="select-input">
+                <select id="logSection" class="select-input" title="Sección de la Máquina IS" aria-label="Sección de la Máquina IS">
                     <option value="1">Sección 1</option>
                     <option value="2">Sección 2</option>
                     <option value="3">Sección 3</option>
@@ -2166,7 +2166,7 @@
 
             <div class="form-group">
                 <label for="logCavity">Cavidad (Gota)</label>
-                <select id="logCavity" class="select-input">
+                <select id="logCavity" class="select-input" title="Cavidad (Gota)" aria-label="Cavidad (Gota)">
                     <option value="A">Cavidad A (Interna)</option>
                     <option value="B">Cavidad B (Media)</option>
                     <option value="C">Cavidad C (Externa)</option>
@@ -2176,7 +2176,7 @@
 
             <div class="form-group">
                 <label for="logDefectSelect">Defecto Observado</label>
-                <select id="logDefectSelect" class="select-input">
+                <select id="logDefectSelect" class="select-input" title="Defecto Observado" aria-label="Defecto Observado">
                     <!-- Se poblará con JS -->
                 </select>
             </div>
@@ -2193,7 +2193,7 @@
         <div class="swab-config-panel">
             <div class="calibration-title">⏰ Temporizador de Swabbing (Lubricación)</div>
             <div class="swab-controls">
-                <select id="swabInterval" class="select-input">
+                <select id="swabInterval" class="select-input" title="Intervalo de Swabbing" aria-label="Intervalo de Swabbing">
                     <option value="10">Cada 10 minutos (Alta Frecuencia)</option>
                     <option value="15" selected>Cada 15 minutos (Estándar)</option>
                     <option value="20">Cada 20 minutos (Línea Rápida)</option>
@@ -2208,7 +2208,7 @@
     <!-- PESTAÑA 2: DIRECTORIO DE DEFECTOS -->
     <div id="directoryView" class="view-content">
         <div class="search-container search-container-flex">
-            <input type="text" class="search-input search-input-flex" id="searchInput" placeholder="Buscar defecto por nombre..." onkeyup="filterDefects()">
+            <input type="text" class="search-input search-input-flex" id="searchInput" placeholder="Buscar defecto por nombre..." onkeyup="filterDefects()" title="Buscar defecto" aria-label="Buscar defecto">
             <button class="btn-action btn-filter-criticos" onclick="document.getElementById('searchInput').value = 'Crítico'; filterDefects();">Críticos</button>
         </div>
 

@@ -3,6 +3,7 @@ import { ARTICULOS_DEFAULT, DEFECTOS_DB, renderDefectsList, generateDefectIllust
 import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera } from './camera.js';
 import { startProcessing, stopProcessing } from './vision.js';
 import { calculateSopMs } from './timing.js';
+import { terminateTesseractWorker } from './ocr.js';
 
 
 
@@ -308,6 +309,11 @@ async function switchView(viewName) {
                     stopProcessing();
                     stopDiagnosticCamera();
                     stopScannerCamera();
+                }
+
+                // Liberar Worker de OCR si salimos de la pestaña Scanner
+                if (viewName !== 'scanner') {
+                    terminateTesseractWorker();
                 }
 
                 // Al cambiar a directorio, renderizar la lista completa

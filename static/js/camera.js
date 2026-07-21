@@ -13,6 +13,9 @@ const cameraConstraints = {
 async function startDiagnosticCamera() {
     if (state.diagnosticStream) return;
     
+    // Grace period para liberar el hardware si se acaba de apagar otra cámara
+    await new Promise(res => setTimeout(res, 350));
+
     const video = document.getElementById('webcam');
     const status = document.getElementById('opencvStatus');
     if (!video || !status) return;
@@ -62,6 +65,9 @@ async function startScannerCamera() {
     if (!video) return;
 
     if (state.scannerStream) stopScannerCamera();
+    
+    // Grace period para liberar el hardware de cámaras anteriores
+    await new Promise(res => setTimeout(res, 350));
 
     try {
         const scannerConstraints = {

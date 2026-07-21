@@ -14,21 +14,34 @@ let db = null;
 
 function initLogDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('VitroDiagDB', 1);
-        request.onupgradeneeded = function(e) {
-            const tempDb = e.target.result;
-            if (!tempDb.objectStoreNames.contains('bitacora')) {
-                tempDb.createObjectStore('bitacora', { keyPath: 'id' });
-            }
-        };
-        request.onsuccess = function(e) {
-            db = e.target.result;
-            resolve(db);
-        };
-        request.onerror = function(e) {
-            console.error("Error al abrir IndexedDB:", e);
+        if (!window.indexedDB) {
+            console.warn("IndexedDB no soportado o bloqueado. La bitácora no funcionará.");
+            reject(new Error("IndexedDB no soportado"));
+            return;
+        }
+        try {
+            const request = indexedDB.open('VitroDiagDB', 1);
+            request.onupgradeneeded = function(e) {
+                const tempDb = e.target.result;
+                if (!tempDb.objectStoreNames.contains('bitacora')) {
+                    tempDb.createObjectStore('bitacora', { keyPath: 'id' });
+                }
+            };
+            request.onsuccess = function(e) {
+                db = e.target.result;
+                db.onerror = function(event) {
+                    console.error("Database global error: ", event.target.error);
+                };
+                resolve(db);
+            };
+            request.onerror = function(e) {
+                console.error("Error al abrir IndexedDB:", e);
+                reject(e);
+            };
+        } catch (e) {
+            console.error("Excepción síncrona al abrir IndexedDB:", e);
             reject(e);
-        };
+        }
     });
 }
 

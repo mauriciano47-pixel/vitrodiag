@@ -15,10 +15,23 @@ async function initTesseractWorker() {
     try {
         tesseractWorker = await Tesseract.createWorker('eng');
         isWorkerReady = true;
-        console.log("Tesseract Worker persistente inicializado con éxito.");
+        console.log("Tesseract Worker inicializado con éxito.");
     } catch (err) {
         console.error("Fallo al inicializar Tesseract Worker:", err);
         throw err;
+    }
+}
+
+async function terminateTesseractWorker() {
+    if (tesseractWorker) {
+        try {
+            await tesseractWorker.terminate();
+            tesseractWorker = null;
+            isWorkerReady = false;
+            console.log("Tesseract Worker terminado para liberar memoria.");
+        } catch (e) {
+            console.error("Error al terminar Tesseract:", e);
+        }
     }
 }
 
@@ -150,7 +163,7 @@ async function runScannerOcr() {
         const processedImage = await preprocessImageForOcr(state.scannerImageBase64);
 
         if (!isWorkerReady || !tesseractWorker) {
-            statusMsg.innerText = "Inicializando motor OCR persistente...";
+            statusMsg.innerText = "Inicializando motor OCR...";
             await initTesseractWorker();
         }
 
@@ -758,5 +771,6 @@ export {
     renderScannerComparisonTable,
     applyScannerValuesToCalculator,
     resetScannerReport,
-    cancelOcrConfirm
+    cancelOcrConfirm,
+    terminateTesseractWorker
 };

@@ -24,11 +24,11 @@ async function warmUpModel(model) {
             tfjsStatus.innerText = "Motor de Visión: Calibrando modelo local (Warm-up)...";
             tfjsStatus.style.color = "#fbbf24";
         }
-        const dummy = tf.tidy(() => tf.zeros([1, 224, 224, 3]));
-        const prediction = model.predict(dummy);
-        prediction.dataSync(); // Fuerza la ejecución sincrona para compilar shaders
-        dummy.dispose();
-        prediction.dispose();
+        tf.tidy(() => {
+            const dummy = tf.zeros([1, 224, 224, 3]);
+            const prediction = model.predict(dummy);
+            prediction.dataSync(); // Fuerza la ejecución sincrona para compilar shaders
+        });
         console.log("TFJS: Warm-up completado.");
     } catch (e) {
         console.warn("TFJS: Warm-up omitido o fallido: ", e);
@@ -569,19 +569,16 @@ export function runLiveDiagnosis() {
     // Ejecutar diagnóstico en caliente
     if (typeof tf !== 'undefined' && state.tfModel && canvas) {
         try {
-            const inputTensor = tf.tidy(() => {
+            const prob = tf.tidy(() => {
                 const img = tf.browser.fromPixels(canvas);
                 const resized = tf.image.resizeBilinear(img, [224, 224]);
                 const normalized = resized.div(255.0);
-                return normalized.expandDims(0);
+                const inputTensor = normalized.expandDims(0);
+                
+                const prediction = state.tfModel.predict(inputTensor);
+                const data = prediction.dataSync();
+                return data[0];
             });
-
-            const prediction = state.tfModel.predict(inputTensor);
-            const data = prediction.dataSync();
-            const prob = data[0];
-            
-            inputTensor.dispose();
-            prediction.dispose();
 
             const confThreshold = state.confidenceThreshold / 100;
 
