@@ -581,7 +581,7 @@ export function isBottlePresent(borders, width, height) {
     for (let y = minY; y < maxY; y++) {
         let rowEdges = 0;
         for (let x = minX; x < maxX; x++) {
-            if (borders[y * width + x] > 128) {
+            if (borders[y * width + x] > 0) {
                 rowEdges++;
                 edgePixelCount++;
             }
@@ -591,8 +591,8 @@ export function isBottlePresent(borders, width, height) {
         }
     }
 
-    const minVerticalSpan = Math.floor(height * 0.12); // Al menos 12% de la altura de la imagen
-    const minEdgePixels = 25; // Al menos 25 píxeles de contorno acumulado
+    const minVerticalSpan = Math.floor(height * 0.05); // Al menos 5% de la altura de la imagen
+    const minEdgePixels = 8; // Al menos 8 píxeles de contorno acumulado
 
     return (validRows.length >= minVerticalSpan && edgePixelCount >= minEdgePixels);
 }
@@ -678,6 +678,19 @@ export function runLiveDiagnosis() {
                         <li><strong>Preforma:</strong> Verificar distribución de masa en zona superior.</li>
                     `;
                 }
+
+                if (cursorText) {
+                    cursorText.innerText = 'RECHAZO: ASIMETRÍA';
+                    cursorText.style.color = '#ef4444';
+                    if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
+                    if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';
+                }
+
+                if (lastDiagStatus !== 'rechazo') {
+                    playBeep('danger');
+                    triggerVibration('danger');
+                    lastDiagStatus = 'rechazo';
+                }
             } else {
                 if (tfjsStatus) {
                     tfjsStatus.innerText = `✅ Motor IA: Silueta Normal (Confianza ${(prob*100).toFixed(1)}%)`;
@@ -695,6 +708,19 @@ export function runLiveDiagnosis() {
                     diagAcciones.innerHTML = `
                         <li>El envase cumple con la simetría básica estructural.</li>
                     `;
+                }
+
+                if (cursorText) {
+                    cursorText.innerText = 'ACEPTABLE';
+                    cursorText.style.color = '#10b981';
+                    if (crosshairX) crosshairX.style.backgroundColor = '#10b981';
+                    if (crosshairY) crosshairY.style.backgroundColor = '#10b981';
+                }
+
+                if (lastDiagStatus !== 'aceptable') {
+                    playBeep('success');
+                    triggerVibration('success');
+                    lastDiagStatus = 'aceptable';
                 }
             }
         } catch (e) {
