@@ -137,8 +137,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 7. Registrar Service Worker con Auto-Actualización Instantánea (Estrategia Network-First)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=1.0.54-g').then(reg => {
             console.log("[PWA] Service Worker registrado correctamente.");
+            try { reg.update(); } catch(e) {}
             
             // Comprobar si hay actualizaciones disponibles en el servidor
             reg.addEventListener('updatefound', () => {
