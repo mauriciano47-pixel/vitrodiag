@@ -9,10 +9,36 @@
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
+    // PURGA AUTOMÁTICA DE CACHÉ DE VERSIONES ANTERIORES EN CELULARES
+    if ('caches' in window) {
+        caches.keys().then(function(names) {
+            names.forEach(function(name) {
+                if (name.includes('v1.0.54') || !name.includes('v1.0.55')) {
+                    caches.delete(name);
+                    console.log('[PWA] Purga de caché antigua ejecutada:', name);
+                }
+            });
+        });
+    }
+    window.clearAppCache = async function() {
+        if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (let r of regs) await r.unregister();
+        }
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            for (let k of keys) await caches.delete(k);
+        }
+        localStorage.clear();
+        sessionStorage.clear();
+        alert('Caché eliminada con éxito. La app se recargará ahora.');
+        window.location.reload(true);
+    };
+
     // Inyectar dinámicamente el manifiesto PWA y la metaetiqueta theme-color para compatibilidad estática PWA y GitHub Pages
     const manifestLink = document.createElement('link');
     manifestLink.rel = 'manifest';
-    manifestLink.href = 'static/manifest.webmanifest';
+    manifestLink.href = 'static/manifest.webmanifest?v=1.0.55';
     document.head.appendChild(manifestLink);
 
     const themeMeta = document.createElement('meta');
@@ -1517,7 +1543,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span class="version-badge">v1.0.54</span></h1>
+        <h1>VitroDiag <span class="version-badge">v1.0.55</span></h1>
         <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
     </header>
 
@@ -1532,6 +1558,9 @@
         </div>
         <button class="btn-manage-articles" onclick="openArticlesModal()">
             ⚙️ Fichas Técnicas
+        </button>
+        <button class="btn-manage-articles" onclick="clearAppCache()" title="Purgar caché antigua en celular" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border-color: var(--warning);">
+            🔄 Reset Caché Celular
         </button>
     </div>
 
@@ -2260,6 +2289,6 @@
         <div class="footer-subtext">PLANO DE CONTROL ÓPTICO - MÁQUINA I.S. CALIENTE</div>
     </footer>
 
-    <script type="module" src="static/js/main.js"></script>
+    <script type="module" src="static/js/main.js?v=1.0.55"></script>
 </body>
 </html>
