@@ -1,5 +1,5 @@
 // VitroDiag - Service Worker (Network-First Strategy with Cache Fallback for PWA Offline)
-const CACHE_NAME = 'vitrodiag-cache-v1.0.55-FINAL';
+const CACHE_NAME = 'vitrodiag-cache-v1.0.55-CLEAN';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -27,14 +27,14 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Precargando assets en caché PWA...');
       return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('[SW] Precarga parcial completada (algunos recursos opcionales no encontrados):', err);
+        console.warn('[SW] Precarga parcial completada:', err);
       });
     })
   );
   self.skipWaiting();
 });
 
-// Activación: Limpieza de cachés antiguas
+// Activación: Limpieza total de cualquier caché distinta a la actual
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -51,9 +51,21 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Estrategia Network-First con Fallback a Cache (Ideal para PWA Offline en Planta y Celulares)
+// Estrategia Network-First con Bypass en Navegación Principal
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  // En peticiones de navegación de página, forzar red limpia sin usar caché estática obsoleta
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request, { cache: 'reload' })
+        .catch(() => caches.match(event.request).then((res) => res || caches.match('./')))
+    );
+    return;
+  }
 
   event.respondWith(
     fetch(event.request)
@@ -66,16 +78,7 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          if (event.request.mode === 'navigate') {
-            return caches.match('./') || caches.match('/');
-          }
-        });
-      })
+      .catch(() => caches.match(event.request))
   );
 });
 
