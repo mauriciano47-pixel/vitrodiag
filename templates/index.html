@@ -9,7 +9,7 @@
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     {% load static %}
-    <link rel="manifest" href="/static/manifest.webmanifest">
+    <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
     <script>
     // Inyectar dinámicamente la metaetiqueta theme-color para evitar advertencias de compatibilidad de Firefox en HTML estático
     const themeMeta = document.createElement('meta');

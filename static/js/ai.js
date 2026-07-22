@@ -73,42 +73,62 @@ async function loadCustomUploadedModel() {
         }
 
 async function loadTensorFlowModel() {
-            const tfjsStatus = getTfjsStatus();
-            if (typeof tf === 'undefined') {
-                if (tfjsStatus) {
-                    tfjsStatus.innerText = "Visión: Librerías de red neuronal no cargadas";
-                    tfjsStatus.style.color = "#ef4444";
-                }
-                return;
-            }
-            try {
-                await tf.setBackend('webgl'); // Forzar explícitamente backend de GPU si está disponible
-                console.log("Backend TFJS activo:", tf.getBackend());
-            } catch (e) {
-                console.warn("Backend WebGL no disponible, usando defecto:", e);
-            }
-
-            try {
-                const isGithubPages = window.location.hostname.includes('github.io') || window.location.pathname.includes('/vitrodiag');
-                const modelPath = isGithubPages ? 'model/model.json' : '/static/model/model.json';
-                if (tfjsStatus) {
-                    tfjsStatus.innerText = `Buscando modelo en ${modelPath}...`;
-                }
-                // Carga asíncrona del modelo guardado localmente en la PWA
-                state.tfModel = await tf.loadLayersModel(modelPath);
-                await warmUpModel(state.tfModel);
-                if (tfjsStatus) {
-                    tfjsStatus.innerText = "Motor IA: Red Neuronal CNN cargada offline";
-                    tfjsStatus.style.color = "#10b981"; // Verde (Success)
-                }
-            } catch (err) {
-                console.log("No se encontró un modelo entrenado en /static/model/model.json. Usando diagnóstico de contornos.");
-                if (tfjsStatus) {
-                    tfjsStatus.innerText = "Motor de Visión: Análisis de Contornos Activo (Algorítmico)";
-                    tfjsStatus.style.color = "#06b6d4"; // Cyan
-                }
-            }
+    const tfjsStatus = getTfjsStatus();
+    if (typeof tf === 'undefined') {
+        if (tfjsStatus) {
+            tfjsStatus.innerText = "Motor de Visión: Análisis de Contornos Activo (Algorítmico)";
+            tfjsStatus.style.color = "#06b6d4";
         }
+        return;
+    }
+
+    try {
+        await tf.setBackend('webgl');
+        console.log("Backend TFJS activo:", tf.getBackend());
+    } catch (e) {
+        try {
+            await tf.setBackend('cpu');
+            console.log("Backend TFJS CPU activo:", tf.getBackend());
+        } catch (cpuErr) {
+            console.warn("Backend WebGL/CPU no disponible, usando defecto:", cpuErr);
+        }
+    }
+
+    const possiblePaths = [
+        'static/model/model.json',
+        './static/model/model.json',
+        '/static/model/model.json'
+    ];
+
+    let loadedModel = null;
+    for (const path of possiblePaths) {
+        try {
+            console.log(`[TFJS] Probando modelo en: ${path}`);
+            loadedModel = await tf.loadLayersModel(path);
+            if (loadedModel) {
+                console.log(`[TFJS] Modelo cargado con éxito desde: ${path}`);
+                state.tfModel = loadedModel;
+                break;
+            }
+        } catch (e) {
+            // Continuar al siguiente path de fallback
+        }
+    }
+
+    if (state.tfModel) {
+        await warmUpModel(state.tfModel);
+        if (tfjsStatus) {
+            tfjsStatus.innerText = "Motor IA: Red Neuronal CNN cargada offline";
+            tfjsStatus.style.color = "#10b981"; // Verde (Success)
+        }
+    } else {
+        console.log("[TFJS] Modelo CNN personalizado no encontrado. Usando diagnóstico de contornos algorítmico.");
+        if (tfjsStatus) {
+            tfjsStatus.innerText = "Motor de Visión: Análisis de Contornos Activo (Algorítmico)";
+            tfjsStatus.style.color = "#06b6d4"; // Cyan
+        }
+    }
+}
 
 let lastDiagStatus = 'alineando'; // Estado de diagnóstico anterior: 'alineando', 'aceptable', 'rechazo'
 let audioCtx = null;

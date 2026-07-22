@@ -1,33 +1,33 @@
 // VitroDiag - Service Worker (Network-First Strategy with Cache Fallback for PWA Offline)
-const CACHE_NAME = 'vitrodiag-cache-v1.0.53';
+const CACHE_NAME = 'vitrodiag-cache-v1.0.54';
 
 const ASSETS_TO_CACHE = [
-  '/',
-  '/static/manifest.webmanifest',
-  '/static/js/main.js',
-  '/static/js/state.js',
-  '/static/js/camera.js',
-  '/static/js/vision.js',
-  '/static/js/ui.js',
-  '/static/js/db.js',
-  '/static/js/ocr.js',
-  '/static/js/timing.js',
-  '/static/js/ai.js',
-  '/static/js/log.js',
-  '/static/js/swab.js',
-  '/static/js/geometry.js',
-  '/static/icons/icon-192.svg',
-  '/static/model/model.json',
-  '/static/model/weights.bin'
+  './',
+  'static/manifest.webmanifest',
+  'static/js/main.js',
+  'static/js/state.js',
+  'static/js/camera.js',
+  'static/js/vision.js',
+  'static/js/ui.js',
+  'static/js/db.js',
+  'static/js/ocr.js',
+  'static/js/timing.js',
+  'static/js/ai.js',
+  'static/js/log.js',
+  'static/js/swab.js',
+  'static/js/geometry.js',
+  'static/icons/icon-192.svg',
+  'static/model/model.json',
+  'static/model/weights.bin'
 ];
 
-// Instalación: Precargar recursos esenciales
+// Instalación: Precargar recursos esenciales de forma segura
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Precargando assets en caché...');
+      console.log('[SW] Precargando assets en caché PWA...');
       return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('[SW] Error en precarga parcial de assets:', err);
+        console.warn('[SW] Precarga parcial completada (algunos recursos opcionales no encontrados):', err);
       });
     })
   );
@@ -51,7 +51,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Estrategia Network-First con Fallback a Cache (Ideal para PWA Offline en Planta)
+// Estrategia Network-First con Fallback a Cache (Ideal para PWA Offline en Planta y Celulares)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
@@ -72,7 +72,7 @@ self.addEventListener('fetch', (event) => {
             return cachedResponse;
           }
           if (event.request.mode === 'navigate') {
-            return caches.match('/');
+            return caches.match('./') || caches.match('/');
           }
         });
       })
