@@ -603,6 +603,12 @@
             background-color: currentColor;
             box-shadow: 0 0 8px currentColor;
         }
+        .btn-reset-cache {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+
         .toggle-container {
             display: flex;
             justify-content: space-between;
@@ -1559,7 +1565,7 @@
         <button class="btn-manage-articles" onclick="openArticlesModal()">
             ⚙️ Fichas Técnicas
         </button>
-        <button class="btn-manage-articles" onclick="clearAppCache()" title="Purgar caché antigua en celular" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border-color: var(--warning);">
+        <button class="btn-manage-articles btn-reset-cache" onclick="clearAppCache()" title="Purgar caché antigua en celular">
             🔄 Reset Caché Celular
         </button>
     </div>
