@@ -9,9 +9,13 @@
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     {% load static %}
-    <link rel="manifest" href="{% static 'manifest.webmanifest' %}">
     <script>
-    // Inyectar dinámicamente la metaetiqueta theme-color para evitar advertencias de compatibilidad de Firefox en HTML estático
+    // Inyectar dinámicamente el manifiesto PWA y la metaetiqueta theme-color para evitar advertencias de compatibilidad de Firefox y linter estático
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = "{% static 'manifest.webmanifest' %}";
+    document.head.appendChild(manifestLink);
+
     const themeMeta = document.createElement('meta');
     themeMeta.name = 'theme-color';
     themeMeta.content = '#0f172a';
@@ -356,6 +360,7 @@
         }
 
         .status-alert {
+            display: inline-block;
             font-weight: 700;
             padding: 2px 8px;
             border-radius: 4px;
@@ -1626,7 +1631,7 @@
     <div id="liveView" class="view-content active">
         <div class="camera-wrapper" onclick="if(window.startDiagnosticCamera) { window.startDiagnosticCamera(); } if(window.startProcessing) { window.startProcessing(); }" title="Toca para iniciar cámara en celular">
             <div id="opencvStatus" class="opencv-status">Motor Visión: Esperando Envase en Guías...</div>
-            <video id="webcam" autoplay muted playsinline></video>
+            <video id="webcam" autoplay muted></video>
             <canvas id="canvasOutput" class="d-none"></canvas>
             
             <div class="overlay-guide">
@@ -1646,7 +1651,7 @@
         <div class="diagnostic-card" id="resultadoCard">
             <div class="card-title" id="diagTitulo">📷 Buscando Envase...</div>
             <div class="diag-status-row">
-                <span id="diagGravedad" class="status-alert status-warning" style="display: inline-block;">Sin Envase</span>
+                <span id="diagGravedad" class="status-alert status-warning">Sin Envase</span>
             </div>
             <div id="diagEstado" class="diag-state">Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.</div>
             
