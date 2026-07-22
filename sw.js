@@ -54,6 +54,12 @@ self.addEventListener('activate', (event) => {
 // Estrategia Network-First con Fallback a Cache (Ideal para PWA Offline en Planta y Celulares)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  
+  // BYPASS: No interceptar peticiones cross-origin (CDNs, tfjs, tesseract, etc.)
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    return; // Dejar que el navegador lo maneje de forma nativa sin SW
+  }
 
   event.respondWith(
     fetch(event.request)
@@ -74,6 +80,8 @@ self.addEventListener('fetch', (event) => {
           if (event.request.mode === 'navigate') {
             return caches.match('./') || caches.match('/');
           }
+          // Si no hay respuesta de red ni en caché, devolver error explícito
+          return Response.error();
         });
       })
   );

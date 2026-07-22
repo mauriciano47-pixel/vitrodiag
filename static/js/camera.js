@@ -26,7 +26,10 @@ async function startDiagnosticCamera() {
     try {
         state.diagnosticStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
         video.srcObject = state.diagnosticStream;
+        video.muted = true;
+        video.volume = 0;
         video.setAttribute('playsinline', '');
+        video.setAttribute('muted', '');
         await video.play().catch(e => console.log("Play webcam interrumpido:", e));
         status.innerText = "Motor Visión: Activo (Nativo)";
         status.style.color = "#10b981";
@@ -35,7 +38,10 @@ async function startDiagnosticCamera() {
         try {
             state.diagnosticStream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = state.diagnosticStream;
+            video.muted = true;
+            video.volume = 0;
             video.setAttribute('playsinline', '');
+            video.setAttribute('muted', '');
             await video.play().catch(e => console.log("Play webcam fallback interrumpido:", e));
             status.innerText = "Motor Visión: Activo (Nativo)";
             status.style.color = "#10b981";

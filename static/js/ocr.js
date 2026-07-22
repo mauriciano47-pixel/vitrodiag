@@ -617,7 +617,9 @@ function setScannerSource(source) {
         startScannerCamera();
         
         // Pre-calentar el worker mientras el usuario enfoca la cámara
-        if (!isWorkerReady) initTesseractWorker();
+        if (!isWorkerReady) {
+            initTesseractWorker().catch(e => console.warn("Pre-calentamiento OCR omitido:", e.message));
+        }
     } else if (source === 'file') {
         btnCam.classList.remove('active');
         btnFile.classList.add('active');

@@ -74,6 +74,8 @@ window.setFilter = setFilter;
 window.filterDefects = filterDefects;
 
 window.setVisionMode = setVisionMode;
+window.startDiagnosticCamera = startDiagnosticCamera;
+window.startProcessing = startProcessing;
 
 window.validateBdfTiming = validateBdfTiming;
 window.calculateSopMs = calculateSopMs;

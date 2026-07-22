@@ -104,7 +104,7 @@ function stopProcessing() {
 function processFrame() {
             if (!state.streamActive) return;
             
-            if (!video || video.readyState < 2 || video.videoWidth === 0) {
+            if (!video || video.readyState < 1 || video.videoWidth === 0) {
                 state.animationFrameId = requestAnimationFrame(processFrame);
                 return;
             }

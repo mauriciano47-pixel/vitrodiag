@@ -337,7 +337,7 @@ export function setupSilhouetteToggleListener() {
     const calibrationPanel = document.getElementById('calibrationPanel');
 
     if (toggle && webcamVideo && canvasOutput) {
-        toggle.addEventListener('change', () => {
+        const applyToggleState = () => {
             if (toggle.checked) {
                 canvasOutput.classList.remove('d-none');
                 webcamVideo.classList.add('d-none');
@@ -347,7 +347,12 @@ export function setupSilhouetteToggleListener() {
                 webcamVideo.classList.remove('d-none');
                 if (calibrationPanel) calibrationPanel.classList.remove('visible');
             }
-        });
+        };
+
+        // Aplicar estado inicial al arrancar la app
+        applyToggleState();
+
+        toggle.addEventListener('change', applyToggleState);
     }
 }
 

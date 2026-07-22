@@ -1624,9 +1624,9 @@
 
     <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO -->
     <div id="liveView" class="view-content active">
-        <div class="camera-wrapper">
-            <div id="opencvStatus" class="opencv-status">Motor Visión: Cargando...</div>
-            <video id="webcam" autoplay muted></video>
+        <div class="camera-wrapper" onclick="if(window.startDiagnosticCamera) { window.startDiagnosticCamera(); } if(window.startProcessing) { window.startProcessing(); }" title="Toca para iniciar cámara en celular">
+            <div id="opencvStatus" class="opencv-status">Motor Visión: Esperando Envase en Guías...</div>
+            <video id="webcam" autoplay muted playsinline></video>
             <canvas id="canvasOutput" class="d-none"></canvas>
             
             <div class="overlay-guide">
@@ -1638,20 +1638,23 @@
             <div id="diagCursor" class="diag-cursor">
                 <div class="crosshair crosshair-x"></div>
                 <div class="crosshair crosshair-y"></div>
-                <div class="cursor-text">ANALIZANDO...</div>
+                <div class="cursor-text">ESPERANDO ENVASE</div>
             </div>
         </div>
 
         <!-- REUBICADO: Panel de Diagnóstico más cerca de la cámara -->
         <div class="diagnostic-card" id="resultadoCard">
-            <div class="card-title" id="diagTitulo">Iniciando motor...</div>
+            <div class="card-title" id="diagTitulo">📷 Buscando Envase...</div>
             <div class="diag-status-row">
-                <span id="diagGravedad" class="status-alert"></span>
+                <span id="diagGravedad" class="status-alert status-warning" style="display: inline-block;">Sin Envase</span>
             </div>
-            <div id="diagEstado" class="diag-state"></div>
+            <div id="diagEstado" class="diag-state">Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.</div>
             
             <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
-            <ol class="actions-list" id="diagAcciones"></ol>
+            <ol class="actions-list" id="diagAcciones">
+                <li>Alinee el cuello y cuerpo de la botella dentro de la retícula de disparo.</li>
+                <li>Si la cámara no enciende, toca el visor superior o abre la web vía HTTPS.</li>
+            </ol>
         </div>
 
         <div class="toggle-container">
