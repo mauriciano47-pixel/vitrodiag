@@ -394,82 +394,174 @@ function fallbackAlgorithmicDiagnosis() {
     }
 
     const maxDeviation = Math.max(...neckDeviations);
-    // Multiplicamos por 200 en lugar de 100 para duplicar la sensibilidad, ya que el cuello torcido simple a veces no se detectaba
     const percentDeviation = (maxDeviation / avgBodyWidth) * 200;
+
+    // --- EVALUACIÓN MULTIZONA (patronista1) DE DEFECTOS ESPECÍFICOS SEGÚN FICHA TÉCNICA ---
+    const activeArticle = state.activeArticle;
+    const articleName = activeArticle ? activeArticle.nombre : "Artículo Patrón";
+
+    // 1. ZONA 1: CORONA / BOCA (0% a 15% de la botella)
+    const startMouthY = Math.floor(bottleTopY);
+    const endMouthY = Math.floor(bottleTopY + bottleHeight * 0.15);
+    let mouthLayers = 0;
+    let mouthAsymmetrySum = 0;
+    
+    for (let y = startMouthY; y < endMouthY; y += 2) {
+        let leftX = -1, rightX = -1;
+        for (let x = 0; x < width; x++) { if (borders[y * width + x] > 0) { leftX = x; break; } }
+        for (let x = width - 1; x >= 0; x--) { if (borders[y * width + x] > 0) { rightX = x; break; } }
+        if (leftX !== -1 && rightX !== -1) {
+            const mouthCenter = (leftX + rightX) / 2;
+            mouthAsymmetrySum += Math.abs(mouthCenter - avgBodyCenter);
+            mouthLayers++;
+        }
+    }
+    const avgMouthDev = mouthLayers > 0 ? (mouthAsymmetrySum / mouthLayers) : 0;
+    const mouthDevPercent = (avgMouthDev / avgBodyWidth) * 200;
+
+    // 2. ZONA 3: HOMBRO (40% a 55% de la botella)
+    const startShoulderY = Math.floor(bottleTopY + bottleHeight * 0.40);
+    const endShoulderY = Math.floor(bottleTopY + bottleHeight * 0.55);
+    let shoulderLayers = 0;
+    let shoulderAsymmetrySum = 0;
+
+    for (let y = startShoulderY; y < endShoulderY; y += 2) {
+        let leftX = -1, rightX = -1;
+        for (let x = 0; x < width; x++) { if (borders[y * width + x] > 0) { leftX = x; break; } }
+        for (let x = width - 1; x >= 0; x--) { if (borders[y * width + x] > 0) { rightX = x; break; } }
+        if (leftX !== -1 && rightX !== -1) {
+            const shoulderCenter = (leftX + rightX) / 2;
+            shoulderAsymmetrySum += Math.abs(shoulderCenter - avgBodyCenter);
+            shoulderLayers++;
+        }
+    }
+    const avgShoulderDev = shoulderLayers > 0 ? (shoulderAsymmetrySum / shoulderLayers) : 0;
+    const shoulderDevPercent = (avgShoulderDev / avgBodyWidth) * 200;
+
+    // 3. ZONA 5: FONDO / BASE (85% a 100% de la botella)
+    const startBaseY = Math.floor(bottleTopY + bottleHeight * 0.85);
+    const endBaseY = Math.floor(bottleBottomY);
+    let baseLayers = 0;
+    let baseAsymmetrySum = 0;
+
+    for (let y = startBaseY; y < endBaseY; y += 2) {
+        let leftX = -1, rightX = -1;
+        for (let x = 0; x < width; x++) { if (borders[y * width + x] > 0) { leftX = x; break; } }
+        for (let x = width - 1; x >= 0; x--) { if (borders[y * width + x] > 0) { rightX = x; break; } }
+        if (leftX !== -1 && rightX !== -1) {
+            const baseCenter = (leftX + rightX) / 2;
+            baseAsymmetrySum += Math.abs(baseCenter - avgBodyCenter);
+            baseLayers++;
+        }
+    }
+    const avgBaseDev = baseLayers > 0 ? (baseAsymmetrySum / baseLayers) : 0;
+    const baseDevPercent = (avgBaseDev / avgBodyWidth) * 200;
 
     const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 5;
     const toleranceLimit = parseInt(sliderVal) || 5;
 
-    console.log(`[Eje Dinámico v1.0.51] Altura: ${bottleHeight}px | Top: ${bottleTopY} | Base: ${bottleBottomY} | Desvío: ${percentDeviation.toFixed(2)}% | Límite: ${toleranceLimit}%`);
+    console.log(`[Patrón Moldería patronista1] ${articleName} | H: ${bottleHeight}px | Cuello: ${percentDeviation.toFixed(1)}% | Corona: ${mouthDevPercent.toFixed(1)}% | Hombro: ${shoulderDevPercent.toFixed(1)}% | Base: ${baseDevPercent.toFixed(1)}%`);
 
     const cursorText = document.querySelector('.cursor-text');
     const crosshairX = document.querySelector('.crosshair-x');
     const crosshairY = document.querySelector('.crosshair-y');
 
-    if (percentDeviation > toleranceLimit) {
-        // Cuello torcido confirmado
-        if (diagTitulo) diagTitulo.innerText = "❌ Defecto Crítico: Cuello Torcido / Deformado";
+    // Detección nombrada del defecto específico según zona anatómica
+    let detectedDefect = null;
+    let defectZone = null;
+    let defectDev = 0;
+    let defectActions = "";
+
+    if (mouthDevPercent > (toleranceLimit * 1.3)) {
+        detectedDefect = "Boca Incompleta / Defecto de Corona";
+        defectZone = "Corona (0-15%)";
+        defectDev = mouthDevPercent;
+        defectActions = `
+            <li><strong>Mecanismo IS:</strong> Ajustar alineación del brazo de transferencia y presión de soplo inicial.</li>
+            <li><strong>Moldería:</strong> Inspeccionar estado del anillo de corona y machuelo NNPB.</li>
+        `;
+    } else if (percentDeviation > toleranceLimit) {
+        detectedDefect = "Cuello Torcido / Pliegue de Cuello";
+        defectZone = "Cuello (15-40%)";
+        defectDev = percentDeviation;
+        defectActions = `
+            <li><strong>Mecanismo IS:</strong> Ajustar pinza de transferencia y brazo de soplado.</li>
+            <li><strong>Moldería:</strong> Inspeccionar encaje del anillo de cuello y boquilla.</li>
+            <li><strong>Proceso:</strong> Revisar distribución de vidrio en el parison y enfriamiento del macho.</li>
+        `;
+    } else if (shoulderDevPercent > (toleranceLimit * 1.2)) {
+        detectedDefect = "Hombro Caído / Deformación de Hombro";
+        defectZone = "Hombro (40-55%)";
+        defectDev = shoulderDevPercent;
+        defectActions = `
+            <li><strong>Proceso:</strong> Ajustar tiempo de enfriamiento de preforma y vacío en molde de soplo.</li>
+            <li><strong>Moldería:</strong> Limpiar ventilación y juntas en zona de hombro del molde.</li>
+        `;
+    } else if (baseDevPercent > (toleranceLimit * 1.2)) {
+        detectedDefect = "Fondo Inclinado / Base Desplazada";
+        defectZone = "Fondo (85-100%)";
+        defectDev = baseDevPercent;
+        defectActions = `
+            <li><strong>Mecanismo IS:</strong> Inspeccionar mecanismo de expulsión (take-out) y placa de enfriamiento de fondo.</li>
+            <li><strong>Moldería:</strong> Verificar planitud del fondo de molde y mecanismo de punzón.</li>
+        `;
+    }
+
+    if (detectedDefect) {
+        // Defecto Específico Confirmado
+        if (diagTitulo) diagTitulo.innerText = `❌ Defecto Crítico: ${detectedDefect}`;
         if (diagGravedad) {
             diagGravedad.className = "status-alert status-danger";
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Rechazo Inmediato";
         }
-        if (diagEstado) diagEstado.innerText = `Desviación del eje del cuello detectada: ${percentDeviation.toFixed(1)}% (Límite: ${toleranceLimit}%).`;
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `
-                <li><strong>Mecanismo IS:</strong> Ajustar alineación de la pinza de transferencia y brazo de soplado.</li>
-                <li><strong>Moldería:</strong> Inspeccionar corona y encaje del anillo de cuello.</li>
-                <li><strong>Proceso:</strong> Revisar distribución de vidrio en el parison y enfriamiento del macho.</li>
-            `;
-        }
+        if (diagEstado) diagEstado.innerText = `Desviación observada en ${defectZone}: ${defectDev.toFixed(1)}% (Límite tolerado: ${toleranceLimit}%). Ficha: ${articleName}.`;
+        if (diagAcciones) diagAcciones.innerHTML = defectActions;
+        
         if (tfjsStatus) {
-            tfjsStatus.innerText = `Motor OpenCV: Cuello Desviado (${percentDeviation.toFixed(1)}% / Límite ${toleranceLimit}%)`;
+            tfjsStatus.innerText = `Patrón Moldería: ${detectedDefect} (${defectDev.toFixed(1)}%)`;
             tfjsStatus.style.color = "#ef4444";
         }
         
-        // Actualizar cursor visual
         if (cursorText) {
-            cursorText.innerText = 'RECHAZO: CUELLO TORCIDO';
+            cursorText.innerText = `RECHAZO: ${detectedDefect.toUpperCase().split('/')[0]}`;
             cursorText.style.color = '#ef4444';
             if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
             if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';
         }
 
-        // Tono y vibración de aviso "Diagnóstico Listo - Rechazo"
         if (lastDiagStatus !== 'rechazo') {
             playBeep('danger');
             triggerVibration('danger');
             lastDiagStatus = 'rechazo';
         }
     } else {
-        // Aceptable
-        if (diagTitulo) diagTitulo.innerText = "✅ Silueta dentro de tolerancias";
+        // Conforme con Ficha Técnica
+        if (diagTitulo) diagTitulo.innerText = `✅ Silueta Conforme (${articleName})`;
         if (diagGravedad) {
             diagGravedad.className = "status-alert status-success";
             diagGravedad.style.display = "inline-block";
             diagGravedad.innerText = "Aceptable";
         }
-        if (diagEstado) diagEstado.innerText = `Simetría dentro de los parámetros: ${percentDeviation.toFixed(1)}% de desvío (Límite: ${toleranceLimit}%).`;
+        if (diagEstado) diagEstado.innerText = `Silueta en las 5 zonas dentro de los parámetros de moldería patrón: ${percentDeviation.toFixed(1)}% desvío max.`;
         if (diagAcciones) {
             diagAcciones.innerHTML = `
-                <li>El envase cumple con los parámetros geométricos del artículo.</li>
+                <li>El envase cumple con las especificaciones de moldería para ${articleName}.</li>
                 <li>Mantener velocidad nominal de producción.</li>
             `;
         }
         if (tfjsStatus) {
-            tfjsStatus.innerText = `Motor OpenCV: Envase Aceptable (Desvío: ${percentDeviation.toFixed(1)}%)`;
+            tfjsStatus.innerText = `Patrón Moldería: Envase Conforme (${articleName})`;
             tfjsStatus.style.color = "#10b981";
         }
 
-        // Actualizar cursor visual
         if (cursorText) {
-            cursorText.innerText = 'ACEPTABLE';
+            cursorText.innerText = 'CONFORME CON PATRÓN';
             cursorText.style.color = '#10b981';
             if (crosshairX) crosshairX.style.backgroundColor = '#10b981';
             if (crosshairY) crosshairY.style.backgroundColor = '#10b981';
         }
 
-        // Tono y vibración de aviso "Diagnóstico Listo - Aceptable"
         if (lastDiagStatus !== 'aceptable') {
             playBeep('success');
             triggerVibration('success');
