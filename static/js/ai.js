@@ -279,7 +279,7 @@ function fallbackAlgorithmicDiagnosis() {
     for (let y = 0; y < height; y++) {
         let count = 0;
         for (let x = 0; x < width; x++) {
-            if (borders[y * width + x] > 128) {
+            if (borders[y * width + x] > 0) {
                 count++;
             }
         }
@@ -571,30 +571,74 @@ function runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter) {
 export function isBottlePresent(borders, width, height) {
     if (!borders || width === 0 || height === 0) return false;
 
-    let edgePixelCount = 0;
-    const validRows = [];
-    const minX = Math.floor(width * 0.05);
-    const maxX = Math.floor(width * 0.95);
-    const minY = Math.floor(height * 0.05);
-    const maxY = Math.floor(height * 0.95);
+    // Retícula central de inspección: 15% a 85% X, 10% a 90% Y
+    const minX = Math.floor(width * 0.15);
+    const maxX = Math.floor(width * 0.85);
+    const minY = Math.floor(height * 0.10);
+    const maxY = Math.floor(height * 0.90);
+
+    let validBottleRows = 0;
+    let prevLeftX = -1;
+    let prevRightX = -1;
+    
+    let maxContinuous = 0;
+    let currentContinuous = 0;
 
     for (let y = minY; y < maxY; y++) {
-        let rowEdges = 0;
+        let leftEdgeX = -1;
+        let rightEdgeX = -1;
+
+        // 1. Buscar contorno izquierdo fuerte (>= 128)
         for (let x = minX; x < maxX; x++) {
-            if (borders[y * width + x] > 0) {
-                rowEdges++;
-                edgePixelCount++;
+            if (borders[y * width + x] >= 128) {
+                leftEdgeX = x;
+                break;
             }
         }
-        if (rowEdges >= 1) {
-            validRows.push(y);
+
+        // 2. Buscar contorno derecho fuerte (>= 128)
+        for (let x = maxX - 1; x >= minX; x--) {
+            if (borders[y * width + x] >= 128) {
+                rightEdgeX = x;
+                break;
+            }
+        }
+
+        // 3. Validar si la fila contiene un par de bordes simétricos con ancho válido de envase
+        const bottleWidth = rightEdgeX - leftEdgeX;
+        const minWidth = Math.floor(width * 0.15); // Ancho mínimo del envase (15% de pantalla)
+        const maxWidth = Math.floor(width * 0.82); // Ancho máximo del envase (82% de pantalla)
+
+        if (leftEdgeX !== -1 && rightEdgeX !== -1 && bottleWidth >= minWidth && bottleWidth <= maxWidth) {
+            validBottleRows++;
+
+            // 4. Comprobar continuidad vertical con la fila anterior (borde continuo de envase)
+            if (prevLeftX !== -1 && Math.abs(leftEdgeX - prevLeftX) <= 8 && Math.abs(rightEdgeX - prevRightX) <= 8) {
+                currentContinuous++;
+            } else {
+                currentContinuous = 1;
+            }
+            
+            if (currentContinuous > maxContinuous) {
+                maxContinuous = currentContinuous;
+            }
+            
+            prevLeftX = leftEdgeX;
+            prevRightX = rightEdgeX;
+        } else {
+            prevLeftX = -1;
+            prevRightX = -1;
+            currentContinuous = 0;
         }
     }
 
-    const minVerticalSpan = Math.floor(height * 0.05); // Al menos 5% de la altura de la imagen
-    const minEdgePixels = 8; // Al menos 8 píxeles de contorno acumulado
+    // Un envase REAL requiere:
+    // 1. Al menos 30% de las filas de la pantalla con contornos válidos de envase (para H=180, ~54 filas).
+    // 2. Un segmento continuo de contorno vertical de al menos 18% de la pantalla (para H=180, ~32 filas).
+    const minRowsRequired = Math.floor(height * 0.30);
+    const minContinuousRequired = Math.floor(height * 0.18);
 
-    return (validRows.length >= minVerticalSpan && edgePixelCount >= minEdgePixels);
+    return (validBottleRows >= minRowsRequired && maxContinuous >= minContinuousRequired);
 }
 
 export function runLiveDiagnosis() {
