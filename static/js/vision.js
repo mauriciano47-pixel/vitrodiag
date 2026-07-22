@@ -215,8 +215,18 @@ function processFrame() {
                         }
                     }
                     
-                    // En modo térmico no hay análisis de simetría clásico
-                    state.lastProcessedBorders = null;
+                    // En modo térmico, calcular bordes por contraste de luminancia para asegurar presencia de envase
+                    for (let y = 1; y < height - 1; y++) {
+                        for (let x = 1; x < width - 1; x++) {
+                            const diff = Math.abs(gray[y * width + x] - gray[y * width + (x + 1)]);
+                            if (diff > threshold) {
+                                borders[y * width + x] = 255;
+                            }
+                        }
+                    }
+                    state.lastProcessedBorders = borders;
+                    state.lastBordersWidth = width;
+                    state.lastBordersHeight = height;
 
                 } else {
                     // --- MODOS DE CONTORNO (FINE O SOBEL) ---

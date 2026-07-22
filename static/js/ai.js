@@ -553,8 +553,8 @@ export function isBottlePresent(borders, width, height) {
 
     let edgePixelCount = 0;
     const validRows = [];
-    const minX = Math.floor(width * 0.08);
-    const maxX = Math.floor(width * 0.92);
+    const minX = Math.floor(width * 0.05);
+    const maxX = Math.floor(width * 0.95);
     const minY = Math.floor(height * 0.05);
     const maxY = Math.floor(height * 0.95);
 
@@ -566,13 +566,13 @@ export function isBottlePresent(borders, width, height) {
                 edgePixelCount++;
             }
         }
-        if (rowEdges >= 3) {
+        if (rowEdges >= 1) {
             validRows.push(y);
         }
     }
 
-    const minVerticalSpan = Math.floor(height * 0.15); // Al menos 15% de la altura de la imagen
-    const minEdgePixels = 50; // Al menos 50 píxeles de contorno acumulado
+    const minVerticalSpan = Math.floor(height * 0.12); // Al menos 12% de la altura de la imagen
+    const minEdgePixels = 25; // Al menos 25 píxeles de contorno acumulado
 
     return (validRows.length >= minVerticalSpan && edgePixelCount >= minEdgePixels);
 }
