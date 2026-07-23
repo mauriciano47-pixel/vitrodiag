@@ -21,5 +21,11 @@ export const state = {
     // Temporizador de Swabbing
     swabTimerId: null,
     swabTimeLeft: 0,
-    audioCtx: null
+    audioCtx: null,
+
+    // Motor Híbrido de Detección (Gemini Vision + Algorítmico)
+    geminiApiKey: null,
+    isOnline: navigator.onLine || false,
+    lastGeminiResult: null,
+    geminiAnalyzing: false
 };

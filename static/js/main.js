@@ -59,6 +59,13 @@ import {
     setupLogEventListeners
 } from './log.js';
 import { initSwabModule } from './swab.js';
+import { 
+    saveGeminiApiKey, 
+    loadGeminiApiKey, 
+    clearGeminiApiKey, 
+    runDeepDiagnosis, 
+    initConnectivityMonitor 
+} from './geminiVision.js';
 
 // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
 window.DEFECTOS_DB = DEFECTOS_DB;
@@ -94,6 +101,11 @@ window.cancelOcrConfirm = cancelOcrConfirm;
 window.updateConfidenceThresholdDisplay = updateConfidenceThresholdDisplay;
 window.loadCustomUploadedModel = loadCustomUploadedModel;
 
+// Exponer funciones de Gemini Vision al ámbito global
+window.saveGeminiApiKey = saveGeminiApiKey;
+window.clearGeminiApiKey = clearGeminiApiKey;
+window.runDeepDiagnosis = runDeepDiagnosis;
+
 // Exponer Toasts de forma global para depuracion
 window.showToast = showToast;
 
@@ -113,6 +125,8 @@ window.addEventListener('DOMContentLoaded', () => {
     loadTensorFlowModel();
     setupLogEventListeners();
     initSwabModule();
+    loadGeminiApiKey();
+    initConnectivityMonitor();
 
     // 1. Inicializar el directorio de defectos
     renderDefectsList(DEFECTOS_DB);
@@ -137,7 +151,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 7. Registrar Service Worker con Auto-Actualización Instantánea (Estrategia Network-First)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js?v=1.0.54-g').then(reg => {
+        navigator.serviceWorker.register('sw.js?v=1.0.57').then(reg => {
             console.log("[PWA] Service Worker registrado correctamente.");
             try { reg.update(); } catch(e) {}
             

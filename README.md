@@ -1,4 +1,4 @@
-# VitroDiag v1.0.56
+# VitroDiag v1.0.57
 
 Muestreo Rápido NNPB para Operador I.S. de Cristal Chile.
 
@@ -9,22 +9,24 @@ VitroDiag es una plataforma Progressive Web App (PWA) de asistencia óptica y co
 ## Características
 
 - 📱 Acceso a cámara trasera del smartphone
+- 🧠 Motor Híbrido de Diagnóstico: IA en la nube (Gemini Vision API) + Algorítmico local offline
 - 🤖 Motor de inferencia analítica (Cerebro NNPB)
-- 🎯 Detección de defectos en envases de vidrio
-- ⚡ Procesamiento en tiempo real offline
+- 🎯 Detección de defectos multizona en envases de vidrio (Corona, Cuello, Hombro, Cuerpo, Fondo)
+- ⚡ Procesamiento en tiempo real con tolerancia anti-falsos positivos (maxContinuous)
 
 ## Cómo usar
 
 1. Abre la app en tu celular desde [VitroDiag PWA](https://mauriciano47-pixel.github.io/vitrodiag/).
 2. Permite acceso a la cámara.
 3. Alinea el envase según las guías del visor.
-4. El diagnóstico se ejecutará automáticamente en tiempo real sin requerir clics.
+4. El diagnóstico se ejecutará automáticamente en tiempo real (o mediante Diagnóstico Profundo con IA).
 
 ## Defectos detectados
 
 - 🚨 REBABA EN LA BOCA (OVERPRESSED)
 - 🚨 BAJO BOCA / BOCA INCOMPLETA
 - 🚨 COLUMPIO DE CUERPO (BIRDSWING)
+- 🚨 DEFECTOS MULTIZONA (CUELLO TORCIDO, OVALAMIENTO, HUNDIMIENTO, BURBUJAS)
 - ✅ ENVASE CONFORME
 
 ---
