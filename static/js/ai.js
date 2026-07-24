@@ -1,6 +1,8 @@
 import { state } from './state.js';
 import { showToast } from './ui.js';
 import { processFrame } from './vision.js';
+import { DEFECTOS_DB, getDefectsByZone, getDefectById } from './db.js';
+
 
 // ⚠️ FIX #4: Referencias DOM obtenidas de forma lazy dentro de las funciones
 // para evitar crash cuando el módulo se importa antes de DOMContentLoaded.
@@ -466,65 +468,66 @@ function fallbackAlgorithmicDiagnosis() {
     const crosshairX = document.querySelector('.crosshair-x');
     const crosshairY = document.querySelector('.crosshair-y');
 
-    // Detección nombrada del defecto específico según zona anatómica
-    let detectedDefect = null;
+    // Detección nombrada del defecto específico según zona anatómica consultada en DEFECTOS_DB
+    let detectedDefectObj = null;
     let defectZone = null;
     let defectDev = 0;
-    let defectActions = "";
 
     if (mouthDevPercent > (toleranceLimit * 1.3)) {
-        detectedDefect = "Boca Incompleta / Defecto de Corona";
+        detectedDefectObj = getDefectById("bajo_boca") || getDefectById("rebaba_boca") || getDefectsByZone("boca")[0];
         defectZone = "Corona (0-15%)";
         defectDev = mouthDevPercent;
-        defectActions = `
-            <li><strong>Mecanismo IS:</strong> Ajustar alineación del brazo de transferencia y presión de soplo inicial.</li>
-            <li><strong>Moldería:</strong> Inspeccionar estado del anillo de corona y machuelo NNPB.</li>
-        `;
     } else if (percentDeviation > toleranceLimit) {
-        detectedDefect = "Cuello Torcido / Pliegue de Cuello";
+        detectedDefectObj = getDefectById("boca_inclinada") || getDefectsByZone("cuello")[0] || {
+            nombre: "Cuello Torcido / Pliegue de Cuello",
+            gravedad: "Crítico",
+            descripcion: "Desviación angular o asimetría grave en la zona de cuello.",
+            acciones: ["Ajustar pinza de transferencia y brazo de soplado.", "Inspeccionar encaje del anillo de cuello."]
+        };
         defectZone = "Cuello (15-40%)";
         defectDev = percentDeviation;
-        defectActions = `
-            <li><strong>Mecanismo IS:</strong> Ajustar pinza de transferencia y brazo de soplado.</li>
-            <li><strong>Moldería:</strong> Inspeccionar encaje del anillo de cuello y boquilla.</li>
-            <li><strong>Proceso:</strong> Revisar distribución de vidrio en el parison y enfriamiento del macho.</li>
-        `;
     } else if (shoulderDevPercent > (toleranceLimit * 1.2)) {
-        detectedDefect = "Hombro Caído / Deformación de Hombro";
+        detectedDefectObj = getDefectsByZone("hombro")[0] || {
+            nombre: "Hombro Caído / Deformación de Hombro",
+            gravedad: "Mayor",
+            descripcion: "Variación de perfil en la zona de hombro.",
+            acciones: ["Ajustar tiempo de enfriamiento de preforma.", "Limpiar ventilación de molde."]
+        };
         defectZone = "Hombro (40-55%)";
         defectDev = shoulderDevPercent;
-        defectActions = `
-            <li><strong>Proceso:</strong> Ajustar tiempo de enfriamiento de preforma y vacío en molde de soplo.</li>
-            <li><strong>Moldería:</strong> Limpiar ventilación y juntas en zona de hombro del molde.</li>
-        `;
     } else if (baseDevPercent > (toleranceLimit * 1.2)) {
-        detectedDefect = "Fondo Inclinado / Base Desplazada";
+        detectedDefectObj = getDefectsByZone("fondo")[0] || {
+            nombre: "Fondo Inclinado / Base Desplazada",
+            gravedad: "Mayor",
+            descripcion: "Desplazamiento o falta de planitud en el asiento del envase.",
+            acciones: ["Inspeccionar mecanismo de expulsión (take-out).", "Verificar planitud de fondo."]
+        };
         defectZone = "Fondo (85-100%)";
         defectDev = baseDevPercent;
-        defectActions = `
-            <li><strong>Mecanismo IS:</strong> Inspeccionar mecanismo de expulsión (take-out) y placa de enfriamiento de fondo.</li>
-            <li><strong>Moldería:</strong> Verificar planitud del fondo de molde y mecanismo de punzón.</li>
-        `;
     }
 
-    if (detectedDefect) {
-        // Defecto Específico Confirmado
-        if (diagTitulo) diagTitulo.innerText = `❌ Defecto Crítico: ${detectedDefect}`;
+    if (detectedDefectObj) {
+        const detectedName = detectedDefectObj.nombre;
+        const defectActions = (detectedDefectObj.acciones || []).map(a => `<li>${a}</li>`).join('');
+
+        // Defecto Específico Confirmado desde DEFECTOS_DB
+        if (diagTitulo) diagTitulo.innerText = `❌ Defecto Crítico: ${detectedName}`;
         if (diagGravedad) {
-            diagGravedad.className = "status-alert status-danger";
+            const gClass = detectedDefectObj.gravedad === "Crítico" ? "status-danger" : "status-warning";
+            diagGravedad.className = `status-alert ${gClass}`;
             diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = "Rechazo Inmediato";
+            diagGravedad.innerText = `Rechazo (${detectedDefectObj.gravedad || 'Crítico'})`;
         }
-        if (diagEstado) diagEstado.innerText = `Desviación observada en ${defectZone}: ${defectDev.toFixed(1)}% (Límite tolerado: ${toleranceLimit}%). Ficha: ${articleName}.`;
+        if (diagEstado) diagEstado.innerText = `Desviación observada en ${defectZone}: ${defectDev.toFixed(1)}% (Límite: ${toleranceLimit}%). Ficha: ${articleName}. ${detectedDefectObj.descripcion || ''}`;
         if (diagAcciones) diagAcciones.innerHTML = defectActions;
         
         if (tfjsStatus) {
-            tfjsStatus.innerText = `Patrón Moldería: ${detectedDefect} (${defectDev.toFixed(1)}%)`;
+            tfjsStatus.innerText = `Patrón Moldería: ${detectedName} (${defectDev.toFixed(1)}%)`;
             tfjsStatus.style.color = "#ef4444";
         }
         
         if (cursorText) {
-            cursorText.innerText = `RECHAZO: ${detectedDefect.toUpperCase().split('/')[0]}`;
+            cursorText.innerText = `RECHAZO: ${detectedName.toUpperCase().split('/')[0]}`;
             cursorText.style.color = '#ef4444';
             if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
             if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';
@@ -536,6 +539,7 @@ function fallbackAlgorithmicDiagnosis() {
             lastDiagStatus = 'rechazo';
         }
     } else {
+
         // Conforme con Ficha Técnica
         if (diagTitulo) diagTitulo.innerText = `✅ Silueta Conforme (${articleName})`;
         if (diagGravedad) {

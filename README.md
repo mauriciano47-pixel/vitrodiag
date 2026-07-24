@@ -1,6 +1,7 @@
-# VitroDiag v1.0.57
+# VitroDiag v1.0.58
 
 Muestreo Rápido NNPB para Operador I.S. de Cristal Chile.
+
 
 ## Descripción
 

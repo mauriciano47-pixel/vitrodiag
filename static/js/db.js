@@ -2158,4 +2158,14 @@
             
             renderDefectsList(filtered);
         }
+
+        export function getDefectsByZone(zone) {
+            if (!zone || zone === 'todo') return DEFECTOS_DB;
+            return DEFECTOS_DB.filter(d => d.zona.toLowerCase() === zone.toLowerCase());
+        }
+
+        export function getDefectById(id) {
+            return DEFECTOS_DB.find(d => d.id === id) || null;
+        }
+
 

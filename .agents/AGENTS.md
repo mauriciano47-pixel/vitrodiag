@@ -1,5 +1,8 @@
 # Reglas del Workspace — VitroDiag
 
+- **REGLA ABSOLUTA DE LIMPIEZA FINAL Y CERO ERRORES/PROBLEMAS**: Cada vez que se realice cualquier modificación, edición, parche o generación de archivos en el proyecto, el agente DEBE revisar de forma obligatoria y autónoma la pestaña de problemas del IDE (`@[current_problems]`), consolas y linters, resolviendo de inmediato el 100% de advertencias, lints, alertas y errores (Python, JavaScript, HTML, CSS, Markdown) antes de dar por concluida la tarea o entregar la respuesta.
+
+
 - **Corrección Proactiva de Lints y Advertencias**: Cada vez que se realicen cambios, auditorías o se generen archivos (código Python, JavaScript, HTML o Markdown) y el IDE/terminal reporte advertencias o problemas, el agente debe proceder de forma autónoma a corregirlos de inmediato para mantener el workspace libre de alertas, sin esperar a que el usuario lo delegue explícitamente y sin necesidad de pedir autorización o confirmación previa. Esto incluye, pero no se limita a:
   - **HTML/Accesibilidad**: Errores de tipo "Form elements must have labels" (falta de `title` o `aria-label` en `<input>`, `<select>`, `<textarea>`).
   - **CSS**: Advertencias de "CSS inline styles should not be used" (reemplazar `style="..."` por clases CSS dedicadas).
@@ -7,7 +10,6 @@
   - **Python**: Errores de sintaxis (`SyntaxError`), imports no utilizados, variables sin uso.
   - **JavaScript**: `ReferenceError`, `TypeError`, imports rotos, variables no declaradas.
 
-- **Verificación y Limpieza Final Obligatoria tras Cada Tarea**: Al concluir cualquier tarea o solicitud, el agente DEBE realizar una inspección de lints y advertencias del IDE (`@[current_problems]`), asegurando que todos los archivos (código Python, JavaScript, HTML, CSS y Markdown) queden 100% limpios de problemas y alertas antes de finalizar el turno.
 
 - **Sincronización Automática de Propuesta y Documentación (VitroDiag)**: Cada vez que se implemente una nueva función, módulo, parche o cambio de versión en la aplicación, el agente DEBE actualizar automáticamente la propuesta técnica oficial (`vitrodiag_propuesta_oficial.md`), el documento de información en el Escritorio (`VitroDiag_Info.txt`), el `VERSION.txt` y `README.md`, garantizando que todas las funciones, hojas de ruta y versiones coincidan 100% con la aplicación.
 
@@ -19,3 +21,5 @@
 - **UI/UX (disenador1)**: Invocado al crear o modificar plantillas HTML, CSS o JS para garantizar estándares estéticos premium.
 - **Documentación (escriba1)**: Invocado automáticamente tras la aprobación de nuevas funciones para redactar manuales y docstrings.
 - **DevOps (piloto1)**: Invocado exclusivamente cuando el código está listo para ser preparado y desplegado a producción.
+- **Gestión Obligatoria de Commits y Repositorios Git**: Cada vez que se completen modificaciones, parches o un nuevo release de versión en la aplicación, el agente DEBE ejecutar automáticamente los comandos de git para guardar el commit (`git add .`, `git commit -m "..."`) y realizar el push (`git push origin main`) al repositorio remoto para actualizar la producción en vivo (GitHub Pages).
+
