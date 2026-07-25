@@ -218,6 +218,9 @@ async function runScannerOcr() {
             }
         }
         showToast(errorMsg, "danger");
+    } finally {
+        // Liberar memoria del trabajador OCR explícitamente para evitar fugas en PWA
+        await terminateTesseractWorker();
     }
 }
 

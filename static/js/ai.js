@@ -709,7 +709,10 @@ export function isBottlePresent(borders, width, height) {
             validBottleRows++;
 
             // 4. Comprobar continuidad vertical con la fila anterior (borde continuo de envase)
-            if (prevLeftX !== -1 && Math.abs(leftEdgeX - prevLeftX) <= 8 && Math.abs(rightEdgeX - prevRightX) <= 8) {
+            // Se aumenta drásticamente la tolerancia a un porcentaje relativo del ancho (aprox 35px) 
+            // para soportar curvas pronunciadas (cuello/hombro) sin perder lectura.
+            const toleranceX = Math.floor(width * 0.12) || 35; 
+            if (prevLeftX !== -1 && Math.abs(leftEdgeX - prevLeftX) <= toleranceX && Math.abs(rightEdgeX - prevRightX) <= toleranceX) {
                 currentContinuous++;
             } else {
                 currentContinuous = 1;

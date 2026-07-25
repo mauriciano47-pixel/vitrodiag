@@ -1,4 +1,4 @@
-# VitroDiag v1.1.0
+# VitroDiag v1.1.1
 
 Muestreo Rápido NNPB y Reconocimiento de Defectos para Operador I.S. de Cristal Chile.
 
@@ -9,7 +9,7 @@ VitroDiag es una plataforma Progressive Web App (PWA) de asistencia óptica, con
 ## Características
 
 - 📱 **Visión en Vivo:** Acceso a cámara del smartphone con guías dinámicas de moldería según ficha técnica.
-- 🧠 **MotorVision v1.1.0:** Inferencia de IA multimodal con Gemini 2.0 Flash inyectado con el **catálogo oficial de 96 defectos** vidrieros.
+- 🧠 **MotorVision v1.1.1:** Inferencia de IA multimodal con Gemini 2.0 Flash inyectado con el **catálogo oficial de 96 defectos** vidrieros.
 - 🎯 **Clasificación Multizona de Precisión:** Diagnóstico automático por zona anatómica (Boca, Cuello, Hombro, Cuerpo, Fondo) y severidad (Crítico, Mayor, Menor).
 - ⚙️ **Acciones Correctivas I.S.:** Mapeo instantáneo con los ajustes sugeridos de máquina I.S. y moldes.
 - ⚡ **Filtrado Anti-Falsas Lecturas:** Algoritmo continuo `maxContinuous` y `isBottlePresent`.

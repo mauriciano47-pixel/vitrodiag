@@ -109,6 +109,15 @@ window.runDeepDiagnosis = runDeepDiagnosis;
 // Exponer Toasts de forma global para depuracion
 window.showToast = showToast;
 
+// Configurar manejador global para promesas rechazadas ("Fugas silenciosas" como fetch fallidos o timeouts)
+window.addEventListener('unhandledrejection', function(event) {
+    console.error("[Estabilidad] Promesa rechazada no manejada capturada:", event.reason);
+    if (event.reason && (event.reason.message || '').includes('Failed to fetch')) {
+        console.warn("Posible pérdida de conexión de red interceptada. Evitando colapso global.");
+        event.preventDefault();
+    }
+});
+
 // Inicialización de la aplicación cuando el DOM está completamente cargado
 window.addEventListener('DOMContentLoaded', () => {
     // 0. Configurar atributos y elementos del DOM para cumplir con políticas de compatibilidad del validador HTML5
