@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag v1.0.55 - Operador IS</title>
+    <title>VitroDiag v1.1.0 - Operador IS</title>
     <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" defer></script>
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
@@ -13,7 +13,7 @@
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (name.includes('v1.0.54') || !name.includes('v1.0.55')) {
+                if (!name.includes('v1.1.0')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
@@ -38,7 +38,7 @@
     // Inyectar dinámicamente el manifiesto PWA y la metaetiqueta theme-color para compatibilidad estática PWA y GitHub Pages
     const manifestLink = document.createElement('link');
     manifestLink.rel = 'manifest';
-    manifestLink.href = 'static/manifest.webmanifest?v=1.0.55';
+    manifestLink.href = 'static/manifest.webmanifest?v=1.1.0';
     document.head.appendChild(manifestLink);
 
     const themeMeta = document.createElement('meta');

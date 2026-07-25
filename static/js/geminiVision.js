@@ -2,6 +2,7 @@
 // Motor principal de detección inteligente para VitroDiag (Opción D - Híbrido)
 import { state } from './state.js';
 import { showToast } from './ui.js';
+import { DEFECTOS_DB, getDefectCatalogSummary, findDefectByIdOrFuzzy } from './db.js';
 
 // Configuración del endpoint de Gemini Vision API
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -12,52 +13,47 @@ const AUTO_ANALYSIS_COOLDOWN_MS = 6000;
 // Timestamp del último análisis exitoso
 let lastAnalysisTimestamp = 0;
 
-// Prompt de ingeniería especializado en defectos de vidrio NNPB
-const GLASS_DEFECT_PROMPT = `Eres un inspector de control de calidad experto en envases de vidrio para la industria vidriera (proceso NNPB / Blow-Blow).
+/**
+ * Genera el prompt de ingeniería especializado incluyendo el catálogo oficial de 96 defectos.
+ * @returns {string}
+ */
+function buildGlassDefectPrompt() {
+    const catalogSummary = getDefectCatalogSummary();
+    return `Eres un inspector experto de control de calidad en envases de vidrio para la industria vidriera (proceso NNPB / Blow-Blow).
 
-Analiza esta imagen de una botella de vidrio. La imagen muestra contornos/bordes procesados de la botella (silueta naranja sobre fondo negro), o puede ser una foto directa.
+Analiza minuciosamente esta imagen de una botella/envase de vidrio. La imagen puede ser una foto directa o el contorno digital procesado.
 
-Debes identificar TODOS los defectos visibles. Los defectos comunes en botellas de vidrio incluyen:
+Debes comparar lo observado contra nuestro CATÁLOGO OFICIAL DE 96 DEFECTOS INDUSTRIALES DE MÁQUINA I.S. que se detalla a continuación:
 
-**Defectos Geométricos (Forma):**
-- Cuello Torcido: el cuello no está alineado con el eje central del cuerpo
-- Ovalamiento: el cuerpo no es circular, es elíptico u ovalado
-- Hundimiento: deformación cóncava en una zona del cuerpo
-- Hombro Caído: asimetría en la zona de transición entre cuello y cuerpo
-- Fondo Inclinado: la base no es plana o está desplazada
-- Boca Incompleta: la corona/boca tiene irregularidades o falta material
+--- CATÁLOGO OFICIAL DE DEFECTOS ---
+${catalogSummary}
+--- FIN DEL CATÁLOGO ---
 
-**Defectos de Superficie:**
-- Rotura / Grieta: fractura visible en el vidrio
-- Burbuja: inclusión gaseosa visible como un punto brillante o hueco
-- Rebaba: exceso de vidrio en la costura del molde o en la corona
-- Costura Marcada: línea de unión del molde excesivamente visible
-- Inclusión: partícula extraña atrapada en el vidrio
+Instrucciones:
+1. Identifica si existen uno o más defectos visibles.
+2. Si detectas un defecto, debes asociarlo OBLIGATORIAMENTE con uno de los "ID" del catálogo oficial.
+3. Si el envase está conforme y sin fallas, indica defectos_encontrados: false.
 
-**Defectos de Distribución:**
-- Pared Delgada: zona del vidrio con espesor visiblemente menor
-- Vidrio Grueso: acumulación excesiva de material en una zona
-
-Responde EXCLUSIVAMENTE con un JSON válido (sin markdown, sin backticks) con esta estructura:
+Responde EXCLUSIVAMENTE con un JSON válido (sin markdown, sin bloques \`\`\`json) con esta estructura exacta:
 {
   "defectos_encontrados": true/false,
   "cantidad_defectos": número,
   "analisis": [
     {
-      "defecto": "nombre del defecto",
-      "zona": "corona|cuello|hombro|cuerpo|fondo",
+      "defecto_id": "id_del_catalogo (ejemplo: rebaba_boca, columpio, pared_delgada, etc.)",
+      "defecto_nombre": "nombre oficial del defecto",
+      "zona": "boca|cuello|cuerpo|fondo|general",
       "gravedad": "critico|mayor|menor",
       "confianza": número 0-100,
-      "descripcion": "descripción breve de lo observado",
-      "accion_correctiva": "ajuste sugerido para la máquina IS o el molde"
+      "descripcion": "descripción detallada del hallazgo en la imagen",
+      "accion_correctiva": "acción correctiva recomendada para la máquina I.S."
     }
   ],
   "estado_general": "aceptable|rechazo",
-  "resumen": "resumen breve del diagnóstico en una oración"
+  "resumen": "resumen profesional del diagnóstico en una oración"
+}`;
 }
 
-Si la botella se ve perfecta o no puedes identificar defectos claros, responde con defectos_encontrados: false y estado_general: "aceptable".
-Si la imagen no muestra una botella o no es analizable, indica cantidad_defectos: 0 y un resumen explicando la situación.`;
 
 /**
  * Guarda la API Key de Gemini en localStorage de forma segura.
@@ -210,10 +206,11 @@ export async function analyzeWithGemini(canvas, videoElement) {
     updateAnalyzingUI(true);
 
     try {
+        const glassPrompt = buildGlassDefectPrompt();
         const requestBody = {
             contents: [{
                 parts: [
-                    { text: GLASS_DEFECT_PROMPT + contextPrompt },
+                    { text: glassPrompt + contextPrompt },
                     {
                         inline_data: {
                             mime_type: "image/jpeg",
@@ -375,50 +372,71 @@ export function renderGeminiResult(result) {
     const articleName = state.activeArticle ? state.activeArticle.nombre : "Artículo";
 
     if (result.defectos_encontrados && result.analisis && result.analisis.length > 0) {
-        // Defectos encontrados por Gemini
-        const primaryDefect = result.analisis[0];
+        // Enriquecer análisis buscando coincidencias en la base de datos oficial DEFECTOS_DB
+        result.analisis.forEach(item => {
+            const match = findDefectByIdOrFuzzy(item.defecto_id || item.defecto_nombre || item.defecto);
+            if (match) {
+                item.matchedDefect = match;
+                item.defecto_nombre = match.nombre;
+                item.zona = match.zona;
+                item.gravedad = match.gravedad.toLowerCase();
+                item.official_acciones = match.acciones;
+                item.official_causas = match.causas;
+            }
+        });
+
+        const primary = result.analisis[0];
+        const primaryName = primary.defecto_nombre || primary.defecto || "Defecto Vidrio";
         const defectCount = result.cantidad_defectos || result.analisis.length;
 
         const defectTitle = defectCount > 1
-            ? `❌ ${defectCount} Defectos Detectados (Gemini IA)`
-            : `❌ Defecto: ${primaryDefect.defecto} (Gemini IA)`;
+            ? `🚨 ${defectCount} Defectos Detectados — Gemini IA (96 Catálogo)`
+            : `🚨 Defecto: ${primaryName} (Gemini IA)`;
 
         if (diagTitulo) diagTitulo.innerText = defectTitle;
         if (diagGravedad) {
-            const gravClass = primaryDefect.gravedad === 'critico' ? 'status-danger'
-                : primaryDefect.gravedad === 'mayor' ? 'status-warning'
+            const gravClass = primary.gravedad === 'critico' ? 'status-danger'
+                : primary.gravedad === 'mayor' ? 'status-warning'
                 : 'status-info';
             diagGravedad.className = `status-alert ${gravClass}`;
             diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = result.estado_general === 'rechazo' ? "Rechazo Inmediato" : "Revisar";
+            diagGravedad.innerText = result.estado_general === 'rechazo' ? `Rechazo (${primary.gravedad.toUpperCase()})` : "Revisar";
         }
 
         if (diagEstado) {
-            let statusHtml = `<strong>Diagnóstico IA (Gemini Vision):</strong> ${result.resumen || ''}`;
+            let statusHtml = `<strong>Diagnóstico Gemini Vision (96 Defectos):</strong> ${result.resumen || ''}`;
             if (defectCount > 1) {
                 statusHtml += '<br><strong>Defectos identificados:</strong>';
                 result.analisis.forEach((d, i) => {
-                    statusHtml += `<br>${i + 1}. <em>${d.defecto}</em> en zona ${d.zona} (${d.confianza}% confianza)`;
+                    const name = d.defecto_nombre || d.defecto;
+                    statusHtml += `<br>${i + 1}. <strong>${name}</strong> [Zona ${d.zona.toUpperCase()}] (${d.confianza}% conf.) — ${d.descripcion}`;
                 });
             } else {
-                statusHtml += `<br><strong>Zona:</strong> ${primaryDefect.zona} | <strong>Confianza:</strong> ${primaryDefect.confianza}%`;
+                statusHtml += `<br><strong>Ubicación:</strong> Zona ${primary.zona.toUpperCase()} | <strong>Confianza:</strong> ${primary.confianza}%<br><strong>Detalle:</strong> ${primary.descripcion}`;
             }
             diagEstado.innerHTML = statusHtml;
         }
 
         if (diagAcciones) {
-            diagAcciones.innerHTML = result.analisis.map(d =>
-                `<li><strong>${d.defecto} (${d.zona}):</strong> ${d.accion_correctiva}</li>`
-            ).join('');
+            let actionsHtml = '';
+            result.analisis.forEach(d => {
+                const name = d.defecto_nombre || d.defecto;
+                if (d.official_acciones && d.official_acciones.length > 0) {
+                    actionsHtml += `<li><strong>Ajustes Máquina I.S. para "${name}":</strong><ul>${d.official_acciones.map(a => `<li>${a}</li>`).join('')}</ul></li>`;
+                } else if (d.accion_correctiva) {
+                    actionsHtml += `<li><strong>${name}:</strong> ${d.accion_correctiva}</li>`;
+                }
+            });
+            diagAcciones.innerHTML = actionsHtml;
         }
 
         if (tfjsStatus) {
-            tfjsStatus.innerText = `🧠 Gemini IA: ${primaryDefect.defecto} — ${primaryDefect.confianza}% confianza`;
+            tfjsStatus.innerText = `🧠 Gemini IA (96 Catálogo): ${primaryName} — ${primary.confianza}% confianza`;
             tfjsStatus.style.color = "#ef4444";
         }
 
         if (cursorText) {
-            cursorText.innerText = `RECHAZO: ${primaryDefect.defecto.toUpperCase()}`;
+            cursorText.innerText = `RECHAZO: ${primaryName.toUpperCase()}`;
             cursorText.style.color = '#ef4444';
             if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
             if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';

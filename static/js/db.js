@@ -2168,4 +2168,38 @@
             return DEFECTOS_DB.find(d => d.id === id) || null;
         }
 
+        /**
+         * Genera un resumen compacto en texto de los 96 defectos para inyectar en Gemini Vision Prompt.
+         * @returns {string}
+         */
+        export function getDefectCatalogSummary() {
+            return DEFECTOS_DB.map(d => `- ID: "${d.id}" | Nombre: "${d.nombre}" | Zona: "${d.zona}" | Gravedad: "${d.gravedad}" | Descr: "${d.descripcion.slice(0, 100)}..."`).join('\n');
+        }
+
+        /**
+         * Busca un defecto por ID exacto, o por coincidencias aproximadas en nombre/id.
+         * @param {string} searchStr 
+         * @returns {Object|null}
+         */
+        export function findDefectByIdOrFuzzy(searchStr) {
+            if (!searchStr) return null;
+            const cleanStr = searchStr.trim().toLowerCase();
+            
+            // 1. Coincidencia exacta por ID
+            let match = DEFECTOS_DB.find(d => d.id.toLowerCase() === cleanStr);
+            if (match) return match;
+
+            // 2. Coincidencia por inclusión de ID
+            match = DEFECTOS_DB.find(d => cleanStr.includes(d.id.toLowerCase()) || d.id.toLowerCase().includes(cleanStr));
+            if (match) return match;
+
+            // 3. Coincidencia por nombre
+            match = DEFECTOS_DB.find(d => d.nombre.toLowerCase().includes(cleanStr) || cleanStr.includes(d.nombre.toLowerCase()));
+            if (match) return match;
+
+            // 4. Fallback: búsqueda por palabras clave de la zona
+            return null;
+        }
+
+
 
