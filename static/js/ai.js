@@ -98,8 +98,7 @@ async function loadTensorFlowModel() {
 
     const possiblePaths = [
         'static/model/model.json',
-        './static/model/model.json',
-        '/static/model/model.json'
+        './static/model/model.json'
     ];
 
     let loadedModel = null;
