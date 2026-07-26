@@ -22,7 +22,8 @@ import {
     startDiagnosticCamera, 
     stopDiagnosticCamera, 
     startScannerCamera, 
-    stopScannerCamera 
+    stopScannerCamera,
+    forceRetryCamera
 } from './camera.js';
 import { 
     startProcessing, 
@@ -82,6 +83,7 @@ window.filterDefects = filterDefects;
 
 window.setVisionMode = setVisionMode;
 window.startDiagnosticCamera = startDiagnosticCamera;
+window.forceRetryCamera = forceRetryCamera;
 window.startProcessing = startProcessing;
 
 window.validateBdfTiming = validateBdfTiming;

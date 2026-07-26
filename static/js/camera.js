@@ -47,11 +47,25 @@ async function startDiagnosticCamera() {
             status.style.color = "#10b981";
         } catch (fallbackErr) {
             console.error("No se pudo iniciar la cámara: ", fallbackErr);
-            status.innerText = "Visión: Sin cámara";
-            status.style.color = "#ef4444";
-            showToast("No se pudo acceder a la cámara trasera. Otorga los permisos en tu navegador.", "warning");
+            state.diagnosticStream = null;
+            const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+            if (!isSecure) {
+                status.innerText = "Visión: Requiere HTTPS o Localhost";
+                status.style.color = "#f59e0b";
+                showToast("Para usar la cámara, abre la app desde HTTPS (GitHub Pages) o localhost.", "warning");
+            } else {
+                status.innerText = "Visión: Sin cámara (Toca para Reintentar)";
+                status.style.color = "#ef4444";
+                showToast("No se pudo acceder a la cámara. Otorga los permisos en tu navegador y toca el visor para reintentar.", "warning");
+            }
         }
     }
+}
+
+export function forceRetryCamera() {
+    state.diagnosticStream = null;
+    startDiagnosticCamera();
+    if (window.startProcessing) window.startProcessing();
 }
 
 function stopDiagnosticCamera() {
