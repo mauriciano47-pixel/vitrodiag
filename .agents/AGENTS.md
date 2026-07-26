@@ -25,3 +25,6 @@
 
 - **Organización y Disciplina del Escritorio (/learn)**: Cada vez que se generen o creen accesos directos (`.lnk` / `.url`), archivos o iconos dirigidos al Escritorio del usuario, el agente DEBE agruparlos automáticamente dentro de su carpeta por categoría correspondiente (ej. `Otros Prototipos` para proyectos finalizados, `Desarrollo e IA`, `Documentos y Utilidades`, `Navegadores y Ocio`, `proton`, `trading`, `tubemate`), manteniendo siempre la superficie principal del Escritorio limpia y ordenada.
 
+- **Gestión Autónoma y Silenciosa de Errores y Componentes MCP/CLI**: Cada vez que el sistema o las herramientas reporten alertas, advertencias de servidores MCP o actualizaciones disponibles de componentes CLI (ej. `gcloud components update`, dependencias Python/MCP faltantes), el agente debe proceder de forma autónoma a ejecutar las actualizaciones y correcciones en segundo plano sin interrumpir al usuario con avisos o popups repetitivos, manteniendo siempre el entorno de herramientas 100% actualizado y libre de errores.
+
+
