@@ -23,3 +23,5 @@
 - **DevOps (piloto1)**: Invocado exclusivamente cuando el código está listo para ser preparado y desplegado a producción.
 - **Gestión Obligatoria de Commits y Repositorios Git**: Cada vez que se completen modificaciones, parches o un nuevo release de versión en la aplicación, el agente DEBE ejecutar automáticamente los comandos de git para guardar el commit (`git add .`, `git commit -m "..."`) y realizar el push (`git push origin main`) al repositorio remoto para actualizar la producción en vivo (GitHub Pages).
 
+- **Organización y Disciplina del Escritorio (/learn)**: Cada vez que se generen o creen accesos directos (`.lnk` / `.url`), archivos o iconos dirigidos al Escritorio del usuario, el agente DEBE agruparlos automáticamente dentro de su carpeta por categoría correspondiente (ej. `Otros Prototipos` para proyectos finalizados, `Desarrollo e IA`, `Documentos y Utilidades`, `Navegadores y Ocio`, `proton`, `trading`, `tubemate`), manteniendo siempre la superficie principal del Escritorio limpia y ordenada.
+
