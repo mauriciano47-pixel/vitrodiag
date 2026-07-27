@@ -27,4 +27,7 @@
 
 - **Gestión Autónoma y Silenciosa de Errores y Componentes MCP/CLI**: Cada vez que el sistema o las herramientas reporten alertas, advertencias de servidores MCP o actualizaciones disponibles de componentes CLI (ej. `gcloud components update`, dependencias Python/MCP faltantes), el agente debe proceder de forma autónoma a ejecutar las actualizaciones y correcciones en segundo plano sin interrumpir al usuario con avisos o popups repetitivos, manteniendo siempre el entorno de herramientas 100% actualizado y libre de errores.
 
+- **Directidad Técnica y Cero Obviedades en Diagnósticos**: Cuando el usuario reporte un fallo, discrepancia de versión o error en sus aplicaciones, se DEBE asumir automáticamente que ya ejecutó todas las acciones de cliente obvias (recargar navegador, presionar botones de reset de caché o F5). Queda prohibido responder con sugerencias o explicaciones redundantes de nivel usuario. El agente debe proceder de inmediato a auditar código, infraestructura, headers, Service Workers o aplicar soluciones alternativas técnicas avanzadas de fondo.
+
+
 
