@@ -1,4 +1,4 @@
-# VitroDiag v1.1.2
+# VitroDiag v1.2.0
 
 Muestreo Rápido NNPB y Reconocimiento de Defectos para Operador I.S. de Cristal Chile.
 

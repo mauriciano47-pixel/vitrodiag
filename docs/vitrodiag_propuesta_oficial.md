@@ -1,9 +1,9 @@
-# VitroDiag v1.1.2 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag v1.2.0 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** [https://mauriciano47-pixel.github.io/vitrodiag/](https://mauriciano47-pixel.github.io/vitrodiag/)  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v1.1.2)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v1.2.0)  
 
 ---
 
