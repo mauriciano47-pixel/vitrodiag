@@ -19,6 +19,11 @@ const ASSETS_TO_CACHE = [
   'static/js/geometry.js',
   'static/js/geminiVision.js',
   'static/icons/icon-192.svg',
+  'static/icons/icon-512.svg',
+  'static/icons/icon-192.png',
+  'static/icons/icon-512.png',
+  'apple-touch-icon.png',
+  'favicon.ico',
   'static/model/model.json',
   'static/model/weights.bin'
 ];
