@@ -1592,7 +1592,7 @@
             
             <div class="mb-15">
                 <label for="modalSelectArticle" class="modal-select-label">Seleccionar Artículo para Editar/Ver</label>
-                <select id="modalSelectArticle" class="select-input" onchange="loadArticleInModal(this.value)">
+                <select id="modalSelectArticle" class="select-input" aria-label="Seleccionar artículo para cargar" onchange="loadArticleInModal(this.value)">
                     <!-- Se cargará dinámicamente -->
                 </select>
             </div>
@@ -1600,25 +1600,25 @@
             <div class="modal-section-divider">
                 <h3 class="modal-form-title" id="modalFormTitle">Editar Ficha Técnica</h3>
                 
-                <input type="hidden" id="artId">
+                <input type="hidden" id="artId" aria-label="ID del artículo">
                 
                 <div class="form-group form-group-sm">
                     <label for="artNombre">Nombre del Artículo</label>
-                    <input type="text" id="artNombre" class="input-number input-text-left" placeholder="Ej: Botella Cerveza 330ml">
+                    <input type="text" id="artNombre" class="input-number input-text-left" placeholder="Ej: Botella Cerveza 330ml" aria-label="Nombre del artículo">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="artBpm">Velocidad (BPM)</label>
-                        <input type="number" id="artBpm" class="input-number" min="1" max="600">
+                        <input type="number" id="artBpm" class="input-number" min="1" max="600" aria-label="Botellas por minuto (BPM)">
                     </div>
                     <div class="form-group">
                         <label for="artSecciones">Secciones IS</label>
-                        <input type="number" id="artSecciones" class="input-number" min="2" max="20">
+                        <input type="number" id="artSecciones" class="input-number" min="2" max="20" aria-label="Número de secciones de máquina IS">
                     </div>
                     <div class="form-group">
                         <label for="artCavidades">Cavidades</label>
-                        <select id="artCavidades" class="select-input">
+                        <select id="artCavidades" class="select-input" aria-label="Número de cavidades por sección">
                             <option value="1">1 (Sencilla)</option>
                             <option value="2">2 (Doble)</option>
                             <option value="3">3 (Triple)</option>
@@ -1774,15 +1774,15 @@
                 </div>
                 <div class="vision-mode-options">
                     <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="fine" checked>
+                        <input class="vision-mode-radio" type="radio" name="visionMode" value="fine" checked aria-label="Modo de visión Fine Contours">
                         <span class="vision-mode-tab active" id="tabModeFine" onclick="setVisionMode('fine')">Silueta Fina</span>
                     </label>
                     <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="sobel">
+                        <input class="vision-mode-radio" type="radio" name="visionMode" value="sobel" aria-label="Modo de visión Sobel Filter">
                         <span class="vision-mode-tab" id="tabModeSobel" onclick="setVisionMode('sobel')">Sobel</span>
                     </label>
                     <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="thermal">
+                        <input class="vision-mode-radio" type="radio" name="visionMode" value="thermal" aria-label="Modo de visión Térmica Simulada">
                         <span class="vision-mode-tab" id="tabModeThermal" onclick="setVisionMode('thermal')">Térmico</span>
                     </label>
                 </div>
@@ -1818,11 +1818,11 @@
             <div class="form-row ia-form-row">
                 <div class="ia-upload-col">
                     <label for="uploadModelJson" class="ia-upload-label">Archivo model.json</label>
-                    <input type="file" id="uploadModelJson" accept=".json" class="ia-upload-input">
+                    <input type="file" id="uploadModelJson" accept=".json" class="ia-upload-input" aria-label="Subir modelo TensorFlow JSON">
                 </div>
                 <div class="ia-upload-col">
                     <label for="uploadModelBin" class="ia-upload-label">Pesos (.bin)</label>
-                    <input type="file" id="uploadModelBin" accept=".bin" multiple class="ia-upload-input">
+                    <input type="file" id="uploadModelBin" accept=".bin" multiple class="ia-upload-input" aria-label="Subir pesos del modelo TensorFlow BIN">
                 </div>
             </div>
 
@@ -1923,7 +1923,7 @@
                 
                 <div class="form-group">
                     <label for="defectSelector">Seleccionar Defecto observado en Caliente:</label>
-                    <select id="defectSelector" class="select-input" onchange="showDefectRemedy()">
+                    <select id="defectSelector" class="select-input" aria-label="Seleccionar defecto del catálogo NNPB" onchange="showDefectRemedy()">
                         <option value="">-- Elegir un defecto de moldería --</option>
                         <option value="bajo_boca">Boca Incompleta / Bajo Boca (NNPB)</option>
                         <option value="cuello_torcido">Botella Colgada / Cuello Torcido</option>
@@ -2048,7 +2048,7 @@
                         <span class="scanner-upload-cta scanner-upload-cta-native">Abrir Cámara del Celular</span>
                         <span class="scanner-upload-hint">Mejor enfoque nativo para documentos</span>
                     </label>
-                    <input type="file" id="scannerNativeCameraInput" accept="image/*" class="scanner-file-hidden" onchange="handleScannerFileSelect(this)">
+                    <input type="file" id="scannerNativeCameraInput" accept="image/*" class="scanner-file-hidden" aria-label="Capturar foto de consola con cámara nativa" onchange="handleScannerFileSelect(this)">
 
                     <!-- Botón Subir Galería -->
                     <label for="scannerFileInput" class="scanner-upload-label scanner-upload-label-gallery">
@@ -2056,7 +2056,7 @@
                         <span class="scanner-upload-cta">Seleccionar de Galería</span>
                         <span class="scanner-upload-hint">Soporta formatos JPG, PNG, WEBP</span>
                     </label>
-                    <input type="file" id="scannerFileInput" accept="image/*" class="scanner-file-hidden" onchange="handleScannerFileSelect(this)">
+                    <input type="file" id="scannerFileInput" accept="image/*" class="scanner-file-hidden" aria-label="Cargar imagen de consola desde archivo" onchange="handleScannerFileSelect(this)">
                 </div>
             </div>
 
