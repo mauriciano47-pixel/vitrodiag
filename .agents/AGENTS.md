@@ -29,5 +29,8 @@
 
 - **Directidad Técnica y Cero Obviedades en Diagnósticos**: Cuando el usuario reporte un fallo, discrepancia de versión o error en sus aplicaciones, se DEBE asumir automáticamente que ya ejecutó todas las acciones de cliente obvias (recargar navegador, presionar botones de reset de caché o F5). Queda prohibido responder con sugerencias o explicaciones redundantes de nivel usuario. El agente debe proceder de inmediato a auditar código, infraestructura, headers, Service Workers o aplicar soluciones alternativas técnicas avanzadas de fondo.
 
+- **Sincronización Automática con Cerebros Obsidian (/learn)**: Cada vez que se realicen modificaciones, nuevas funciones o parches en cualquiera de las aplicaciones del usuario (Ataraxia, VitroDiag, CambioYa, Faro, HiDoctor, etc.), el agente DEBE actualizar de forma automática e inmediata el cerebro correspondiente en Obsidian ubicado en `C:\Users\mauro\OneDrive\Desktop\Cerebros_Obsidian\cerebro_<nombre_app>`, añadiendo o actualizando las notas markdown, MOCs y conexiones de arquitectura relevantes.
+
+
 
 
