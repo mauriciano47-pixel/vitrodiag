@@ -67,6 +67,7 @@ import {
     runDeepDiagnosis, 
     initConnectivityMonitor 
 } from './geminiVision.js';
+import { initDatasetUI } from './datasetManager.js';
 
 // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
 window.DEFECTOS_DB = DEFECTOS_DB;
@@ -138,6 +139,7 @@ window.addEventListener('DOMContentLoaded', () => {
     initSwabModule();
     loadGeminiApiKey();
     initConnectivityMonitor();
+    initDatasetUI();
 
     // 1. Inicializar el directorio de defectos
     renderDefectsList(DEFECTOS_DB);

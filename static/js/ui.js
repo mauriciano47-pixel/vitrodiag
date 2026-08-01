@@ -4,6 +4,7 @@ import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopSc
 import { startProcessing, stopProcessing } from './vision.js';
 import { calculateSopMs } from './timing.js';
 import { terminateTesseractWorker } from './ocr.js';
+import { renderDatasetGallery } from './datasetManager.js';
 
 
 
@@ -319,6 +320,11 @@ async function switchView(viewName) {
                 // Al cambiar a directorio, renderizar la lista completa
                 if (viewName === 'directory') {
                     renderDefectsList(DEFECTOS_DB);
+                }
+
+                // Al cambiar a banco de entrenamiento, renderizar galería actualizada
+                if (viewName === 'dataset') {
+                    renderDatasetGallery();
                 }
 
                 // Delay de estabilización física del hardware de cámara antes de liberar el semáforo

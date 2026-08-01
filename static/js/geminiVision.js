@@ -3,6 +3,7 @@
 import { state } from './state.js';
 import { showToast } from './ui.js';
 import { DEFECTOS_DB, getDefectCatalogSummary, findDefectByIdOrFuzzy } from './db.js';
+import { getFewShotExamplesForDefect } from './datasetManager.js';
 
 // Configuración del endpoint de Gemini Vision API
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
@@ -206,18 +207,46 @@ export async function analyzeWithGemini(canvas, videoElement) {
     updateAnalyzingUI(true);
 
     try {
-        const glassPrompt = buildGlassDefectPrompt();
+        let glassPrompt = buildGlassDefectPrompt();
+        
+        // Obtener ejemplos Few-Shot RAG del Banco de Entrenamiento local
+        let fewShotParts = [];
+        try {
+            const samples = await getFewShotExamplesForDefect(null, 2);
+            if (samples && samples.length > 0) {
+                glassPrompt += `\n\n--- EJEMPLOS DE CALIBRACIÓN REALES DE LA PLANTA DE CRISTAL CHILE ---\n`;
+                samples.forEach((sample, idx) => {
+                    glassPrompt += `Ejemplo ${idx + 1}: Muestra de "${sample.defectoNombre}" en zona ${sample.zona}. ${sample.notas ? 'Notas: ' + sample.notas : ''}\n`;
+                    if (sample.fotoBase64) {
+                        const cleanB64 = sample.fotoBase64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+                        fewShotParts.push({
+                            inline_data: {
+                                mime_type: "image/jpeg",
+                                data: cleanB64
+                            }
+                        });
+                    }
+                });
+                glassPrompt += `Utiliza estos ejemplos de referencia para calibrar tu criterio de inspección en la imagen objetivo.\n`;
+            }
+        } catch (fsErr) {
+            console.warn('[GeminiVision] No se pudieron cargar ejemplos Few-Shot:', fsErr);
+        }
+
+        const requestParts = [
+            { text: glassPrompt + contextPrompt },
+            ...fewShotParts,
+            {
+                inline_data: {
+                    mime_type: "image/jpeg",
+                    data: base64Image
+                }
+            }
+        ];
+
         const requestBody = {
             contents: [{
-                parts: [
-                    { text: glassPrompt + contextPrompt },
-                    {
-                        inline_data: {
-                            mime_type: "image/jpeg",
-                            data: base64Image
-                        }
-                    }
-                ]
+                parts: requestParts
             }],
             generationConfig: {
                 temperature: 0.2,

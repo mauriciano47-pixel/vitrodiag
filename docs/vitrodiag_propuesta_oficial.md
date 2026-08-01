@@ -35,6 +35,11 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
    Registro estructurado de paradas, defectos de moldeo y ajustes realizados. Exporta reportes formateados instantáneamente para ser enviados por WhatsApp a jefes de turno y mantenimiento.
 9. **PWA Offline Autónomo (Service Worker v1.1.2):**
    Instalación de app nativa con caché inteligente HTML5 pura. Permite operar al 100% de capacidad en zonas ciegas sin cobertura de red o Wi-Fi en el área caliente.
+10. **Detector Geométrico Instantáneo & Plomada Digital (60 FPS):**
+    Algoritmo determinista en tiempo real que calcula la plomada central ($\theta$) y simetría especular del envase. Alerta automáticamente sobre botellas torcidas/inclinadas, hombros hundidos y rebabas en corona.
+11. **Módulo Banco de Entrenamiento IA & Calibración Few-Shot RAG:**
+    Gestor en IndexedDB para capturar, etiquetar y exportar fotos de defectos reales en planta. Inyecta muestras reales de calibración en la API de Gemini Vision para máxima certeza en defectos minuciosos.
+
 
 ---
 

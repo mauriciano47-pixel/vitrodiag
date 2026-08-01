@@ -18,6 +18,7 @@ const ASSETS_TO_CACHE = [
   'static/js/swab.js',
   'static/js/geometry.js',
   'static/js/geminiVision.js',
+  'static/js/datasetManager.js',
   'static/icons/icon-192.svg',
   'static/icons/icon-512.svg',
   'static/icons/icon-192.png',

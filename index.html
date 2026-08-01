@@ -1673,6 +1673,7 @@
         <button class="tab-btn" onclick="switchView('sop')">Calculadora SOP</button>
         <button class="tab-btn" onclick="switchView('scanner')">Escáner Panel</button>
         <button class="tab-btn" onclick="switchView('log')">Bitácora</button>
+        <button class="tab-btn" onclick="switchView('dataset')">📸 Banco IA</button>
         <button class="tab-btn" onclick="switchView('directory')">Directorio</button>
     </div>
 
@@ -2259,6 +2260,50 @@
                 <button class="filter-btn" id="btnStartSwab">Iniciar</button>
             </div>
             <div id="swabLastTime" class="swab-last-time">Último Swabbing registrado: Ninguno</div>
+        </div>
+    <!-- PESTAÑA 1.9: BANCO DE ENTRENAMIENTO IA & DATASET INDUSTRIAL -->
+    <div id="datasetView" class="view-content">
+        <div class="bitacora-panel">
+            <div class="calibration-title">📸 Banco de Entrenamiento IA (Dataset Industrial)</div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:15px;">
+                Captura y cataloga fotos reales de defectos en la planta de Cristal Chile. Las muestras se almacenan offline y calibran Gemini Vision mediante <b>Few-Shot RAG</b> para defectos minuciosos.
+            </p>
+
+            <div class="form-group">
+                <label>Fotografía de Muestra de Defecto</label>
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                    <button class="btn-action" id="btnCaptureDatasetSample" style="flex:1;">📸 Capturar Foto de Cámara</button>
+                </div>
+                <div id="datasetPreviewContainer" style="text-align:center; display:none; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--border-color);">
+                    <img id="datasetPreviewImg" src="" alt="Previsualización Muestra" style="max-width:100%; max-height:180px; border-radius:6px; object-fit:contain;" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="datasetDefectSelect">Defecto Observado (Catálogo 96)</label>
+                <select id="datasetDefectSelect" class="select-input" title="Seleccionar defecto del catálogo 96" aria-label="Seleccionar defecto del catálogo 96">
+                    <!-- Se poblará dinámicamente con JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="datasetNotes">Notas u Observaciones de Planta (Opcional)</label>
+                <input type="text" id="datasetNotes" class="search-input" style="width:100%;" placeholder="Ej: Sección 4, Cavidad B - Falla recurrente en soplo final..." title="Notas de la muestra" aria-label="Notas de la muestra" />
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
+                <button class="btn-action btn-action-success" id="btnSaveDatasetSample" style="flex:1;">💾 Guardar Muestra</button>
+                <button class="btn-action btn-action-alt" id="btnExportDatasetJSON" style="flex:1;">📥 Exportar Dataset (.JSON)</button>
+            </div>
+        </div>
+
+        <div class="swab-config-panel">
+            <div class="calibration-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>📂 Muestras Registradas (<span id="datasetCountBadge">0</span>)</span>
+            </div>
+            <div id="datasetGalleryContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px; margin-top:12px;">
+                <!-- Cards de muestras dinámicas -->
+            </div>
         </div>
     </div>
 

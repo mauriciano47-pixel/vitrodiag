@@ -1,0 +1,360 @@
+/**
+ * datasetManager.js — Módulo de Gestión de Banco de Imágenes de Entrenamiento (VitroDiag)
+ * Permite capturar, etiquetar, almacenar en IndexedDB y exportar datasets de defectos reales.
+ * Ofrece soporte Few-Shot RAG para inyectar muestras de calibración en Gemini Vision API.
+ */
+
+import { showToast } from './ui.js';
+import { DEFECTOS_DB } from './db.js';
+
+const DB_NAME = 'VitroDiag_DatasetDB';
+const DB_VERSION = 1;
+const STORE_SAMPLES = 'samples';
+
+let dbInstance = null;
+
+/**
+ * Inicializa la base de datos IndexedDB para el Banco de Entrenamiento.
+ * @returns {Promise<IDBDatabase>}
+ */
+export function initDatasetDB() {
+    return new Promise((resolve, reject) => {
+        if (dbInstance) {
+            resolve(dbInstance);
+            return;
+        }
+
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_SAMPLES)) {
+                const store = db.createObjectStore(STORE_SAMPLES, { keyPath: 'id' });
+                store.createIndex('defectoId', 'defectoId', { unique: false });
+                store.createIndex('zona', 'zona', { unique: false });
+                store.createIndex('timestamp', 'timestamp', { unique: false });
+            }
+        };
+
+        request.onsuccess = (event) => {
+            dbInstance = event.target.result;
+            console.log('[DatasetManager] IndexedDB inicializada correctamente.');
+            resolve(dbInstance);
+        };
+
+        request.onerror = (event) => {
+            console.error('[DatasetManager] Error al abrir IndexedDB:', event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
+
+/**
+ * Guarda una nueva muestra de foto defectuosa en la base de datos local.
+ * @param {Object} sampleData - { fotoBase64, defectoId, notas, articuloId }
+ * @returns {Promise<Object>}
+ */
+export async function saveSample(sampleData) {
+    try {
+        const db = await initDatasetDB();
+        const defectoInfo = DEFECTOS_DB.find(d => d.id === sampleData.defectoId) || {
+            nombre: 'Defecto Personalizado',
+            zona: 'general',
+            gravedad: 'Mayor'
+        };
+
+        const newSample = {
+            id: 'sample_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            timestamp: Date.now(),
+            fechaRegistro: new Date().toLocaleString('es-CL'),
+            defectoId: sampleData.defectoId,
+            defectoNombre: defectoInfo.nombre,
+            zona: defectoInfo.zona || 'general',
+            gravedad: defectoInfo.gravedad || 'Mayor',
+            articuloId: sampleData.articuloId || 'ssp_296',
+            fotoBase64: sampleData.fotoBase64,
+            notas: sampleData.notas || ''
+        };
+
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_SAMPLES, 'readwrite');
+            const store = tx.objectStore(STORE_SAMPLES);
+            const req = store.add(newSample);
+
+            req.onsuccess = () => {
+                showToast(`Muestra guardada: ${defectoInfo.nombre}`, 'success');
+                resolve(newSample);
+            };
+
+            req.onerror = (e) => {
+                console.error('[DatasetManager] Error guardando muestra:', e.target.error);
+                showToast('Error al guardar la muestra de imagen.', 'danger');
+                reject(e.target.error);
+            };
+        });
+    } catch (err) {
+        console.error('[DatasetManager] Error en saveSample:', err);
+        throw err;
+    }
+}
+
+/**
+ * Obtiene todas las muestras registradas en el banco de entrenamiento.
+ * @returns {Promise<Array>}
+ */
+export async function getAllSamples() {
+    try {
+        const db = await initDatasetDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_SAMPLES, 'readonly');
+            const store = tx.objectStore(STORE_SAMPLES);
+            const req = store.getAll();
+
+            req.onsuccess = () => {
+                const samples = req.result || [];
+                // Ordenar por fecha descendente
+                samples.sort((a, b) => b.timestamp - a.timestamp);
+                resolve(samples);
+            };
+
+            req.onerror = (e) => {
+                console.error('[DatasetManager] Error obteniendo muestras:', e.target.error);
+                reject(e.target.error);
+            };
+        });
+    } catch (err) {
+        console.error('[DatasetManager] Error en getAllSamples:', err);
+        return [];
+    }
+}
+
+/**
+ * Elimina una muestra del banco por su ID.
+ * @param {string} sampleId
+ * @returns {Promise<boolean>}
+ */
+export async function deleteSample(sampleId) {
+    try {
+        const db = await initDatasetDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_SAMPLES, 'readwrite');
+            const store = tx.objectStore(STORE_SAMPLES);
+            const req = store.delete(sampleId);
+
+            req.onsuccess = () => {
+                showToast('Muestra eliminada del banco.', 'info');
+                resolve(true);
+            };
+
+            req.onerror = (e) => {
+                console.error('[DatasetManager] Error eliminando muestra:', e.target.error);
+                reject(e.target.error);
+            };
+        });
+    } catch (err) {
+        console.error('[DatasetManager] Error en deleteSample:', err);
+        return false;
+    }
+}
+
+/**
+ * Exporta el conjunto completo de muestras en un archivo JSON descargable.
+ */
+export async function exportDatasetJSON() {
+    try {
+        const samples = await getAllSamples();
+        if (samples.length === 0) {
+            showToast('No hay muestras en el banco de entrenamiento para exportar.', 'warning');
+            return;
+        }
+
+        const datasetPayload = {
+            metadata: {
+                app: 'VitroDiag',
+                version: '1.2.0',
+                fechaExportacion: new Date().toISOString(),
+                totalMuestras: samples.length,
+                empresa: 'Cristal Chile (Planta Caliente / Fría)'
+            },
+            muestras: samples
+        };
+
+        const jsonStr = JSON.stringify(datasetPayload, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `VitroDiag_Dataset_CristalChile_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast(`Dataset exportado con éxito (${samples.length} muestras).`, 'success');
+    } catch (err) {
+        console.error('[DatasetManager] Error exportando dataset:', err);
+        showToast('Error al generar archivo de exportación.', 'danger');
+    }
+}
+
+/**
+ * Obtiene ejemplos de referencia (Few-Shot) para inyectar en el prompt de Gemini Vision.
+ * @param {string} [defectoId]
+ * @param {number} [limit=2]
+ * @returns {Promise<Array>}
+ */
+export async function getFewShotExamplesForDefect(defectoId = null, limit = 2) {
+    try {
+        const samples = await getAllSamples();
+        if (!samples || samples.length === 0) return [];
+
+        let filtered = samples;
+        if (defectoId) {
+            filtered = samples.filter(s => s.defectoId === defectoId);
+        }
+
+        if (filtered.length === 0) {
+            filtered = samples; // Fallback a cualquier muestra de la base
+        }
+
+        return filtered.slice(0, limit);
+    } catch (err) {
+        console.error('[DatasetManager] Error obteniendo Few-Shot examples:', err);
+        return [];
+    }
+}
+
+let tempCapturedBase64 = null;
+
+/**
+ * Puebla el selector de defectos del Banco de Entrenamiento con el catálogo de 96 defectos.
+ */
+export function populateDatasetSelect() {
+    const select = document.getElementById('datasetDefectSelect');
+    if (!select) return;
+
+    select.innerHTML = '';
+    DEFECTOS_DB.forEach(def => {
+        const opt = document.createElement('option');
+        opt.value = def.id;
+        opt.textContent = `[${def.zona.toUpperCase()}] ${def.nombre} (${def.gravedad})`;
+        select.appendChild(opt);
+    });
+}
+
+/**
+ * Renderiza la galería de muestras registradas en el banco local.
+ */
+export async function renderDatasetGallery() {
+    const container = document.getElementById('datasetGalleryContainer');
+    const badge = document.getElementById('datasetCountBadge');
+    if (!container) return;
+
+    try {
+        const samples = await getAllSamples();
+        if (badge) badge.innerText = samples.length;
+
+        if (samples.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Aún no hay muestras registradas en el banco. Captura fotos de defectos para comenzar.</div>`;
+            return;
+        }
+
+        container.innerHTML = samples.map(sample => `
+            <div style="background:rgba(15,23,42,0.6); border:1px solid var(--border-color); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px;">
+                <img src="${sample.fotoBase64}" alt="${sample.defectoNombre}" style="width:100%; height:90px; object-fit:cover; border-radius:4px;" />
+                <div style="font-weight:bold; font-size:0.75rem; color:var(--accent-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${sample.defectoNombre}</div>
+                <div style="font-size:0.65rem; color:var(--text-muted);">${sample.fechaRegistro}</div>
+                <button class="filter-btn" onclick="window.deleteDatasetSample('${sample.id}')" style="font-size:0.65rem; padding:2px 6px; margin-top:auto; background:rgba(239,68,68,0.2); color:#ef4444; border-color:rgba(239,68,68,0.4);">🗑️ Eliminar</button>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error('[DatasetManager] Error renderizando galería:', err);
+    }
+}
+
+/**
+ * Inicializa los controladores de UI y eventos para la gestión del banco de entrenamiento.
+ */
+export function initDatasetUI() {
+    populateDatasetSelect();
+    renderDatasetGallery();
+
+    const btnCapture = document.getElementById('btnCaptureDatasetSample');
+    const btnSave = document.getElementById('btnSaveDatasetSample');
+    const btnExport = document.getElementById('btnExportDatasetJSON');
+    const previewContainer = document.getElementById('datasetPreviewContainer');
+    const previewImg = document.getElementById('datasetPreviewImg');
+
+    if (btnCapture) {
+        btnCapture.addEventListener('click', () => {
+            const canvas = document.getElementById('canvasOutput');
+            const video = document.getElementById('webcam');
+
+            if (!canvas || canvas.width === 0) {
+                showToast('Encienda la cámara en el panel de Diagnóstico antes de capturar una muestra.', 'warning');
+                return;
+            }
+
+            // Usar canvas u offscreen de video
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const ctx = tempCanvas.getContext('2d');
+            
+            if (video && video.readyState >= 2) {
+                ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+            } else {
+                ctx.drawImage(canvas, 0, 0);
+            }
+
+            tempCapturedBase64 = tempCanvas.toDataURL('image/jpeg', 0.85);
+            if (previewImg && previewContainer) {
+                previewImg.src = tempCapturedBase64;
+                previewContainer.style.display = 'block';
+            }
+            showToast('Muestra fotográfica capturada. Seleccione el defecto y guarde.', 'info');
+        });
+    }
+
+    if (btnSave) {
+        btnSave.addEventListener('click', async () => {
+            if (!tempCapturedBase64) {
+                showToast('Capture primero una foto con el botón de cámara.', 'warning');
+                return;
+            }
+
+            const defectoSelect = document.getElementById('datasetDefectSelect');
+            const notesInput = document.getElementById('datasetNotes');
+
+            const defectoId = defectoSelect ? defectoSelect.value : 'rebaba_boca';
+            const notas = notesInput ? notesInput.value.trim() : '';
+
+            await saveSample({
+                fotoBase64: tempCapturedBase64,
+                defectoId: defectoId,
+                notas: notas
+            });
+
+            // Limpiar formulario
+            tempCapturedBase64 = null;
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (notesInput) notesInput.value = '';
+
+            renderDatasetGallery();
+        });
+    }
+
+    if (btnExport) {
+        btnExport.addEventListener('click', () => {
+            exportDatasetJSON();
+        });
+    }
+
+    // Función global para eliminar muestras desde la galería
+    window.deleteDatasetSample = async (sampleId) => {
+        await deleteSample(sampleId);
+        renderDatasetGallery();
+    };
+}
+

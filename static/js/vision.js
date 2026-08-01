@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { mostrarResultadoDefecto } from './geometry.js';
+import { mostrarResultadoDefecto, detectGeometricDefects } from './geometry.js';
 import { showToast } from './ui.js';
 import { runLiveDiagnosis } from './ai.js';
 
@@ -470,6 +470,51 @@ function processFrame() {
                     ctx.moveTo(midX, 0);
                     ctx.lineTo(midX, h);
                     ctx.stroke();
+                }
+
+                // --- ANÁLISIS GEOMÉTRICO EN TIEMPO REAL & PLOMADA DIGITAL ---
+                if (state.lastProcessedBorders && state.lastBordersWidth > 0) {
+                    const geoResult = detectGeometricDefects(state.lastProcessedBorders, state.lastBordersWidth, state.lastBordersHeight);
+                    if (geoResult && geoResult.midpoints.length > 0) {
+                        const w = canvas.width;
+                        const h = canvas.height;
+                        
+                        // 1. Dibujar línea de Plomada Digital (Eje de equilibrio real)
+                        ctx.save();
+                        ctx.lineWidth = 2;
+                        if (geoResult.isTilted) {
+                            ctx.strokeStyle = "rgba(239, 68, 68, 0.95)"; // Rojo alerta
+                            ctx.setLineDash([6, 3]);
+                        } else {
+                            ctx.strokeStyle = "rgba(34, 197, 94, 0.85)"; // Verde OK
+                            ctx.setLineDash([]);
+                        }
+                        
+                        // Dibujar plomada central estimada
+                        const slope = Math.tan(geoResult.tiltAngle * (Math.PI / 180));
+                        const midYAvg = h / 2;
+                        const midXAvg = w / 2;
+                        const xTop = midXAvg - (midYAvg * slope);
+                        const xBottom = midXAvg + ((h - midYAvg) * slope);
+
+                        ctx.beginPath();
+                        ctx.moveTo(xTop, 0);
+                        ctx.lineTo(xBottom, h);
+                        ctx.stroke();
+
+                        // 2. Insignia visual de inclinación (Plomada badge)
+                        ctx.fillStyle = geoResult.isTilted ? "rgba(239, 68, 68, 0.85)" : "rgba(15, 23, 42, 0.75)";
+                        ctx.fillRect(8, 8, 140, 22);
+                        ctx.fillStyle = "#ffffff";
+                        ctx.font = "bold 11px sans-serif";
+                        ctx.fillText(`📐 PLOMADA: ${geoResult.tiltAngle.toFixed(1)}° ${geoResult.isTilted ? '🚨 TORCIDO' : 'OK'}`, 12, 23);
+                        ctx.restore();
+
+                        // 3. Disparar alerta si hay defecto geométrico crítico
+                        if (geoResult.detected && geoResult.defect && frameCounter % 15 === 0) {
+                            mostrarResultadoDefecto(geoResult.defect);
+                        }
+                    }
                 }
 
                 frameCounter++;
