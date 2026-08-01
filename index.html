@@ -2271,8 +2271,10 @@
 
             <div class="form-group">
                 <label>Fotografía de Muestra de Defecto</label>
-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
-                    <button class="btn-action" id="btnCaptureDatasetSample" style="flex:1;">📸 Capturar Foto de Cámara</button>
+                <input type="file" id="datasetFileInput" accept="image/*" style="display:none;" onchange="window.handleDatasetFileSelect(event)">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
+                    <button class="btn-action" id="btnCaptureDatasetSample" onclick="window.captureDatasetFromCamera()" style="flex:1;">📸 Foto de Cámara</button>
+                    <button class="btn-action btn-action-alt" id="btnUploadDatasetFile" onclick="window.triggerDatasetFileSelect()" style="flex:1;">📁 Subir Foto (Galería)</button>
                 </div>
                 <div id="datasetPreviewContainer" style="text-align:center; display:none; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border:1px dashed var(--border-color);">
                     <img id="datasetPreviewImg" src="" alt="Previsualización Muestra" style="max-width:100%; max-height:180px; border-radius:6px; object-fit:contain;" />
@@ -2292,8 +2294,8 @@
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
-                <button class="btn-action btn-action-success" id="btnSaveDatasetSample" style="flex:1;">💾 Guardar Muestra</button>
-                <button class="btn-action btn-action-alt" id="btnExportDatasetJSON" style="flex:1;">📥 Exportar Dataset (.JSON)</button>
+                <button class="btn-action btn-action-success" id="btnSaveDatasetSample" onclick="window.saveDatasetSample()" style="flex:1;">💾 Guardar Muestra</button>
+                <button class="btn-action btn-action-alt" id="btnExportDatasetJSON" onclick="window.exportDatasetJSON()" style="flex:1;">📥 Exportar Dataset (.JSON)</button>
             </div>
         </div>
 

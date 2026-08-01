@@ -256,7 +256,7 @@ export async function renderDatasetGallery() {
         if (badge) badge.innerText = samples.length;
 
         if (samples.length === 0) {
-            container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Aún no hay muestras registradas en el banco. Captura fotos de defectos para comenzar.</div>`;
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Aún no hay muestras registradas en el banco. Captura o sube fotos de defectos para comenzar.</div>`;
             return;
         }
 
@@ -265,6 +265,7 @@ export async function renderDatasetGallery() {
                 <img src="${sample.fotoBase64}" alt="${sample.defectoNombre}" style="width:100%; height:90px; object-fit:cover; border-radius:4px;" />
                 <div style="font-weight:bold; font-size:0.75rem; color:var(--accent-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${sample.defectoNombre}</div>
                 <div style="font-size:0.65rem; color:var(--text-muted);">${sample.fechaRegistro}</div>
+                ${sample.notas ? `<div style="font-size:0.65rem; color:var(--text-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📝 ${sample.notas}</div>` : ''}
                 <button class="filter-btn" onclick="window.deleteDatasetSample('${sample.id}')" style="font-size:0.65rem; padding:2px 6px; margin-top:auto; background:rgba(239,68,68,0.2); color:#ef4444; border-color:rgba(239,68,68,0.4);">🗑️ Eliminar</button>
             </div>
         `).join('');
@@ -274,87 +275,124 @@ export async function renderDatasetGallery() {
 }
 
 /**
- * Inicializa los controladores de UI y eventos para la gestión del banco de entrenamiento.
+ * Captura la foto activa desde la cámara de diagnóstico o lienzo actual.
+ */
+export function captureDatasetFromCamera() {
+    const canvas = document.getElementById('canvasOutput');
+    const video = document.getElementById('webcam');
+    const previewContainer = document.getElementById('datasetPreviewContainer');
+    const previewImg = document.getElementById('datasetPreviewImg');
+
+    let base64 = null;
+
+    if (video && video.readyState >= 2 && video.videoWidth > 0) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = video.videoWidth;
+        tempCanvas.height = video.videoHeight;
+        const ctx = tempCanvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        base64 = tempCanvas.toDataURL('image/jpeg', 0.85);
+    } else if (canvas && canvas.width > 0) {
+        base64 = canvas.toDataURL('image/jpeg', 0.85);
+    }
+
+    if (!base64 || base64 === 'data:,') {
+        showToast('La cámara no tiene un fotograma activo. Utilice la opción "📁 Subir Foto" para seleccionar una foto de su galería.', 'warning');
+        return;
+    }
+
+    tempCapturedBase64 = base64;
+    if (previewImg && previewContainer) {
+        previewImg.src = tempCapturedBase64;
+        previewContainer.style.display = 'block';
+    }
+    showToast('Foto capturada de la cámara. Seleccione el defecto y guarde la muestra.', 'success');
+}
+
+/**
+ * Activa la selección de archivo de imagen desde el sistema del usuario.
+ */
+export function triggerDatasetFileSelect() {
+    const input = document.getElementById('datasetFileInput');
+    if (input) input.click();
+}
+
+/**
+ * Maneja la selección de archivo de imagen cargado por el usuario.
+ * @param {Event} event 
+ */
+export function handleDatasetFileSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        showToast('Por favor seleccione un archivo de imagen válido (JPG, PNG, WEBP).', 'danger');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        tempCapturedBase64 = e.target.result;
+        const previewContainer = document.getElementById('datasetPreviewContainer');
+        const previewImg = document.getElementById('datasetPreviewImg');
+        if (previewImg && previewContainer) {
+            previewImg.src = tempCapturedBase64;
+            previewContainer.style.display = 'block';
+        }
+        showToast('Imagen cargada correctamente desde archivo.', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Guarda la muestra capturada en la base de datos local IndexedDB.
+ */
+export async function handleSaveDatasetSample() {
+    if (!tempCapturedBase64) {
+        showToast('Seleccione o capture primero una imagen con el botón de cámara o archivo.', 'warning');
+        return;
+    }
+
+    const defectoSelect = document.getElementById('datasetDefectSelect');
+    const notesInput = document.getElementById('datasetNotes');
+    const previewContainer = document.getElementById('datasetPreviewContainer');
+
+    const defectoId = defectoSelect ? defectoSelect.value : 'rebaba_boca';
+    const notas = notesInput ? notesInput.value.trim() : '';
+
+    await saveSample({
+        fotoBase64: tempCapturedBase64,
+        defectoId: defectoId,
+        notas: notas
+    });
+
+    tempCapturedBase64 = null;
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (notesInput) notesInput.value = '';
+
+    renderDatasetGallery();
+}
+
+/**
+ * Inicializa los controladores de UI y eventos globales para la gestión del banco de entrenamiento.
  */
 export function initDatasetUI() {
     populateDatasetSelect();
     renderDatasetGallery();
 
-    const btnCapture = document.getElementById('btnCaptureDatasetSample');
-    const btnSave = document.getElementById('btnSaveDatasetSample');
-    const btnExport = document.getElementById('btnExportDatasetJSON');
-    const previewContainer = document.getElementById('datasetPreviewContainer');
-    const previewImg = document.getElementById('datasetPreviewImg');
+    // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
+    window.captureDatasetFromCamera = captureDatasetFromCamera;
+    window.triggerDatasetFileSelect = triggerDatasetFileSelect;
+    window.handleDatasetFileSelect = handleDatasetFileSelect;
+    window.saveDatasetSample = handleSaveDatasetSample;
+    window.exportDatasetJSON = exportDatasetJSON;
 
-    if (btnCapture) {
-        btnCapture.addEventListener('click', () => {
-            const canvas = document.getElementById('canvasOutput');
-            const video = document.getElementById('webcam');
-
-            if (!canvas || canvas.width === 0) {
-                showToast('Encienda la cámara en el panel de Diagnóstico antes de capturar una muestra.', 'warning');
-                return;
-            }
-
-            // Usar canvas u offscreen de video
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            const ctx = tempCanvas.getContext('2d');
-            
-            if (video && video.readyState >= 2) {
-                ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-            } else {
-                ctx.drawImage(canvas, 0, 0);
-            }
-
-            tempCapturedBase64 = tempCanvas.toDataURL('image/jpeg', 0.85);
-            if (previewImg && previewContainer) {
-                previewImg.src = tempCapturedBase64;
-                previewContainer.style.display = 'block';
-            }
-            showToast('Muestra fotográfica capturada. Seleccione el defecto y guarde.', 'info');
-        });
-    }
-
-    if (btnSave) {
-        btnSave.addEventListener('click', async () => {
-            if (!tempCapturedBase64) {
-                showToast('Capture primero una foto con el botón de cámara.', 'warning');
-                return;
-            }
-
-            const defectoSelect = document.getElementById('datasetDefectSelect');
-            const notesInput = document.getElementById('datasetNotes');
-
-            const defectoId = defectoSelect ? defectoSelect.value : 'rebaba_boca';
-            const notas = notesInput ? notesInput.value.trim() : '';
-
-            await saveSample({
-                fotoBase64: tempCapturedBase64,
-                defectoId: defectoId,
-                notas: notas
-            });
-
-            // Limpiar formulario
-            tempCapturedBase64 = null;
-            if (previewContainer) previewContainer.style.display = 'none';
-            if (notesInput) notesInput.value = '';
-
-            renderDatasetGallery();
-        });
-    }
-
-    if (btnExport) {
-        btnExport.addEventListener('click', () => {
-            exportDatasetJSON();
-        });
-    }
-
-    // Función global para eliminar muestras desde la galería
     window.deleteDatasetSample = async (sampleId) => {
         await deleteSample(sampleId);
         renderDatasetGallery();
     };
+
+    console.log('[DatasetManager] Módulo Banco de Entrenamiento IA inicializado correctamente.');
 }
+
 

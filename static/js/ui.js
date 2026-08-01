@@ -4,7 +4,7 @@ import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopSc
 import { startProcessing, stopProcessing } from './vision.js';
 import { calculateSopMs } from './timing.js';
 import { terminateTesseractWorker } from './ocr.js';
-import { renderDatasetGallery } from './datasetManager.js';
+import { renderDatasetGallery, populateDatasetSelect } from './datasetManager.js';
 
 
 
@@ -322,8 +322,9 @@ async function switchView(viewName) {
                     renderDefectsList(DEFECTOS_DB);
                 }
 
-                // Al cambiar a banco de entrenamiento, renderizar galería actualizada
+                // Al cambiar a banco de entrenamiento, repoblar opciones y renderizar galería actualizada
                 if (viewName === 'dataset') {
+                    populateDatasetSelect();
                     renderDatasetGallery();
                 }
 
