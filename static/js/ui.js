@@ -259,83 +259,66 @@ function filterDefects() {
         }
 
 async function switchView(viewName) {
-            if (state.isCameraTransitioning) {
-                console.log("Cámara ocupada liberando/adquiriendo hardware. Ignorando cambio de pestaña.");
-                return;
-            }
-            state.isCameraTransitioning = true;
-            let activeViewId;
+    try {
+        // 1. CAMBIO VISUAL INSTANTÁNEO EN EL DOM (0ms - Respuesta inmediata al clic)
+        document.querySelectorAll('.view-content').forEach(view => {
+            view.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
 
+        // Activar el botón cliqueado
+        const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => {
+            const clickAttr = btn.getAttribute('onclick');
+            return clickAttr && clickAttr.includes(viewName);
+        });
+        if (targetBtn) targetBtn.classList.add('active');
+
+        // Mostrar la vista seleccionada
+        const targetView = document.getElementById(viewName + 'View');
+        if (targetView) {
+            targetView.classList.add('active');
+        }
+
+        // 2. INICIALIZAR CONTENIDO DEL MÓDULO OBJETIVO
+        if (viewName === 'directory') {
+            renderDefectsList(DEFECTOS_DB);
+        } else if (viewName === 'dataset') {
             try {
-                // Ocultar todas las vistas
-                document.querySelectorAll('.view-content').forEach(view => {
-                    view.classList.remove('active');
-                });
-                // Desactivar todos los botones
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-
-                // Encontrar botón cliqueado por onclick de forma segura
-                const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => {
-                    const clickAttr = btn.getAttribute('onclick');
-                    return clickAttr && clickAttr.includes(viewName);
-                });
-                if (targetBtn) targetBtn.classList.add('active');
-
-                // Mostrar la vista objetivo
-                const targetView = document.getElementById(viewName + 'View');
-                if (targetView) {
-                    targetView.classList.add('active');
-                    activeViewId = viewName + 'View';
-                }
-
-                // Gestión y liberación cruzada de hardware de cámaras para evitar congelamiento
-                if (viewName === 'live') {
-                    stopScannerCamera(); // Detener cámara de escáner al volver a Diagnóstico
-                    await new Promise(resolve => setTimeout(resolve, 350)); // Delay para asegurar liberacion de hardware
-                    await startDiagnosticCamera(); // Iniciar cámara de diagnóstico bajo demanda
-                    startProcessing(); // Iniciar procesamiento de visión para auto-diagnóstico continuo
-                } else if (viewName === 'scanner') {
-                    stopProcessing(); 
-                    stopDiagnosticCamera(); // Apagar cámara de diagnóstico al entrar a Escáner
-                    await new Promise(resolve => setTimeout(resolve, 350)); // Delay para asegurar liberacion de hardware
-                    // Encender la cámara del escáner si está en modo cámara activo
-                    const btnCam = document.getElementById('btnScannerUseCam');
-                    if (btnCam && btnCam.classList.contains('active')) {
-                        await startScannerCamera();
-                    }
-                } else {
-                    // Detener ambas cámaras para ahorrar CPU y RAM en el móvil
-                    stopProcessing();
-                    stopDiagnosticCamera();
-                    stopScannerCamera();
-                }
-
-                // Liberar Worker de OCR si salimos de la pestaña Scanner
-                if (viewName !== 'scanner') {
-                    terminateTesseractWorker();
-                }
-
-                // Al cambiar a directorio, renderizar la lista completa
-                if (viewName === 'directory') {
-                    renderDefectsList(DEFECTOS_DB);
-                }
-
-                // Al cambiar a banco de entrenamiento, repoblar opciones y renderizar galería actualizada
-                if (viewName === 'dataset') {
-                    populateDatasetSelect();
-                    renderDatasetGallery();
-                }
-
-                // Delay de estabilización física del hardware de cámara antes de liberar el semáforo
-                await new Promise(resolve => setTimeout(resolve, 250));
-            } catch (err) {
-                console.error("Error en transición de hardware de cámara:", err);
-            } finally {
-                state.isCameraTransitioning = false;
+                populateDatasetSelect();
+                renderDatasetGallery();
+            } catch (dsErr) {
+                console.error("[UI] Error cargando Banco IA:", dsErr);
             }
         }
+
+        // 3. GESTIÓN ASÍNCRONA DE CÁMARAS Y RECURSOS (En segundo plano)
+        if (viewName === 'live') {
+            stopScannerCamera();
+            await startDiagnosticCamera();
+            startProcessing();
+        } else if (viewName === 'scanner') {
+            stopProcessing();
+            stopDiagnosticCamera();
+            const btnCam = document.getElementById('btnScannerUseCam');
+            if (btnCam && btnCam.classList.contains('active')) {
+                await startScannerCamera();
+            }
+        } else {
+            // En cualquier otra vista (dataset, sop, log, directory), detener cámaras para liberar CPU/GPU
+            stopProcessing();
+            stopDiagnosticCamera();
+            stopScannerCamera();
+        }
+
+        if (viewName !== 'scanner') {
+            terminateTesseractWorker();
+        }
+    } catch (err) {
+        console.error("Error en transición de vista:", err);
+    }
+}
 
 export function setupSilhouetteToggleListener() {
     const toggle = document.getElementById('silhouetteToggle');
