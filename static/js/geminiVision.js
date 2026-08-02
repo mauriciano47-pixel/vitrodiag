@@ -664,6 +664,29 @@ export function drawDefectBoundingBoxes(canvas, result) {
 }
 
 /**
+ * Solicita interactivamente la API Key al usuario mediante un prompt y la guarda.
+ */
+export function promptSaveGeminiApiKey() {
+    const currentKey = state.geminiApiKey || '';
+    const key = prompt(
+        "🔑 Configuración de Gemini Vision IA (Google AI Studio):\n\n" +
+        "Ingresa o pega tu API Key de Gemini (puedes obtener una gratis en https://aistudio.google.com):",
+        currentKey
+    );
+
+    if (key !== null) {
+        const trimmed = key.trim();
+        if (trimmed.length >= 10) {
+            saveGeminiApiKey(trimmed);
+        } else if (trimmed === '') {
+            clearGeminiApiKey();
+        } else {
+            showToast("API Key inválida. Debe tener al menos 10 caracteres.", "warning");
+        }
+    }
+}
+
+/**
  * Función principal bajo demanda 1-Clic: Captura foto en alta resolución, aplica pre-procesamiento óptico para vidrio y analiza con Gemini Vision.
  */
 export async function captureAndAnalyzeWithAI() {
@@ -671,8 +694,16 @@ export async function captureAndAnalyzeWithAI() {
     const canvas = document.getElementById('canvasOutput');
 
     if (!state.geminiApiKey) {
-        showToast("Por favor configura tu API Key de Gemini en el Panel de IA para habilitar el diagnóstico.", "warning");
-        return;
+        const userKey = prompt(
+            "🔑 Se requiere API Key de Gemini IA para ejecutar el diagnóstico por visión.\n\n" +
+            "Ingresa o pega tu API Key de Google AI Studio (obtenla gratis en https://aistudio.google.com):"
+        );
+        if (userKey && userKey.trim().length >= 10) {
+            saveGeminiApiKey(userKey.trim());
+        } else {
+            showToast("Por favor configura tu API Key de Gemini para habilitar el diagnóstico por IA.", "warning");
+            return;
+        }
     }
 
     const source = (video && video.readyState >= 2 && video.videoWidth > 0) ? video : canvas;

@@ -64,6 +64,7 @@ import {
     saveGeminiApiKey, 
     loadGeminiApiKey, 
     clearGeminiApiKey, 
+    promptSaveGeminiApiKey,
     runDeepDiagnosis, 
     initConnectivityMonitor,
     captureAndAnalyzeWithAI,
@@ -75,6 +76,7 @@ import { initDatasetUI } from './datasetManager.js';
 
 // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
 window.DEFECTOS_DB = DEFECTOS_DB;
+window.promptSaveGeminiApiKey = promptSaveGeminiApiKey;
 window.captureAndAnalyzeWithAI = captureAndAnalyzeWithAI;
 window.triggerDeepAnalysisFileUpload = triggerDeepAnalysisFileUpload;
 window.handleDeepAnalysisFileSelect = handleDeepAnalysisFileSelect;
