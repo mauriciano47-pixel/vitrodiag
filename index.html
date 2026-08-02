@@ -1712,6 +1712,17 @@
             </ol>
         </div>
 
+        <!-- BOTONES PRINCIPALES DE ACCIÓN IA DIRECTA -->
+        <div style="width:100%; max-width:480px; margin: 12px 0;">
+            <input type="file" id="deepAnalysisFileInput" accept="image/*" style="display:none;" onchange="window.handleDeepAnalysisFileSelect(event)">
+            <button class="btn-action btn-action-success" id="btnAnalyzeAI" onclick="window.captureAndAnalyzeWithAI()" style="width:100%; font-weight:bold; font-size:1rem; padding:14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                ⚡ ANALIZAR BOTELLA CON IA (GEMINI 2.0)
+            </button>
+            <button class="btn-action btn-action-alt" id="btnUploadAI" onclick="window.triggerDeepAnalysisFileUpload()" style="width:100%; margin-top:8px;">
+                📁 Cargar Foto de Envase para Análisis IA
+            </button>
+        </div>
+
         <div class="toggle-container">
             <span class="toggle-label">Ver Bordes de Silueta (Visión Artificial)</span>
             <label class="switch">

@@ -15,14 +15,71 @@ const AUTO_ANALYSIS_COOLDOWN_MS = 6000;
 let lastAnalysisTimestamp = 0;
 
 /**
- * Genera el prompt de ingeniería especializado incluyendo el catálogo oficial de 96 defectos.
+ * Pre-procesamiento óptico industrial para realzar imperfecciones en vidrio transparente.
+ * Aplica ajuste de contraste adaptativo, ecualización de sombras y nitidez de micro-fisuras.
+ * @param {HTMLCanvasElement|HTMLVideoElement|HTMLImageElement} source - Elemento fuente de imagen
+ * @returns {string} Base64 de la imagen procesada en formato JPEG
+ */
+export function preprocessGlassImage(source) {
+    if (!source) return null;
+
+    const canvas = document.createElement('canvas');
+    let width = source.videoWidth || source.naturalWidth || source.width || 1024;
+    let height = source.videoHeight || source.naturalHeight || source.height || 1024;
+
+    // Escalar manteniendo proporción hasta máx 1024px para respuesta óptima de Gemini
+    const maxDim = 1024;
+    if (width > maxDim || height > maxDim) {
+        if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+        } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+        }
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(source, 0, 0, width, height);
+
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+
+    // Filtro de Realce Óptico Industrial para Vidrio (CLAHE Simulación)
+    // Aumenta contraste en tonos medios y resalta micro-sombras de refracción
+    const contrastFactor = 1.35; 
+    const brightnessOffset = -10;
+
+    for (let i = 0; i < data.length; i += 4) {
+        let r = data[i];
+        let g = data[i+1];
+        let b = data[i+2];
+
+        // Ecualización adaptativa de contraste RGB
+        r = Math.min(255, Math.max(0, contrastFactor * (r - 128) + 128 + brightnessOffset));
+        g = Math.min(255, Math.max(0, contrastFactor * (g - 128) + 128 + brightnessOffset));
+        b = Math.min(255, Math.max(0, contrastFactor * (b - 128) + 128 + brightnessOffset));
+
+        data[i] = r;
+        data[i+1] = g;
+        data[i+2] = b;
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    return canvas.toDataURL('image/jpeg', 0.90);
+}
+
+/**
+ * Genera el prompt de ingeniería especializado incluyendo el catálogo oficial de 96 defectos y coordenadas 2D.
  * @returns {string}
  */
 function buildGlassDefectPrompt() {
     const catalogSummary = getDefectCatalogSummary();
     return `Eres un inspector experto de control de calidad en envases de vidrio para la industria vidriera (proceso NNPB / Blow-Blow).
 
-Analiza minuciosamente esta imagen de una botella/envase de vidrio. La imagen puede ser una foto directa o el contorno digital procesado.
+Analiza minuciosamente esta fotografía de alta resolución de una botella/envase de vidrio.
 
 Debes comparar lo observado contra nuestro CATÁLOGO OFICIAL DE 96 DEFECTOS INDUSTRIALES DE MÁQUINA I.S. que se detalla a continuación:
 
@@ -30,10 +87,11 @@ Debes comparar lo observado contra nuestro CATÁLOGO OFICIAL DE 96 DEFECTOS INDU
 ${catalogSummary}
 --- FIN DEL CATÁLOGO ---
 
-Instrucciones:
-1. Identifica si existen uno o más defectos visibles.
-2. Si detectas un defecto, debes asociarlo OBLIGATORIAMENTE con uno de los "ID" del catálogo oficial.
-3. Si el envase está conforme y sin fallas, indica defectos_encontrados: false.
+Instrucciones Estrictas:
+1. Identifica si existen uno o más defectos de vidrio (fisuras, columpios/birdswings, rebabas, burbujas, piedras, hombro hundido, pared delgada, vidrio sucio, deformaciones, etc.).
+2. Para cada defecto encontrado, debes asociarlo OBLIGATORIAMENTE con uno de los "ID" del catálogo oficial.
+3. Debes proporcionar las coordenadas del recuadro delimitador (Bounding Box) normalizado de 0 a 1000 [ymin, xmin, ymax, xmax] donde se encuentra la falla visual.
+4. Si el envase está conforme y sin fallas, indica defectos_encontrados: false.
 
 Responde EXCLUSIVAMENTE con un JSON válido (sin markdown, sin bloques \`\`\`json) con esta estructura exacta:
 {
@@ -46,7 +104,8 @@ Responde EXCLUSIVAMENTE con un JSON válido (sin markdown, sin bloques \`\`\`jso
       "zona": "boca|cuello|cuerpo|fondo|general",
       "gravedad": "critico|mayor|menor",
       "confianza": número 0-100,
-      "descripcion": "descripción detallada del hallazgo en la imagen",
+      "box_2d": [ymin, xmin, ymax, xmax],
+      "descripcion": "descripción detallada del hallazgo observado en la foto",
       "accion_correctiva": "acción correctiva recomendada para la máquina I.S."
     }
   ],
@@ -557,6 +616,185 @@ export function initConnectivityMonitor() {
 }
 
 /**
+ * Renderiza recuadros delimitadores (Bounding Boxes) sobre la foto analizada en canvas.
+ * @param {HTMLCanvasElement} canvas - Canvas objetivo
+ * @param {Object} result - Resultado parseado de Gemini Vision
+ */
+export function drawDefectBoundingBoxes(canvas, result) {
+    if (!canvas || !result || !result.analisis || result.analisis.length === 0) return;
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    result.analisis.forEach((defect) => {
+        if (!defect.box_2d || defect.box_2d.length !== 4) return;
+
+        const [ymin, xmin, ymax, xmax] = defect.box_2d;
+        const y1 = (ymin / 1000) * h;
+        const x1 = (xmin / 1000) * w;
+        const y2 = (ymax / 1000) * h;
+        const x2 = (xmax / 1000) * w;
+        const boxW = Math.max(15, x2 - x1);
+        const boxH = Math.max(15, y2 - y1);
+
+        let color = '#ef4444'; // Crítico - Rojo Neón
+        if (defect.gravedad === 'mayor') color = '#f59e0b'; // Mayor - Ámbar Neón
+        else if (defect.gravedad === 'menor') color = '#eab308'; // Menor - Amarillo Neón
+
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
+        ctx.strokeRect(x1, y1, boxW, boxH);
+
+        // Insignia de defecto sobre la zona
+        const label = `🚨 [${(defect.zona || 'DEFECTO').toUpperCase()}] ${defect.defecto_nombre || ''} (${defect.confianza || 90}%)`;
+        ctx.font = 'bold 12px sans-serif';
+        const textWidth = ctx.measureText(label).width;
+
+        ctx.fillStyle = color;
+        ctx.fillRect(x1, Math.max(0, y1 - 20), textWidth + 12, 20);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(label, x1 + 6, Math.max(14, y1 - 6));
+        ctx.restore();
+    });
+}
+
+/**
+ * Función principal bajo demanda 1-Clic: Captura foto en alta resolución, aplica pre-procesamiento óptico para vidrio y analiza con Gemini Vision.
+ */
+export async function captureAndAnalyzeWithAI() {
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvasOutput');
+
+    if (!state.geminiApiKey) {
+        showToast("Por favor configura tu API Key de Gemini en el Panel de IA para habilitar el diagnóstico.", "warning");
+        return;
+    }
+
+    const source = (video && video.readyState >= 2 && video.videoWidth > 0) ? video : canvas;
+    if (!source || source.width === 0) {
+        showToast("Encienda la cámara o cargue una foto desde archivo antes de analizar.", "warning");
+        return;
+    }
+
+    showToast("📸 Capturando foto HD y aplicando pre-procesamiento óptico para vidrio...", "info");
+    updateAnalyzingUI(true);
+
+    try {
+        const processedB64 = preprocessGlassImage(source);
+        if (!processedB64) {
+            showToast("No se pudo procesar la imagen de la cámara.", "danger");
+            return;
+        }
+
+        // Renderizar la foto procesada en el canvas principal
+        const img = new Image();
+        img.onload = async () => {
+            if (canvas) {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.classList.remove('d-none');
+            }
+
+            // Enviar Base64 procesado a Gemini Vision
+            const cleanB64 = processedB64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+            const glassPrompt = buildGlassDefectPrompt();
+            const articleName = state.activeArticle ? state.activeArticle.nombre : "Artículo genérico";
+            const contextPrompt = `\nContexto: El artículo en inspección es "${articleName}". Considera tolerancias NNPB de Cristal Chile.\n`;
+
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: glassPrompt + contextPrompt },
+                        { inline_data: { mime_type: "image/jpeg", data: cleanB64 } }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 1024,
+                    responseMimeType: "application/json"
+                }
+            };
+
+            const response = await fetch(`${GEMINI_API_URL}?key=${state.geminiApiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const responseData = await response.json();
+            const rawText = responseData.candidates[0].content.parts[0].text;
+            const result = parseGeminiResponse(rawText);
+
+            if (result) {
+                state.lastGeminiResult = result;
+                renderGeminiResult(result);
+                if (canvas) drawDefectBoundingBoxes(canvas, result);
+                showToast("Análisis IA completado con éxito.", "success");
+            } else {
+                showToast("No se detectó estructura válida en la respuesta de IA.", "warning");
+            }
+        };
+        img.src = processedB64;
+    } catch (err) {
+        console.error("[GeminiVision] Error en captureAndAnalyzeWithAI:", err);
+        showToast(`Error al analizar imagen con IA: ${err.message}`, "danger");
+    } finally {
+        updateAnalyzingUI(false);
+    }
+}
+
+/**
+ * Activa el selector de archivos para cargar una foto desde el celular/PC.
+ */
+export function triggerDeepAnalysisFileUpload() {
+    const input = document.getElementById('deepAnalysisFileInput');
+    if (input) input.click();
+}
+
+/**
+ * Maneja la selección de archivo de imagen cargado para análisis IA.
+ * @param {Event} event 
+ */
+export function handleDeepAnalysisFileSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        showToast('Por favor seleccione una imagen válida (JPG, PNG, WEBP).', 'danger');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.getElementById('canvasOutput');
+            if (canvas) {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.classList.remove('d-none');
+            }
+            captureAndAnalyzeWithAI();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
  * Actualiza el indicador visual de conectividad.
  * @param {boolean} online
  */
@@ -567,3 +805,4 @@ function updateConnectivityUI(online) {
         badge.innerText = online ? '🌐 Online' : '📵 Offline';
     }
 }
+

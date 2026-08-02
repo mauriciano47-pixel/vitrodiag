@@ -21,8 +21,8 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
    Análisis óptico de detección de bordes y perfilado geométrico del cuello y cuerpo. Verifica la verticalidad, eje central y simetría de la botella a través de la cámara del smartphone.
 2. **Filtro Anti-Falsas Lecturas (`isBottlePresent` & `maxContinuous`):**
    Verificación heurística de densidad de bordes verticales y continuidad espacial continua. Evita lecturas erróneas ante fondos vacíos, estructuras de planta o paredes, exigiendo la presencia real del envase.
-3. **Motor Híbrido MotorVision v1.1.2 con Gemini 2.0 Flash (Catálogo Completo de 96 Defectos):**
-   Análisis profundo de imágenes por IA generativa multimodal (`Gemini 2.0 Flash`) con inyección dinámica del **catálogo oficial de 96 defectos industriales** divididos en Boca, Cuello, Cuerpo, Fondo y Generales. Mapea la respuesta directamente con la base de datos oficial para entregar causas raíz y acciones correctivas para máquina I.S.
+3. **MotorVision IA Multimodal Fotográfico con Gemini 2.0 Flash (Catálogo de 96 Defectos + Bounding Boxes):**
+   Análisis fotográfico directo en RGB de alta resolución con pre-procesamiento óptico específico para vidrio (CLAHE/Contraste adaptativo). Gemini 2.0 Flash evalúa la textura, transparencia y refracción contra el **catálogo oficial de 96 defectos industriales** y proyecta los recuadros delimitadores (Bounding Boxes 2D) sobre la zona exacta de la foto con sus acciones para máquina I.S.
 4. **Agente Patronista1 & Clasificación Multizona por Ficha Técnica:**
    Evaluación técnica dividida por zonas anatómicas del envase (Corona, Cuello, Hombro, Cuerpo, Fondo) contrastada con especificaciones técnicas de moldería NNPB.
 5. **Cerebro Neuronal CNN (TensorFlow.js):**

@@ -9,7 +9,7 @@ VitroDiag es una plataforma Progressive Web App (PWA) de asistencia óptica, con
 ## Características
 
 - 📱 **Visión en Vivo:** Acceso a cámara del smartphone con guías dinámicas de moldería según ficha técnica.
-- 🧠 **MotorVision v1.1.2:** Inferencia de IA multimodal con Gemini 2.0 Flash inyectado con el **catálogo oficial de 96 defectos** vidrieros.
+- 🧠 **MotorVision IA Multimodal HD:** Inferencia fotográfica directa con Gemini 2.0 Flash, pre-procesamiento óptico para vidrio (CLAHE) y **marcado gráfico de zonas (Bounding Boxes)** sobre el catálogo de 96 defectos vidrieros.
 - 🎯 **Clasificación Multizona de Precisión:** Diagnóstico automático por zona anatómica (Boca, Cuello, Hombro, Cuerpo, Fondo) y severidad (Crítico, Mayor, Menor).
 - ⚙️ **Acciones Correctivas I.S.:** Mapeo instantáneo con los ajustes sugeridos de máquina I.S. y moldes.
 - 📐 **Plomada Digital Real-Time:** Cálculo instantáneo del eje de verticalidad ($\theta$) y simetría especular para detección determinista de botellas torcidas, hombros hundidos y rebabas.

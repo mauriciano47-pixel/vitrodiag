@@ -65,12 +65,20 @@ import {
     loadGeminiApiKey, 
     clearGeminiApiKey, 
     runDeepDiagnosis, 
-    initConnectivityMonitor 
+    initConnectivityMonitor,
+    captureAndAnalyzeWithAI,
+    triggerDeepAnalysisFileUpload,
+    handleDeepAnalysisFileSelect,
+    drawDefectBoundingBoxes
 } from './geminiVision.js';
 import { initDatasetUI } from './datasetManager.js';
 
 // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
 window.DEFECTOS_DB = DEFECTOS_DB;
+window.captureAndAnalyzeWithAI = captureAndAnalyzeWithAI;
+window.triggerDeepAnalysisFileUpload = triggerDeepAnalysisFileUpload;
+window.handleDeepAnalysisFileSelect = handleDeepAnalysisFileSelect;
+window.drawDefectBoundingBoxes = drawDefectBoundingBoxes;
 window.switchView = switchView;
 window.changeActiveArticle = changeActiveArticle;
 window.openArticlesModal = openArticlesModal;
