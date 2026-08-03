@@ -1684,6 +1684,7 @@
     <div id="liveView" class="view-content active">
         <div class="camera-wrapper" onclick="if(window.startDiagnosticCamera) { window.startDiagnosticCamera(); } if(window.startProcessing) { window.startProcessing(); }" title="Toca para iniciar cámara en celular">
             <div id="opencvStatus" class="opencv-status">Motor Visión: Esperando Envase en Guías...</div>
+            <button id="btnTapCameraStart" onclick="event.stopPropagation(); if(window.forceRetryCamera) window.forceRetryCamera();" class="btn-action btn-action-success" style="position:absolute; top:45%; left:50%; transform:translate(-50%,-50%); z-index:30; font-size:0.9rem; padding:12px 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); border: 2px solid #ffffff;">📸 TOCAR PARA INICIAR CÁMARA</button>
             <video id="webcam" autoplay muted></video>
             <canvas id="canvasOutput" class="d-none"></canvas>
             
@@ -2399,6 +2400,6 @@
         <div class="footer-subtext">PLANO DE CONTROL ÓPTICO - MÁQUINA I.S. CALIENTE</div>
     </footer>
 
-    <script type="module" src="static/js/main.js?v=1.2.1"></script>
+    <script type="module" src="static/js/main.js?v=1.2.2"></script>
 </body>
 </html>

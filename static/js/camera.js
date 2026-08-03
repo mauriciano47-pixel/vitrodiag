@@ -11,7 +11,11 @@ const cameraConstraints = {
 };
 
 async function startDiagnosticCamera() {
-    if (state.diagnosticStream) return;
+    const btnTap = document.getElementById('btnTapCameraStart');
+    if (state.diagnosticStream) {
+        if (btnTap) btnTap.style.display = 'none';
+        return;
+    }
     
     // Grace period para liberar el hardware si se acaba de apagar otra cámara
     await new Promise(res => setTimeout(res, 350));
@@ -33,6 +37,7 @@ async function startDiagnosticCamera() {
         await video.play().catch(e => console.log("Play webcam interrumpido:", e));
         status.innerText = "Motor Visión: Activo (Nativo)";
         status.style.color = "#10b981";
+        if (btnTap) btnTap.style.display = 'none';
     } catch (err) {
         console.warn("Fallo al cargar constraints recomendados de cámara. Probando fallback...", err);
         try {
@@ -45,18 +50,20 @@ async function startDiagnosticCamera() {
             await video.play().catch(e => console.log("Play webcam fallback interrumpido:", e));
             status.innerText = "Motor Visión: Activo (Nativo)";
             status.style.color = "#10b981";
+            if (btnTap) btnTap.style.display = 'none';
         } catch (fallbackErr) {
             console.error("No se pudo iniciar la cámara: ", fallbackErr);
             state.diagnosticStream = null;
+            if (btnTap) btnTap.style.display = 'block';
             const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
             if (!isSecure) {
                 status.innerText = "Visión: Requiere HTTPS o Localhost";
                 status.style.color = "#f59e0b";
                 showToast("Para usar la cámara, abre la app desde HTTPS (GitHub Pages) o localhost.", "warning");
             } else {
-                status.innerText = "Visión: Sin cámara (Toca para Reintentar)";
-                status.style.color = "#ef4444";
-                showToast("No se pudo acceder a la cámara. Otorga los permisos en tu navegador y toca el visor para reintentar.", "warning");
+                status.innerText = "Visión: Tocá para Activar Cámara";
+                status.style.color = "#f59e0b";
+                showToast("En tu celular, presiona el botón 'TOCAR PARA INICIAR CÁMARA' para otorgar permisos.", "info");
             }
         }
     }
