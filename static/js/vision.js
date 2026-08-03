@@ -518,7 +518,7 @@ function processFrame() {
                 }
 
                 frameCounter++;
-                if (frameCounter % 8 === 0) {
+                if (frameCounter % 15 === 0) {
                     try {
                         runLiveDiagnosis();
                     } catch (diagErr) {

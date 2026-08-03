@@ -71,11 +71,22 @@ import {
     triggerDeepAnalysisFileUpload,
     handleDeepAnalysisFileSelect,
     drawDefectBoundingBoxes
-} from './geminiVision.js';
-import { initDatasetUI } from './datasetManager.js';
+import { 
+    initDatasetUI,
+    openSampleModal,
+    closeSampleModal,
+    updateSampleNotesFromModal,
+    deleteSampleFromModal,
+    analyzeSampleWithGeminiFromModal
+} from './datasetManager.js';
 
 // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
 window.DEFECTOS_DB = DEFECTOS_DB;
+window.openSampleModal = openSampleModal;
+window.closeSampleModal = closeSampleModal;
+window.updateSampleNotesFromModal = updateSampleNotesFromModal;
+window.deleteSampleFromModal = deleteSampleFromModal;
+window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
 window.promptSaveGeminiApiKey = promptSaveGeminiApiKey;
 window.captureAndAnalyzeWithAI = captureAndAnalyzeWithAI;
 window.triggerDeepAnalysisFileUpload = triggerDeepAnalysisFileUpload;

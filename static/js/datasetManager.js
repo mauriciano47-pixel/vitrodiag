@@ -243,6 +243,8 @@ export function populateDatasetSelect() {
     });
 }
 
+let currentActiveSampleId = null;
+
 /**
  * Renderiza la galería de muestras registradas en el banco local.
  */
@@ -261,12 +263,15 @@ export async function renderDatasetGallery() {
         }
 
         container.innerHTML = samples.map(sample => `
-            <div style="background:rgba(15,23,42,0.6); border:1px solid var(--border-color); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px;">
-                <img src="${sample.fotoBase64}" alt="${sample.defectoNombre}" style="width:100%; height:90px; object-fit:cover; border-radius:4px;" />
+            <div onclick="window.openSampleModal('${sample.id}')" style="background:rgba(15,23,42,0.6); border:1px solid var(--border-color); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent-color)'; this.style.transform='scale(1.02)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)';" title="Haga clic para ver detalles, editar notas o diagnosticar con Gemini IA">
+                <img src="${sample.fotoBase64}" alt="${sample.defectoNombre}" style="width:100%; height:95px; object-fit:cover; border-radius:4px;" />
                 <div style="font-weight:bold; font-size:0.75rem; color:var(--accent-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${sample.defectoNombre}</div>
                 <div style="font-size:0.65rem; color:var(--text-muted);">${sample.fechaRegistro}</div>
                 ${sample.notas ? `<div style="font-size:0.65rem; color:var(--text-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">📝 ${sample.notas}</div>` : ''}
-                <button class="filter-btn" onclick="window.deleteDatasetSample('${sample.id}')" style="font-size:0.65rem; padding:2px 6px; margin-top:auto; background:rgba(239,68,68,0.2); color:#ef4444; border-color:rgba(239,68,68,0.4);">🗑️ Eliminar</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto; pt-4;">
+                    <span style="font-size:0.65rem; color:var(--primary);">🔍 Ver detalle</span>
+                    <button class="filter-btn" onclick="event.stopPropagation(); window.deleteDatasetSample('${sample.id}')" style="font-size:0.65rem; padding:2px 6px; background:rgba(239,68,68,0.2); color:#ef4444; border-color:rgba(239,68,68,0.4);" title="Eliminar muestra">🗑️</button>
+                </div>
             </div>
         `).join('');
     } catch (err) {
@@ -275,7 +280,7 @@ export async function renderDatasetGallery() {
 }
 
 /**
- * Captura la foto activa desde la cámara de diagnóstico o lienzo actual.
+ * Captura la foto activa desde la cámara de diagnóstico o activa el selector directo de imagen.
  */
 export function captureDatasetFromCamera() {
     const canvas = document.getElementById('canvasOutput');
@@ -297,7 +302,8 @@ export function captureDatasetFromCamera() {
     }
 
     if (!base64 || base64 === 'data:,') {
-        showToast('La cámara no tiene un fotograma activo. Utilice la opción "📁 Subir Foto" para seleccionar una foto de su galería.', 'warning');
+        showToast('Abriendo selector de cámara/galería del sistema...', 'info');
+        triggerDatasetFileSelect();
         return;
     }
 
@@ -374,6 +380,116 @@ export async function handleSaveDatasetSample() {
 }
 
 /**
+ * Abre el modal interactivo para inspeccionar una muestra registrada.
+ * @param {string} sampleId 
+ */
+export async function openSampleModal(sampleId) {
+    try {
+        const samples = await getAllSamples();
+        const sample = samples.find(s => s.id === sampleId);
+        if (!sample) return;
+
+        currentActiveSampleId = sampleId;
+        const modal = document.getElementById('sampleModal');
+        const modalImg = document.getElementById('sampleModalImg');
+        const modalTitle = document.getElementById('sampleModalTitle');
+        const modalDefect = document.getElementById('sampleModalDefectName');
+        const modalMeta = document.getElementById('sampleModalMeta');
+        const modalNotes = document.getElementById('sampleModalNotes');
+
+        if (modalImg) modalImg.src = sample.fotoBase64;
+        if (modalTitle) modalTitle.innerText = `📸 Muestra: ${sample.defectoNombre}`;
+        if (modalDefect) modalDefect.innerText = `[ZONA: ${sample.zona.toUpperCase()}] ${sample.defectoNombre} (${sample.gravedad})`;
+        if (modalMeta) modalMeta.innerText = `Registrado el: ${sample.fechaRegistro} | Artículo: ${sample.articuloId}`;
+        if (modalNotes) modalNotes.value = sample.notas || '';
+
+        if (modal) modal.classList.add('active');
+    } catch (err) {
+        console.error('[DatasetManager] Error al abrir modal de muestra:', err);
+    }
+}
+
+/**
+ * Cierra el modal de inspección de muestra.
+ */
+export function closeSampleModal() {
+    const modal = document.getElementById('sampleModal');
+    if (modal) modal.classList.remove('active');
+    currentActiveSampleId = null;
+}
+
+/**
+ * Actualiza las notas de la muestra activa desde el modal.
+ */
+export async function updateSampleNotesFromModal() {
+    if (!currentActiveSampleId) return;
+
+    const modalNotes = document.getElementById('sampleModalNotes');
+    const newNotes = modalNotes ? modalNotes.value.trim() : '';
+
+    try {
+        const db = await initDatasetDB();
+        const tx = db.transaction(STORE_SAMPLES, 'readwrite');
+        const store = tx.objectStore(STORE_SAMPLES);
+        const req = store.get(currentActiveSampleId);
+
+        req.onsuccess = () => {
+            const sample = req.result;
+            if (sample) {
+                sample.notas = newNotes;
+                store.put(sample);
+                showToast('Notas de la muestra actualizadas.', 'success');
+                renderDatasetGallery();
+                closeSampleModal();
+            }
+        };
+    } catch (err) {
+        console.error('[DatasetManager] Error actualizando notas:', err);
+    }
+}
+
+/**
+ * Elimina la muestra activa desde el modal.
+ */
+export async function deleteSampleFromModal() {
+    if (!currentActiveSampleId) return;
+
+    if (confirm('¿Estás seguro de eliminar esta muestra del banco?')) {
+        await deleteSample(currentActiveSampleId);
+        closeSampleModal();
+        renderDatasetGallery();
+    }
+}
+
+/**
+ * Inyecta la muestra seleccionada directamente a Gemini Vision IA para un diagnóstico instantáneo.
+ */
+export async function analyzeSampleWithGeminiFromModal() {
+    if (!currentActiveSampleId) return;
+
+    try {
+        const samples = await getAllSamples();
+        const sample = samples.find(s => s.id === currentActiveSampleId);
+        if (!sample || !sample.fotoBase64) return;
+
+        closeSampleModal();
+        
+        // Cambiar a la pestaña de diagnóstico en vivo e invocar el diagnóstico IA con la imagen
+        if (typeof window.switchView === 'function') {
+            await window.switchView('live');
+        }
+
+        showToast('Enviando muestra del banco a Gemini Vision IA para análisis profundo...', 'info');
+
+        if (typeof window.runDeepDiagnosis === 'function') {
+            window.runDeepDiagnosis(sample.fotoBase64);
+        }
+    } catch (err) {
+        console.error('[DatasetManager] Error diagnosticando muestra:', err);
+    }
+}
+
+/**
  * Inicializa los controladores de UI y eventos globales para la gestión del banco de entrenamiento.
  */
 export function initDatasetUI() {
@@ -386,6 +502,11 @@ export function initDatasetUI() {
     window.handleDatasetFileSelect = handleDatasetFileSelect;
     window.saveDatasetSample = handleSaveDatasetSample;
     window.exportDatasetJSON = exportDatasetJSON;
+    window.openSampleModal = openSampleModal;
+    window.closeSampleModal = closeSampleModal;
+    window.updateSampleNotesFromModal = updateSampleNotesFromModal;
+    window.deleteSampleFromModal = deleteSampleFromModal;
+    window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
 
     window.deleteDatasetSample = async (sampleId) => {
         await deleteSample(sampleId);

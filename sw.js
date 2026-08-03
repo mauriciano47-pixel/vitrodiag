@@ -1,5 +1,5 @@
 // VitroDiag - Service Worker (Network-First Strategy with Cache Fallback for PWA Offline)
-const CACHE_NAME = 'vitrodiag-cache-v1.2.0';
+const CACHE_NAME = 'vitrodiag-cache-v1.2.1';
 
 const ASSETS_TO_CACHE = [
   './',

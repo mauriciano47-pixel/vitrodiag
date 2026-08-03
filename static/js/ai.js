@@ -509,27 +509,30 @@ function fallbackAlgorithmicDiagnosis() {
         const detectedName = detectedDefectObj.nombre;
         const defectActions = (detectedDefectObj.acciones || []).map(a => `<li>${a}</li>`).join('');
 
-        // Defecto Específico Confirmado desde DEFECTOS_DB
-        if (diagTitulo) diagTitulo.innerText = `❌ Defecto Crítico: ${detectedName}`;
-        if (diagGravedad) {
-            const gClass = detectedDefectObj.gravedad === "Crítico" ? "status-danger" : "status-warning";
-            diagGravedad.className = `status-alert ${gClass}`;
-            diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = `Rechazo (${detectedDefectObj.gravedad || 'Crítico'})`;
-        }
-        if (diagEstado) diagEstado.innerText = `Desviación observada en ${defectZone}: ${defectDev.toFixed(1)}% (Límite: ${toleranceLimit}%). Ficha: ${articleName}. ${detectedDefectObj.descripcion || ''}`;
-        if (diagAcciones) diagAcciones.innerHTML = defectActions;
-        
-        if (tfjsStatus) {
-            tfjsStatus.innerText = `Patrón Moldería: ${detectedName} (${defectDev.toFixed(1)}%)`;
-            tfjsStatus.style.color = "#ef4444";
-        }
-        
-        if (cursorText) {
-            cursorText.innerText = `RECHAZO: ${detectedName.toUpperCase().split('/')[0]}`;
-            cursorText.style.color = '#ef4444';
-            if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
-            if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';
+        const key = `rechazo:${detectedName}`;
+        if (lastRenderedDiagKey !== key) {
+            lastRenderedDiagKey = key;
+            if (diagTitulo) diagTitulo.innerText = `❌ Defecto Crítico: ${detectedName}`;
+            if (diagGravedad) {
+                const gClass = detectedDefectObj.gravedad === "Crítico" ? "status-danger" : "status-warning";
+                diagGravedad.className = `status-alert ${gClass}`;
+                diagGravedad.style.display = "inline-block";
+                diagGravedad.innerText = `Rechazo (${detectedDefectObj.gravedad || 'Crítico'})`;
+            }
+            if (diagEstado) diagEstado.innerText = `Desviación observada en ${defectZone}: ${defectDev.toFixed(1)}% (Límite: ${toleranceLimit}%). Ficha: ${articleName}. ${detectedDefectObj.descripcion || ''}`;
+            if (diagAcciones) diagAcciones.innerHTML = defectActions;
+            
+            if (tfjsStatus) {
+                tfjsStatus.innerText = `Patrón Moldería: ${detectedName} (${defectDev.toFixed(1)}%)`;
+                tfjsStatus.style.color = "#ef4444";
+            }
+            
+            if (cursorText) {
+                cursorText.innerText = `RECHAZO: ${detectedName.toUpperCase().split('/')[0]}`;
+                cursorText.style.color = '#ef4444';
+                if (crosshairX) crosshairX.style.backgroundColor = '#ef4444';
+                if (crosshairY) crosshairY.style.backgroundColor = '#ef4444';
+            }
         }
 
         if (lastDiagStatus !== 'rechazo') {
@@ -539,30 +542,33 @@ function fallbackAlgorithmicDiagnosis() {
         }
     } else {
 
-        // Conforme con Ficha Técnica
-        if (diagTitulo) diagTitulo.innerText = `✅ Silueta Conforme (${articleName})`;
-        if (diagGravedad) {
-            diagGravedad.className = "status-alert status-success";
-            diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = "Aceptable";
-        }
-        if (diagEstado) diagEstado.innerText = `Silueta en las 5 zonas dentro de los parámetros de moldería patrón: ${percentDeviation.toFixed(1)}% desvío max.`;
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `
-                <li>El envase cumple con las especificaciones de moldería para ${articleName}.</li>
-                <li>Mantener velocidad nominal de producción.</li>
-            `;
-        }
-        if (tfjsStatus) {
-            tfjsStatus.innerText = `Patrón Moldería: Envase Conforme (${articleName})`;
-            tfjsStatus.style.color = "#10b981";
-        }
+        const key = `conforme:${articleName}`;
+        if (lastRenderedDiagKey !== key) {
+            lastRenderedDiagKey = key;
+            if (diagTitulo) diagTitulo.innerText = `✅ Silueta Conforme (${articleName})`;
+            if (diagGravedad) {
+                diagGravedad.className = "status-alert status-success";
+                diagGravedad.style.display = "inline-block";
+                diagGravedad.innerText = "Aceptable";
+            }
+            if (diagEstado) diagEstado.innerText = `Silueta en las 5 zonas dentro de los parámetros de moldería patrón: ${percentDeviation.toFixed(1)}% desvío max.`;
+            if (diagAcciones) {
+                diagAcciones.innerHTML = `
+                    <li>El envase cumple con las especificaciones de moldería para ${articleName}.</li>
+                    <li>Mantener velocidad nominal de producción.</li>
+                `;
+            }
+            if (tfjsStatus) {
+                tfjsStatus.innerText = `Patrón Moldería: Envase Conforme (${articleName})`;
+                tfjsStatus.style.color = "#10b981";
+            }
 
-        if (cursorText) {
-            cursorText.innerText = 'CONFORME CON PATRÓN';
-            cursorText.style.color = '#10b981';
-            if (crosshairX) crosshairX.style.backgroundColor = '#10b981';
-            if (crosshairY) crosshairY.style.backgroundColor = '#10b981';
+            if (cursorText) {
+                cursorText.innerText = 'CONFORME CON PATRÓN';
+                cursorText.style.color = '#10b981';
+                if (crosshairX) crosshairX.style.backgroundColor = '#10b981';
+                if (crosshairY) crosshairY.style.backgroundColor = '#10b981';
+            }
         }
 
         if (lastDiagStatus !== 'aceptable') {
@@ -739,6 +745,8 @@ export function isBottlePresent(borders, width, height) {
     return (validBottleRows >= minRowsRequired && maxContinuous >= minContinuousRequired);
 }
 
+let lastRenderedDiagKey = null;
+
 export function runLiveDiagnosis() {
     const canvas = getCanvas();
     const tfjsStatus = getTfjsStatus();
@@ -757,29 +765,32 @@ export function runLiveDiagnosis() {
     // 🛑 FILTRO ANTI-FALSAS LECTURAS:
     // Verificar rigurosamente la presencia física del envase dentro de la retícula antes de calificar la silueta.
     if (!borders || width === 0 || height === 0 || !isBottlePresent(borders, width, height)) {
-        lastDiagStatus = 'alineando';
-        if (diagTitulo) diagTitulo.innerText = "📷 Buscando Envase...";
-        if (diagGravedad) {
-            diagGravedad.className = "status-alert status-warning";
-            diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = "Sin Envase";
-        }
-        if (diagEstado) diagEstado.innerText = "Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.";
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `
-                <li>Alinee el cuello y cuerpo de la botella dentro de la retícula de disparo.</li>
-                <li>Asegúrese de contar con iluminación o contraste adecuados.</li>
-            `;
-        }
-        if (tfjsStatus) {
-            tfjsStatus.innerText = "Motor de Visión: Esperando Envase en Guías...";
-            tfjsStatus.style.color = "#fbbf24";
-        }
-        if (cursorText) {
-            cursorText.innerText = 'ESPERANDO ENVASE';
-            cursorText.style.color = '#fbbf24';
-            if (crosshairX) crosshairX.style.backgroundColor = '#fbbf24';
-            if (crosshairY) crosshairY.style.backgroundColor = '#fbbf24';
+        if (lastRenderedDiagKey !== 'buscando_envase') {
+            lastRenderedDiagKey = 'buscando_envase';
+            lastDiagStatus = 'alineando';
+            if (diagTitulo) diagTitulo.innerText = "📷 Buscando Envase...";
+            if (diagGravedad) {
+                diagGravedad.className = "status-alert status-warning";
+                diagGravedad.style.display = "inline-block";
+                diagGravedad.innerText = "Sin Envase";
+            }
+            if (diagEstado) diagEstado.innerText = "Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.";
+            if (diagAcciones) {
+                diagAcciones.innerHTML = `
+                    <li>Alinee el cuello y cuerpo de la botella dentro de la retícula de disparo.</li>
+                    <li>Asegúrese de contar con iluminación o contraste adecuados.</li>
+                `;
+            }
+            if (tfjsStatus) {
+                tfjsStatus.innerText = "Motor de Visión: Esperando Envase en Guías...";
+                tfjsStatus.style.color = "#fbbf24";
+            }
+            if (cursorText) {
+                cursorText.innerText = 'ESPERANDO ENVASE';
+                cursorText.style.color = '#fbbf24';
+                if (crosshairX) crosshairX.style.backgroundColor = '#fbbf24';
+                if (crosshairY) crosshairY.style.backgroundColor = '#fbbf24';
+            }
         }
         return;
     }
