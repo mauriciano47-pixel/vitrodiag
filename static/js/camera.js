@@ -16,15 +16,23 @@ async function startDiagnosticCamera() {
         if (btnTap) btnTap.style.display = 'none';
         return;
     }
+
+    if (btnTap) {
+        btnTap.innerText = "⏳ Iniciando cámara...";
+        btnTap.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+    }
     
+    // Detener cualquier stream anterior colgado
+    stopDiagnosticCamera();
+
     // Grace period para liberar el hardware si se acaba de apagar otra cámara
-    await new Promise(res => setTimeout(res, 350));
+    await new Promise(res => setTimeout(res, 200));
 
     const video = document.getElementById('webcam');
     const status = document.getElementById('opencvStatus');
     if (!video || !status) return;
 
-    status.innerText = "Iniciando cámara...";
+    status.innerText = "Solicitando cámara en celular...";
     status.style.color = "rgba(255, 111, 0, 0.7)";
     
     try {
@@ -39,7 +47,7 @@ async function startDiagnosticCamera() {
         status.style.color = "#10b981";
         if (btnTap) btnTap.style.display = 'none';
     } catch (err) {
-        console.warn("Fallo al cargar constraints recomendados de cámara. Probando fallback...", err);
+        console.warn("Fallo al cargar constraints recomendados de cámara. Probando fallback simple...", err);
         try {
             state.diagnosticStream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = state.diagnosticStream;
@@ -52,18 +60,22 @@ async function startDiagnosticCamera() {
             status.style.color = "#10b981";
             if (btnTap) btnTap.style.display = 'none';
         } catch (fallbackErr) {
-            console.error("No se pudo iniciar la cámara: ", fallbackErr);
+            console.error("No se pudo iniciar la cámara en el dispositivo: ", fallbackErr);
             state.diagnosticStream = null;
-            if (btnTap) btnTap.style.display = 'block';
+            if (btnTap) {
+                btnTap.style.display = 'block';
+                btnTap.innerText = "📸 TOCAR PARA INICIAR CÁMARA";
+                btnTap.style.background = "linear-gradient(135deg, #10b981, #059669)";
+            }
             const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
             if (!isSecure) {
                 status.innerText = "Visión: Requiere HTTPS o Localhost";
                 status.style.color = "#f59e0b";
-                showToast("Para usar la cámara, abre la app desde HTTPS (GitHub Pages) o localhost.", "warning");
+                showToast("Para usar la cámara, abre la app desde HTTPS (GitHub Pages).", "warning");
             } else {
-                status.innerText = "Visión: Tocá para Activar Cámara";
+                status.innerText = "Visión: Toca el botón verde para reactivar";
                 status.style.color = "#f59e0b";
-                showToast("En tu celular, presiona el botón 'TOCAR PARA INICIAR CÁMARA' para otorgar permisos.", "info");
+                showToast("Si el navegador bloquea la cámara continua, usa el botón '📁 Cargar Foto de Envase' para analizar directamente.", "info");
             }
         }
     }
