@@ -1,5 +1,5 @@
-// VitroDiag - Service Worker (Network-First Strategy with Cache Fallback for PWA Offline)
-const CACHE_NAME = 'vitrodiag-cache-v1.3.1';
+// VitroDiag NEXUS v2.0.0 — Service Worker (Network-First + Cache Fallback)
+const CACHE_NAME = 'vitrodiag-nexus-v2.0.0';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -24,19 +24,17 @@ const ASSETS_TO_CACHE = [
   'static/icons/icon-192.png',
   'static/icons/icon-512.png',
   'apple-touch-icon.png',
-  'favicon.ico',
-  'static/model/model.json',
-  'static/model/weights.bin'
+  'favicon.ico'
 ];
 
-// Instalación: Precargar recursos de forma tolerante a fallos en celulares
+// Instalación: Precargar recursos de forma tolerante a fallos
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Precargando assets en caché PWA...');
+      console.log('[NEXUS SW] Precargando assets...');
       return Promise.allSettled(
         ASSETS_TO_CACHE.map((url) => 
-          cache.add(url).catch((err) => console.warn('[SW] No se pudo cachear:', url, err))
+          cache.add(url).catch((err) => console.warn('[NEXUS SW] No se pudo cachear:', url, err))
         )
       );
     })
@@ -44,14 +42,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activación: Limpieza total de cualquier caché distinta a la actual
+// Activación: Limpieza de cachés anteriores
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[SW] Eliminando caché antigua:', cache);
+            console.log('[NEXUS SW] Eliminando caché antigua:', cache);
             return caches.delete(cache);
           }
         })
@@ -68,7 +66,6 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
-  // En peticiones de navegación de página, forzar red limpia sin usar caché estática obsoleta
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request, { cache: 'reload' })
@@ -92,7 +89,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Listener para forzar actualización inmediata desde la app
+// Listener para forzar actualización
 self.addEventListener('message', (event) => {
   if (event.data && event.data.action === 'skipWaiting') {
     self.skipWaiting();

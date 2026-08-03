@@ -260,7 +260,7 @@ function filterDefects() {
 
 async function switchView(viewName) {
     try {
-        // 1. CAMBIO VISUAL INSTANTÁNEO EN EL DOM (0ms - Respuesta inmediata al clic)
+        // 1. CAMBIO VISUAL INSTANTÁNEO EN EL DOM
         document.querySelectorAll('.view-content').forEach(view => {
             view.classList.remove('active');
         });
@@ -289,34 +289,11 @@ async function switchView(viewName) {
                 populateDatasetSelect();
                 renderDatasetGallery();
             } catch (dsErr) {
-                console.error("[UI] Error cargando Banco IA:", dsErr);
+                console.error("[NEXUS] Error cargando Banco IA:", dsErr);
             }
-        }
-
-        // 3. GESTIÓN ASÍNCRONA DE CÁMARAS Y RECURSOS (En segundo plano)
-        if (viewName === 'live') {
-            stopScannerCamera();
-            await startDiagnosticCamera();
-            startProcessing();
-        } else if (viewName === 'scanner') {
-            stopProcessing();
-            stopDiagnosticCamera();
-            const btnCam = document.getElementById('btnScannerUseCam');
-            if (btnCam && btnCam.classList.contains('active')) {
-                await startScannerCamera();
-            }
-        } else {
-            // En cualquier otra vista (dataset, sop, log, directory), detener cámaras para liberar CPU/GPU
-            stopProcessing();
-            stopDiagnosticCamera();
-            stopScannerCamera();
-        }
-
-        if (viewName !== 'scanner') {
-            terminateTesseractWorker();
         }
     } catch (err) {
-        console.error("Error en transición de vista:", err);
+        console.error("[NEXUS] Error en transición de vista:", err);
     }
 }
 

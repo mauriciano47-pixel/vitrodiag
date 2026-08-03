@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag v1.2.0 - Operador IS</title>
+    <title>VitroDiag NEXUS v2.0.0 — Inspección IA</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" defer></script>
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
@@ -19,7 +17,7 @@
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v1.2.0')) {
+                if (!name.includes('v2.0.0')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
@@ -27,8 +25,8 @@
         });
     }
     // Autopurga de versión anterior en localStorage si detecta v1.1.x
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '1.2.0') {
-        localStorage.setItem('vitrodiag_sys_ver', '1.2.0');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.0') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.0.0');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(regs) {
                 for (let r of regs) r.unregister();
@@ -46,14 +44,14 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará ahora en v1.2.0.');
+        alert('Caché eliminada con éxito. La app se recargará ahora en v2.0.0.');
         window.location.reload(true);
     };
 
     // Inyectar dinámicamente el manifiesto PWA y la metaetiqueta theme-color para compatibilidad estática PWA y GitHub Pages
     const manifestLink = document.createElement('link');
     manifestLink.rel = 'manifest';
-    manifestLink.href = 'manifest.webmanifest?v=1.2.0';
+    manifestLink.href = 'manifest.webmanifest?v=2.0.0';
     document.head.appendChild(manifestLink);
 
     const themeMeta = document.createElement('meta');
@@ -227,6 +225,11 @@
         .view-content.active {
             display: flex;
         }
+
+        .tool-subtab { border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; }
+        .tool-subtab.active { background: linear-gradient(135deg, var(--primary), var(--secondary)) !important; color: white !important; border-color: var(--primary); }
+        .tool-content { display: none; width: 100%; }
+        .tool-content.active { display: block; }
 
         /* VISTA 1: DIAGNÓSTICO EN VIVO */
         .camera-wrapper {
@@ -1564,8 +1567,8 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span class="version-badge">v1.2.0</span></h1>
-        <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
+        <h1>VitroDiag NEXUS <span class="version-badge">v2.0.0</span></h1>
+        <div class="subtitle">Inspección Asistida por IA — Moldería I.S.</div>
     </header>
 
     <!-- BARRA DE ARTÍCULO EN PRODUCCIÓN -->
@@ -1672,12 +1675,10 @@
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchView('live')">Diagnóstico</button>
-        <button class="tab-btn" onclick="switchView('sop')">Calculadora SOP</button>
-        <button class="tab-btn" onclick="switchView('scanner')">Escáner Panel</button>
-        <button class="tab-btn" onclick="switchView('log')">Bitácora</button>
+        <button class="tab-btn active" onclick="switchView('live')">🔍 Inspección</button>
+        <button class="tab-btn" onclick="switchView('tools')">📊 Herramientas</button>
         <button class="tab-btn" onclick="switchView('dataset')">📸 Banco IA</button>
-        <button class="tab-btn" onclick="switchView('directory')">Directorio</button>
+        <button class="tab-btn" onclick="switchView('directory')">📖 Catálogo</button>
     </div>
 
     <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO -->
@@ -1725,149 +1726,69 @@
             <button class="btn-action btn-action-alt" onclick="if(window.triggerLiveNativeFileSelect) window.triggerLiveNativeFileSelect();" style="flex:1; min-width:160px;">
                 📷 TOMAR FOTO CON CELULAR
             </button>
+        <!-- PANTALLA DE INSPECCIÓN NEXUS -->
+        <div style="width:100%; max-width:480px; text-align:center; padding:10px 0;">
+            <h2 style="font-size:1.1rem; color:var(--primary); margin:0 0 4px 0;">🔍 Inspección de Envase</h2>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin:0;">Toma o sube una foto del envase y la IA lo diagnosticará</p>
         </div>
 
-        <!-- BOTONES PRINCIPALES DE ACCIÓN IA DIRECTA -->
-        <div style="width:100%; max-width:480px; margin: 6px 0 12px 0;">
-            <input type="file" id="deepAnalysisFileInput" accept="image/*" style="display:none;" onchange="window.handleDeepAnalysisFileSelect(event)">
-            <button class="btn-action btn-action-success" id="btnAnalyzeAI" onclick="window.captureAndAnalyzeWithAI()" style="width:100%; font-weight:bold; font-size:1rem; padding:14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); background: linear-gradient(135deg, #10b981, #059669);">
-                ⚡ ANALIZAR BOTELLA CON IA (GEMINI 2.0)
+        <!-- ÁREA DE PREVIEW DE IMAGEN -->
+        <div id="nexusPreviewArea" style="width:100%; max-width:480px; min-height:280px; background:rgba(0,0,0,0.4); border-radius:12px; border:2px dashed var(--border-color); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; margin-bottom:12px;">
+            <div id="nexusPlaceholder" style="text-align:center; padding:30px;">
+                <div style="font-size:3rem; margin-bottom:10px;">📷</div>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin:0;">Captura o sube una foto del envase para iniciar el diagnóstico con IA</p>
+            </div>
+            <img id="nexusPreviewImg" src="" alt="Preview del envase" style="display:none; max-width:100%; max-height:400px; object-fit:contain; border-radius:10px;" />
+            <canvas id="nexusBboxCanvas" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+        </div>
+
+        <!-- BOTONES DE CAPTURA -->
+        <div style="width:100%; max-width:480px; display:flex; gap:10px; margin-bottom:10px;">
+            <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" style="display:none;" aria-label="Capturar foto con cámara">
+            <input type="file" id="nexusUploadInput" accept="image/*" style="display:none;" aria-label="Subir foto desde galería">
+            <button class="btn-action btn-action-success" onclick="document.getElementById('nexusCaptureInput').click()" style="flex:1; font-weight:bold; font-size:0.95rem; padding:14px;">
+                📸 Tomar Foto
             </button>
-            <button class="btn-action btn-action-alt" id="btnUploadAI" onclick="window.triggerDeepAnalysisFileUpload()" style="width:100%; margin-top:8px;">
-                📁 Cargar Foto de Envase para Análisis IA
+            <button class="btn-action btn-action-alt" onclick="document.getElementById('nexusUploadInput').click()" style="flex:1; font-size:0.95rem; padding:14px;">
+                📁 Subir Foto
             </button>
         </div>
 
-        <div class="toggle-container">
-            <span class="toggle-label">Ver Bordes de Silueta (Visión Artificial)</span>
-            <label class="switch">
-                <input type="checkbox" id="silhouetteToggle" checked title="Ver bordes de silueta" aria-label="Ver bordes de silueta">
-                <span class="slider round"></span>
-            </label>
-        </div>
-        <div class="toggle-container toggle-extra">
-            <span class="toggle-label">Optimizar para Pantalla de Luz (Backlight)</span>
-            <label class="switch">
-                <input type="checkbox" id="backlightToggle" title="Optimizar para pantalla de luz" aria-label="Optimizar para pantalla de luz">
-                <span class="slider round"></span>
-            </label>
+        <!-- BOTÓN DE DIAGNÓSTICO IA -->
+        <div style="width:100%; max-width:480px; margin-bottom:16px;">
+            <button class="btn-action" id="btnNexusDiagnose" onclick="window.nexusDiagnoseWithAI()" disabled style="width:100%; font-weight:bold; font-size:1.05rem; padding:16px; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:white; opacity:0.5; transition: opacity 0.3s;">
+                ⚡ DIAGNOSTICAR CON IA (GEMINI 2.0)
+            </button>
         </div>
 
-
-
-        <!-- PANEL DE CALIBRACIÓN ÓPTICA PARA LA PLANTA -->
-        <div class="calibration-panel visible" id="calibrationPanel">
-            <div class="calibration-title">⚙️ Calibración Óptica (Anti-Reflejos de Planta)</div>
-            
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Filtro de Contraste (Ganancia)</span>
-                    <span class="slider-value" id="valContrast">1.5x</span>
-                </div>
-                <input type="range" id="sliderContrast" class="range-input" min="1.0" max="3.0" step="0.1" value="1.5" title="Filtro de Contraste" aria-label="Filtro de Contraste">
-            </div>
-
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Compensación de Brillo</span>
-                    <span class="slider-value" id="valBrightness">+10</span>
-                </div>
-                <input type="range" id="sliderBrightness" class="range-input" min="-50" max="50" step="5" value="10" title="Compensación de Brillo" aria-label="Compensación de Brillo">
-            </div>
-
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Sensibilidad / Umbral Canny</span>
-                    <span class="slider-value" id="valCanny">50</span>
-                </div>
-                <input type="range" id="sliderCanny" class="range-input" min="20" max="150" step="5" value="50" title="Sensibilidad Canny" aria-label="Sensibilidad Canny">
-            </div>
-
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Tolerancia de Asimetría (Sensibilidad)</span>
-                    <span class="slider-value" id="valTolerance">5%</span>
-                </div>
-                <input type="range" id="sliderTolerance" class="range-input" min="2" max="15" step="1" value="5" title="Tolerancia de Asimetría" aria-label="Tolerancia de Asimetría">
-            </div>
-            
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Escala de Plantilla Guía</span>
-                    <span class="slider-value" id="valTemplateScale">1.0x</span>
-                </div>
-                <input type="range" id="sliderTemplateScale" class="range-input" min="0.5" max="1.5" step="0.05" value="1.0" title="Escala de Plantilla Guía" aria-label="Escala de Plantilla Guía">
-            </div>
-            <div class="slider-group slider-group-spaced">
-                <div class="slider-header slider-header-spaced">
-                    <span>Modo de Visión Artificial</span>
-                </div>
-                <div class="vision-mode-options">
-                    <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="fine" checked aria-label="Modo de visión Fine Contours">
-                        <span class="vision-mode-tab active" id="tabModeFine" onclick="setVisionMode('fine')">Silueta Fina</span>
-                    </label>
-                    <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="sobel" aria-label="Modo de visión Sobel Filter">
-                        <span class="vision-mode-tab" id="tabModeSobel" onclick="setVisionMode('sobel')">Sobel</span>
-                    </label>
-                    <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="thermal" aria-label="Modo de visión Térmica Simulada">
-                        <span class="vision-mode-tab" id="tabModeThermal" onclick="setVisionMode('thermal')">Térmico</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- PANEL INTERACTIVO DE EXPLICACIÓN Y DEMOSTRACIÓN -->
-            <div class="vision-demo-panel" id="visionDemoPanel">
-                <div id="demoText" class="demo-description">
-                    <b>Silueta Fina (Contorno Técnico)</b>
-                    Limpia destellos y ruidos de planta. Dibuja contornos de 1 píxel para superponer con la guía verde y detectar cuellos doblados o bocas caídas.
-                </div>
-                <div class="demo-preview-container">
-                    <div id="demoVisual" class="bottle-demo-svg mode-fine"></div>
-                </div>
+        <!-- TARJETA DE RESULTADO DE DIAGNÓSTICO -->
+        <div id="nexusResultCard" class="diagnostic-card" style="width:100%; max-width:480px; display:none;">
+            <div id="diagTitulo" style="font-size:1rem; font-weight:bold; color:var(--text-main); margin-bottom:8px;"></div>
+            <div id="diagGravedad" style="margin-bottom:8px;"></div>
+            <div id="diagEstado" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px; line-height:1.5;"></div>
+            <div id="diagAcciones" style="font-size:0.8rem; color:var(--text-main); line-height:1.6;"></div>
+            <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+                <button class="btn-action btn-action-alt" onclick="window.nexusSaveToBitacora()" style="flex:1; font-size:0.8rem; padding:10px;">📋 Guardar en Bitácora</button>
+                <button class="btn-action btn-action-alt" onclick="window.nexusSaveToDataset()" style="flex:1; font-size:0.8rem; padding:10px;">📸 Agregar al Banco IA</button>
             </div>
         </div>
 
-        <div id="tfjsStatus" class="tfjs-status">
-            Iniciando motor de IA TensorFlow.js...
-        </div>
-
-        <!-- PANEL DE CONTROL DE IA TENSORFLOW.JS (OPCIONES DE PRECISIÓN) -->
-        <div class="ia-panel">
-            <div class="ia-panel-header">
-                <span>⚙️ Panel del Motor de IA</span>
-                <span id="iaConfidenceBadge" class="ia-confidence-badge">Filtro: &gt;75%</span>
-            </div>
-            
-            <div class="ia-panel-desc">
-                Permite conectar modelos de visión artificial entrenados con fotos reales de CristalChile (formato TensorFlow.js) para evitar falsos positivos por brillos o reflejos en el Hot End.
-            </div>
-
-            <div class="form-row ia-form-row">
-                <div class="ia-upload-col">
-                    <label for="uploadModelJson" class="ia-upload-label">Archivo model.json</label>
-                    <input type="file" id="uploadModelJson" accept=".json" class="ia-upload-input" aria-label="Subir modelo TensorFlow JSON">
-                </div>
-                <div class="ia-upload-col">
-                    <label for="uploadModelBin" class="ia-upload-label">Pesos (.bin)</label>
-                    <input type="file" id="uploadModelBin" accept=".bin" multiple class="ia-upload-input" aria-label="Subir pesos del modelo TensorFlow BIN">
-                </div>
-            </div>
-
-            <div class="ia-threshold-row">
-                <button class="filter-btn btn-load-nn" onclick="loadCustomUploadedModel()">Cargar Red Neuronal</button>
-                <div class="ia-threshold-group">
-                    <span class="ia-threshold-label">Umbral:</span>
-                    <input type="range" id="confidenceThreshold" min="50" max="95" value="75" title="Umbral de confianza" aria-label="Umbral de confianza de detección" oninput="updateConfidenceThresholdDisplay(this.value)" class="ia-threshold-slider">
-                </div>
-            </div>
+        <!-- INDICADOR DE ESTADO -->
+        <div style="width:100%; max-width:480px; text-align:center; margin-top:8px;">
+            <span id="tfjsStatus" style="font-size:0.7rem; color:var(--text-muted);">Motor Gemini IA: Listo</span>
         </div>
     </div>
 
+    <div id="toolsView" class="view-content">
+        <!-- Sub-tabs de Herramientas -->
+        <div style="width:100%; max-width:480px; display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap;">
+            <button class="btn-action btn-action-alt tool-subtab active" onclick="switchToolTab('sop')" style="flex:1; font-size:0.8rem; padding:10px;">⚙️ Calculadora SOP</button>
+            <button class="btn-action btn-action-alt tool-subtab" onclick="switchToolTab('scanner')" style="flex:1; font-size:0.8rem; padding:10px;">📡 Escáner</button>
+            <button class="btn-action btn-action-alt tool-subtab" onclick="switchToolTab('log')" style="flex:1; font-size:0.8rem; padding:10px;">📋 Bitácora</button>
+        </div>
+
     <!-- PESTAÑA 1.5: CALCULADORA DE TEMPORIZACIÓN SOP -->
-    <div id="sopView" class="view-content">
+    <div id="toolSopContent" class="tool-content active">
         <div class="sop-calculator">
             <div class="calibration-title">📊 Calculadora de Sincronización BDF Industries</div>
             
@@ -2041,7 +1962,7 @@
     </div>
 
     <!-- PESTAÑA 1.7: ESCÁNER DE FICHA TÉCNICA Y CONSOLA BDF -->
-    <div id="scannerView" class="view-content">
+    <div id="toolScannerContent" class="tool-content" style="display:none;">
         <div class="sop-calculator">
             <div class="calibration-title">🔍 Escáner Digital de Consola & Fichas Técnicas</div>
             
@@ -2226,7 +2147,7 @@
     </div>
 
     <!-- PESTAÑA 1.8: BITÁCORA DE TURNO (REPORTE DE MAQUINARIA) -->
-    <div id="logView" class="view-content">
+    <div id="toolLogContent" class="tool-content" style="display:none;">
         <div class="bitacora-panel">
             <div class="calibration-title">📋 Bitácora de Incidencias en Turno</div>
             
@@ -2287,6 +2208,8 @@
             </div>
             <div id="swabLastTime" class="swab-last-time">Último Swabbing registrado: Ninguno</div>
         </div>
+    </div>
+</div>
     <!-- PESTAÑA 1.9: BANCO DE ENTRENAMIENTO IA & DATASET INDUSTRIAL -->
     <div id="datasetView" class="view-content">
         <div class="bitacora-panel">
@@ -2411,6 +2334,16 @@
         <div class="footer-subtext">PLANO DE CONTROL ÓPTICO - MÁQUINA I.S. CALIENTE</div>
     </footer>
 
-    <script type="module" src="static/js/main.js?v=1.3.1"></script>
+    <script>
+    function switchToolTab(tab) {
+        document.querySelectorAll('.tool-content').forEach(el => { el.style.display = 'none'; el.classList.remove('active'); });
+        document.querySelectorAll('.tool-subtab').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById('tool' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Content');
+        if (target) { target.style.display = 'block'; target.classList.add('active'); }
+        if (event && event.target) { event.target.classList.add('active'); }
+    }
+    window.switchToolTab = switchToolTab;
+    </script>
+    <script type="module" src="static/js/main.js?v=2.0.0"></script>
 </body>
 </html>
