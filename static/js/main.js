@@ -23,7 +23,9 @@ import {
     stopDiagnosticCamera, 
     startScannerCamera, 
     stopScannerCamera,
-    forceRetryCamera
+    forceRetryCamera,
+    triggerLiveNativeFileSelect,
+    handleLiveNativeFileSelect
 } from './camera.js';
 import { 
     startProcessing, 
@@ -107,6 +109,8 @@ window.setVisionMode = setVisionMode;
 window.startDiagnosticCamera = startDiagnosticCamera;
 window.forceRetryCamera = forceRetryCamera;
 window.startProcessing = startProcessing;
+window.triggerLiveNativeFileSelect = triggerLiveNativeFileSelect;
+window.handleLiveNativeFileSelect = handleLiveNativeFileSelect;
 
 window.validateBdfTiming = validateBdfTiming;
 window.calculateSopMs = calculateSopMs;

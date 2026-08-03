@@ -330,11 +330,13 @@ export function setupSilhouetteToggleListener() {
         const applyToggleState = () => {
             if (toggle.checked) {
                 canvasOutput.classList.remove('d-none');
-                webcamVideo.classList.add('d-none');
+                webcamVideo.style.opacity = '0';
+                webcamVideo.style.pointerEvents = 'none';
                 if (calibrationPanel) calibrationPanel.classList.add('visible');
             } else {
                 canvasOutput.classList.add('d-none');
-                webcamVideo.classList.remove('d-none');
+                webcamVideo.style.opacity = '1';
+                webcamVideo.style.pointerEvents = 'auto';
                 if (calibrationPanel) calibrationPanel.classList.remove('visible');
             }
         };

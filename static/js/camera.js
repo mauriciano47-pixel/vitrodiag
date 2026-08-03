@@ -137,16 +137,46 @@ async function startScannerCamera() {
     }
 }
 
-function stopScannerCamera() {
-    if (state.scannerStream) {
-        state.scannerStream.getTracks().forEach(track => track.stop());
-        state.scannerStream = null;
+/**
+ * Dispara el input de archivo de cámara nativa del celular.
+ */
+export function triggerLiveNativeFileSelect() {
+    const input = document.getElementById('liveNativeFileInput');
+    if (input) input.click();
+}
+
+/**
+ * Procesa la fotografía tomada por la cámara nativa del smartphone sobre el motor de visión.
+ * @param {Event} event 
+ */
+export function handleLiveNativeFileSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        showToast('Seleccione un archivo de imagen válido.', 'danger');
+        return;
     }
-    const video = document.getElementById('scannerVideo');
-    if (video) {
-        video.srcObject = null;
-        try { video.load(); } catch (e) {}
-    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.getElementById('canvasOutput');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                canvas.width = 320;
+                canvas.height = Math.round(320 * (img.height / img.width));
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                showToast('Fotografía cargada en el motor de visión.', 'success');
+                if (window.runDeepDiagnosis) {
+                    window.runDeepDiagnosis(e.target.result);
+                }
+            }
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
 export { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera };
