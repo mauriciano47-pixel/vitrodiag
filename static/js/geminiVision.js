@@ -444,10 +444,10 @@ function parseGeminiResponse(rawText) {
  * @param {object} result - Resultado parseado del análisis
  */
 export function renderGeminiResult(result) {
-    const diagTitulo = document.getElementById('diagTitulo');
-    const diagGravedad = document.getElementById('diagGravedad');
-    const diagEstado = document.getElementById('diagEstado');
-    const diagAcciones = document.getElementById('diagAcciones');
+    const diagTitulos = document.querySelectorAll('#diagTitulo, #nexusDiagTitulo');
+    const diagGravedades = document.querySelectorAll('#diagGravedad, #nexusDiagGravedad');
+    const diagEstados = document.querySelectorAll('#diagEstado, #nexusDiagEstado');
+    const diagAccionesAll = document.querySelectorAll('#diagAcciones, #nexusDiagAcciones');
     const tfjsStatus = document.getElementById('tfjsStatus');
     const cursorText = document.querySelector('.cursor-text');
     const crosshairX = document.querySelector('.crosshair-x');
@@ -481,42 +481,41 @@ export function renderGeminiResult(result) {
             ? `🚨 ${defectCount} Defectos Detectados — Gemini IA (96 Catálogo)`
             : `🚨 Defecto: ${primaryName} (Gemini IA)`;
 
-        if (diagTitulo) diagTitulo.innerText = defectTitle;
-        if (diagGravedad) {
-            const gravClass = primary.gravedad === 'critico' ? 'status-danger'
-                : primary.gravedad === 'mayor' ? 'status-warning'
-                : 'status-info';
-            diagGravedad.className = `status-alert ${gravClass}`;
-            diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = result.estado_general === 'rechazo' ? `Rechazo (${primary.gravedad.toUpperCase()})` : "Revisar";
-        }
+        diagTitulos.forEach(el => { el.innerText = defectTitle; });
+        
+        const gravClass = primary.gravedad === 'critico' ? 'status-danger'
+            : primary.gravedad === 'mayor' ? 'status-warning'
+            : 'status-info';
+        const gravText = result.estado_general === 'rechazo' ? `Rechazo (${primary.gravedad.toUpperCase()})` : "Revisar";
+        
+        diagGravedades.forEach(el => {
+            el.className = `status-alert ${gravClass}`;
+            el.style.display = "inline-block";
+            el.innerText = gravText;
+        });
 
-        if (diagEstado) {
-            let statusHtml = `<strong>Diagnóstico Gemini Vision (96 Defectos):</strong> ${result.resumen || ''}`;
-            if (defectCount > 1) {
-                statusHtml += '<br><strong>Defectos identificados:</strong>';
-                result.analisis.forEach((d, i) => {
-                    const name = d.defecto_nombre || d.defecto;
-                    statusHtml += `<br>${i + 1}. <strong>${name}</strong> [Zona ${d.zona.toUpperCase()}] (${d.confianza}% conf.) — ${d.descripcion}`;
-                });
-            } else {
-                statusHtml += `<br><strong>Ubicación:</strong> Zona ${primary.zona.toUpperCase()} | <strong>Confianza:</strong> ${primary.confianza}%<br><strong>Detalle:</strong> ${primary.descripcion}`;
-            }
-            diagEstado.innerHTML = statusHtml;
-        }
-
-        if (diagAcciones) {
-            let actionsHtml = '';
-            result.analisis.forEach(d => {
+        let statusHtml = `<strong>Diagnóstico Gemini Vision (96 Defectos):</strong> ${result.resumen || ''}`;
+        if (defectCount > 1) {
+            statusHtml += '<br><strong>Defectos identificados:</strong>';
+            result.analisis.forEach((d, i) => {
                 const name = d.defecto_nombre || d.defecto;
-                if (d.official_acciones && d.official_acciones.length > 0) {
-                    actionsHtml += `<li><strong>Ajustes Máquina I.S. para "${name}":</strong><ul>${d.official_acciones.map(a => `<li>${a}</li>`).join('')}</ul></li>`;
-                } else if (d.accion_correctiva) {
-                    actionsHtml += `<li><strong>${name}:</strong> ${d.accion_correctiva}</li>`;
-                }
+                statusHtml += `<br>${i + 1}. <strong>${name}</strong> [Zona ${d.zona.toUpperCase()}] (${d.confianza}% conf.) — ${d.descripcion}`;
             });
-            diagAcciones.innerHTML = actionsHtml;
+        } else {
+            statusHtml += `<br><strong>Ubicación:</strong> Zona ${primary.zona.toUpperCase()} | <strong>Confianza:</strong> ${primary.confianza}%<br><strong>Detalle:</strong> ${primary.descripcion}`;
         }
+        diagEstados.forEach(el => { el.innerHTML = statusHtml; });
+
+        let actionsHtml = '';
+        result.analisis.forEach(d => {
+            const name = d.defecto_nombre || d.defecto;
+            if (d.official_acciones && d.official_acciones.length > 0) {
+                actionsHtml += `<li><strong>Ajustes Máquina I.S. para "${name}":</strong><ul>${d.official_acciones.map(a => `<li>${a}</li>`).join('')}</ul></li>`;
+            } else if (d.accion_correctiva) {
+                actionsHtml += `<li><strong>${name}:</strong> ${d.accion_correctiva}</li>`;
+            }
+        });
+        diagAccionesAll.forEach(el => { el.innerHTML = actionsHtml; });
 
         if (tfjsStatus) {
             tfjsStatus.innerText = `🧠 Gemini IA (96 Catálogo): ${primaryName} — ${primary.confianza}% confianza`;
@@ -532,19 +531,22 @@ export function renderGeminiResult(result) {
 
     } else {
         // Sin defectos — envase aceptable
-        if (diagTitulo) diagTitulo.innerText = `✅ Envase Conforme (Gemini IA — ${articleName})`;
-        if (diagGravedad) {
-            diagGravedad.className = "status-alert status-success";
-            diagGravedad.style.display = "inline-block";
-            diagGravedad.innerText = "Aceptable";
-        }
-        if (diagEstado) {
-            diagEstado.innerHTML = `<strong>Diagnóstico IA (Gemini Vision):</strong> ${result.resumen || 'Sin defectos visibles detectados.'}`;
-        }
-        if (diagAcciones) {
-            diagAcciones.innerHTML = `<li>El envase cumple con los estándares de calidad para ${articleName}.</li>
-                <li>Mantener velocidad nominal de producción.</li>`;
-        }
+        const successTitle = `✅ Envase Conforme (Gemini IA — ${articleName})`;
+        diagTitulos.forEach(el => { el.innerText = successTitle; });
+
+        diagGravedades.forEach(el => {
+            el.className = "status-alert status-success";
+            el.style.display = "inline-block";
+            el.innerText = "Aceptable";
+        });
+
+        const successSummary = `<strong>Diagnóstico IA (Gemini Vision):</strong> ${result.resumen || 'Sin defectos visibles detectados.'}`;
+        diagEstados.forEach(el => { el.innerHTML = successSummary; });
+
+        const successActions = `<li>El envase cumple con los estándares de calidad para ${articleName}.</li>
+            <li>Mantener velocidad nominal de producción.</li>`;
+        diagAccionesAll.forEach(el => { el.innerHTML = successActions; });
+
         if (tfjsStatus) {
             tfjsStatus.innerText = `🧠 Gemini IA: Envase Aceptable (${articleName})`;
             tfjsStatus.style.color = "#10b981";

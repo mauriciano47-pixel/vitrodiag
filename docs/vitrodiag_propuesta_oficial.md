@@ -1,77 +1,112 @@
-# VitroDiag v1.3.0 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.0.0 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** [https://mauriciano47-pixel.github.io/vitrodiag/](https://mauriciano47-pixel.github.io/vitrodiag/)  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v1.3.0)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.0.0 — NEXUS)  
 
 ---
 
 ## 1. Filosofía y Objetivo del Proyecto
 
-VitroDiag es una plataforma Progressive Web App (PWA) de precisión industrial diseñada para ser utilizada directamente en la planta caliente por el operador de máquina I.S. Su objetivo fundamental es proporcionar un diagnóstico óptico en tiempo real sobre la conformidad geométrica de los envases de vidrio recién soplados, permitiendo corregir a tiempo variaciones en la moldería, tiempos de soplado (SOP) y alineación antes de que el material ingrese al arca de recocido.
+VitroDiag es una plataforma Progressive Web App (PWA) de precisión industrial diseñada para ser utilizada directamente en la planta caliente por el operador de máquina I.S. Su objetivo fundamental es proporcionar un diagnóstico óptico asistido por IA en tiempo real sobre la conformidad geométrica de los envases de vidrio recién soplados, permitiendo corregir a tiempo variaciones en la moldería, tiempos de soplado (SOP) y alineación antes de que el material ingrese al arca de recocido.
+
+El concepto **NEXUS** representa el punto de conexión inteligente entre el operador I.S., la inteligencia artificial de Gemini 2.0 Flash y la planta de producción. La filosofía es **inspección asistida, no automática**: el operador toma la foto, la IA diagnostica, el operador decide.
 
 Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemini 2.0 Flash Vision API opcional en la nube con catálogo dinámico de 96 defectos), VitroDiag ejecuta todos sus motores de visión en el dispositivo móvil y permite diagnósticos profundos con IA multimodal cuando hay conexión activa.
 
 ---
 
-## 2. Catálogo Completo de Funciones
+## 2. Flujo Principal NEXUS
 
-1. **Visión Computacional de Contornos (Sobel/Fine):**
-   Análisis óptico de detección de bordes y perfilado geométrico del cuello y cuerpo. Verifica la verticalidad, eje central y simetría de la botella a través de la cámara del smartphone.
-2. **Filtro Anti-Falsas Lecturas (`isBottlePresent` & `maxContinuous`):**
-   Verificación heurística de densidad de bordes verticales y continuidad espacial continua. Evita lecturas erróneas ante fondos vacíos, estructuras de planta o paredes, exigiendo la presencia real del envase.
-3. **MotorVision IA Multimodal Fotográfico con Gemini 2.0 Flash (Catálogo de 96 Defectos + Bounding Boxes):**
-   Análisis fotográfico directo en RGB de alta resolución con pre-procesamiento óptico específico para vidrio (CLAHE/Contraste adaptativo). Gemini 2.0 Flash evalúa la textura, transparencia y refracción contra el **catálogo oficial de 96 defectos industriales** y proyecta los recuadros delimitadores (Bounding Boxes 2D) sobre la zona exacta de la foto con sus acciones para máquina I.S.
-4. **Agente Patronista1 & Clasificación Multizona por Ficha Técnica:**
-   Evaluación técnica dividida por zonas anatómicas del envase (Corona, Cuello, Hombro, Cuerpo, Fondo) contrastada con especificaciones técnicas de moldería NNPB.
-5. **Cerebro Neuronal CNN (TensorFlow.js):**
-   Red neuronal convolucional ejecutada en WebGL/CPU local para clasificación de defectos offline directamente en la memoria del teléfono.
-6. **Escáner OCR de Consolas (Tesseract.js):**
-   Reconocimiento óptico de caracteres para digitalizar pantallas de control BDF. Convierte fotografías de consolas I.S. en datos numéricos editables de tiempos de soplo y enfriamiento.
-7. **Calculadora SOP & Swabbing:**
+```
+1. 📸  Tomar Foto  →  El operador captura el envase con la cámara nativa del celular
+2. ⚡  Diagnosticar  →  Gemini 2.0 Flash analiza contra el catálogo de 96 defectos
+3. 📋  Resultado    →  Defecto · Zona · Gravedad · Confianza · Acciones correctivas I.S.
+```
+
+---
+
+## 3. Catálogo Completo de Funciones (v2.0.0)
+
+### Tab 1 — Inspección NEXUS (Motor Principal)
+1. **Diagnóstico IA Multimodal Fotográfico con Gemini 2.0 Flash:**  
+   El operador toma o sube una foto del envase. Gemini 2.0 Flash evalúa la textura, transparencia y refracción contra el **catálogo oficial de 96 defectos industriales** y devuelve: defecto detectado, zona anatómica (Corona, Cuello, Hombro, Cuerpo, Fondo), nivel de gravedad, confianza y acciones correctivas específicas para la máquina I.S.
+
+2. **Bounding Boxes sobre la imagen:**  
+   Superposición de recuadros delimitadores 2D sobre la foto del envase indicando la zona exacta del defecto.
+
+3. **Few-Shot RAG con Banco IA:**  
+   Inyección opcional de muestras reales etiquetadas en planta como contexto adicional a Gemini para maximizar la precisión en defectos minuciosos.
+
+### Tab 2 — Herramientas Industriales
+4. **Calculadora SOP & Swabbing:**  
    Algoritmo de cálculo de tiempos de soplo (SOP) según BPM, cavidades y peso. Sugiere intervalos óptimos de lubricación de moldes (swabbing) y previene sobrecalentamiento.
-8. **Bitácora de Incidencias & WhatsApp:**
+
+5. **Escáner OCR de Consolas BDF (Tesseract.js):**  
+   Reconocimiento óptico de caracteres para digitalizar pantallas de control BDF. Convierte fotografías de consolas I.S. en datos numéricos editables de tiempos de soplo y enfriamiento.
+
+6. **Bitácora de Incidencias & WhatsApp:**  
    Registro estructurado de paradas, defectos de moldeo y ajustes realizados. Exporta reportes formateados instantáneamente para ser enviados por WhatsApp a jefes de turno y mantenimiento.
-9. **PWA Offline Autónomo (Service Worker v1.1.2):**
-   Instalación de app nativa con caché inteligente HTML5 pura. Permite operar al 100% de capacidad en zonas ciegas sin cobertura de red o Wi-Fi en el área caliente.
-10. **Detector Geométrico Instantáneo & Plomada Digital (60 FPS):**
-    Algoritmo determinista en tiempo real que calcula la plomada central ($\theta$) y simetría especular del envase. Alerta automáticamente sobre botellas torcidas/inclinadas, hombros hundidos y rebabas en corona.
-11. **Módulo Banco de Entrenamiento IA & Calibración Few-Shot RAG:**
-    Gestor en IndexedDB para capturar, etiquetar y exportar fotos de defectos reales en planta. Inyecta muestras reales de calibración en la API de Gemini Vision para máxima certeza en defectos minuciosos.
 
+### Tab 3 — Catálogo de 96 Defectos Industriales
+7. **Directorio filtrable de defectos:**  
+   Base de conocimiento con los 96 defectos estándar de la industria vidriera, clasificados por zona, gravedad y tipo (geométrico, superficial, distribución de vidrio). Con tarjetas expandibles y buscador.
+
+### Tab 4 — Banco IA (Few-Shot RAG)
+8. **Módulo de Entrenamiento IA & Calibración Few-Shot RAG:**  
+   Gestor en IndexedDB para capturar, etiquetar y exportar fotos de defectos reales en planta. Inyecta muestras reales de calibración en la API de Gemini Vision para máxima certeza.
+
+### Sistema Base
+9. **PWA Offline Autónomo (Service Worker v2.0.0):**  
+   Instalación de app nativa con caché inteligente HTML5 pura. Purga automática de caché de versiones anteriores. Permite operar al 100% de capacidad en zonas ciegas sin cobertura de red o Wi-Fi.
 
 ---
 
-## 3. Arquitectura del Sistema
+## 4. Arquitectura del Sistema
 
-- **Frontend Core:** HTML5, CSS3 vanilla de alto rendimiento con animaciones fluidas y glassmorphism industrial, JavaScript ES6+ estructurado modularmente (`camera.js`, `vision.js`, `ai.js`, `geminiVision.js`, `db.js`, `timing.js`, `swab.js`, `ocr.js`, `ui.js`, `log.js`, `main.js`, `state.js`, `geometry.js`).
-- **Backend / Django Server (Opcional Local):** Django 5.x con `django-axes` para protección contra fuerza bruta y configuraciones de ciberseguridad industrial (`settings.py`).
+- **Frontend Core:** HTML5, CSS3 vanilla de alto rendimiento con animaciones fluidas y glassmorphism industrial, JavaScript ES6+ estructurado modularmente en 14 módulos:
+  - `main.js` (Orquestador NEXUS), `geminiVision.js` (Gemini 2.0 Flash API + Bounding Boxes), `db.js` (96 defectos + IndexedDB), `ai.js` (motor diagnóstico), `datasetManager.js` (Banco IA Few-Shot RAG), `ui.js` (navegación y modales), `camera.js` (cámara nativa), `vision.js` (visión contornos), `timing.js` (Calculadora SOP), `log.js` (Bitácora), `ocr.js` (Tesseract.js), `swab.js` (Swabbing), `state.js` (estado global), `geometry.js` (detector geométrico).
+- **Backend / Django Server (Opcional Local):** Django 5.x con `django-axes` para protección contra fuerza bruta.
 - **Persistencia Local:** `IndexedDB` y `LocalStorage` para operación 100% sin conexión.
-- **Service Worker:** `sw.js` v1.1.2 con estrategia Cache First para assets y Offline Fallback.
+- **Service Worker:** `sw.js` v2.0.0 con estrategia Cache First y purga automática de versiones anteriores.
 
 ---
 
-## 4. Ventajas Competitivas e Industriales
+## 5. Ventajas Competitivas e Industriales
 
-- **Reconocimiento de los 96 Defectos de la Industria Vidriera:** Identificación inmediata de defectos visuales, geométricos y de distribución con diagnósticos y ajustes en máquina I.S.
-- **Autonomía Operativa Total (Cero Latencia):** Inferencia local en GPU/CPU en < 50ms sin depender de servidores remotos.
+- **Reconocimiento de los 96 Defectos de la Industria Vidriera:** Identificación inmediata con diagnósticos y ajustes en máquina I.S.
+- **Autonomía Operativa Total (Cero Latencia Local):** PWA offline funcional en zonas ciegas de planta.
+- **Flujo Simplificado:** Foto → Diagnóstico en 3 pasos. Sin configuraciones complejas para el operador.
 - **Reducción de Merma en Línea Caliente:** Detección temprana de defectos minutos antes de llegar a la línea fría.
 - **Estandarización del Criterio de Operación:** Guía interactiva con sugerencias de ajuste de máquina I.S.
 - **Despliegue Multi-Plataforma:** Compatible con Android, iOS (Safari) y computadores sin tiendas de apps.
 
 ---
 
-## 5. Visión a Futuro y Hoja de Ruta (Roadmap)
+## 6. Historial de Versiones
 
-- **Fase 1 (Actual - v1.1.2):** MotorVision con catálogo completo de 96 defectos en Gemini 2.0 Flash, visión por contornos, inferencia TensorFlow.js local, OCR de consolas y calculadora SOP.
+| Versión | Descripción |
+|---------|-------------|
+| **v2.0.0** | Transformación completa a NEXUS. Flujo Foto→Gemini→Diagnóstico. 4 tabs limpias. Eliminación de código muerto CNN/calibración. |
+| v1.3.1 | Fix bucle infinito de Service Worker. |
+| v1.3.0 | Solución integral de cámara móvil con panel físico de botones. |
+| v1.2.3 | Fix bloqueo del botón de encendido de cámara. |
+| v1.2.2 | Estabilización en smartphones. |
+| v1.2.1 | Fix parpadeo MotorVision, Directorio 96 e interactividad modal Banco IA. |
+
+---
+
+## 7. Visión a Futuro y Hoja de Ruta (Roadmap)
+
+- **Fase 1 (Actual — v2.0.0):** Inspector NEXUS con Gemini 2.0 Flash, 4 tabs, 96 defectos, OCR de consolas, calculadora SOP y Banco IA.
 - **Fase 2 — Integración Térmica Infrarroja:** Compatibilidad con sensores infrarrojos portátiles (Flir One/Seek Thermal) para mapas de temperatura en gotas de vidrio y moldes.
 - **Fase 3 — Dataset Cuantizado de Cristal Chile:** Recolección y entrenamiento de miles de imágenes de defectos reales de planta.
 - **Fase 4 — Conexión IoT & SCADA:** Integración opcional vía WebSockets con consolas de máquina I.S.
 
 ---
 
-## 6. Aviso Legal y Políticas de Privacidad
+## 8. Aviso Legal y Políticas de Privacidad
 
 - **Margen de Error y Responsabilidad:** Prototipo funcional experimental. No sustituye el juicio técnico del operador especializado ni los instrumentos metrológicos de laboratorio.
 - **Privacidad de Datos:** Procesamiento local en memoria RAM del dispositivo. Ninguna foto ni video se almacena externamente sin consentimiento.
