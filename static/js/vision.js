@@ -136,10 +136,10 @@ function processFrame() {
                 const width = imgData.width;
                 const height = imgData.height;
 
-                // OBTENER VALORES DE LOS DESLIZADORES DE CALIBRACIÓN EN CALIENTE
-                const alpha = parseFloat(sliderContrast.value);      // Contraste (1.0 - 3.0)
-                const beta = parseInt(sliderBrightness.value);       // Brillo (-50 - 50)
-                const threshold = parseInt(sliderCanny.value);       // Umbral de detección
+                // OBTENER VALORES DE LOS DESLIZADORES DE CALIBRACIÓN EN CALIENTE (CON FALLBACKS SEGUROS)
+                const alpha = (sliderContrast && sliderContrast.value) ? parseFloat(sliderContrast.value) : 1.2;
+                const beta = (sliderBrightness && sliderBrightness.value) ? parseInt(sliderBrightness.value) : 0;
+                const threshold = (sliderCanny && sliderCanny.value) ? parseInt(sliderCanny.value) : 50;
 
                 // Precalcular LUT (Look-Up Table) para contraste y brillo (256 operaciones vs ~230,000 por frame)
                 const lut = new Uint8Array(256);
@@ -419,7 +419,7 @@ function processFrame() {
 
                 // --- DIBUJAR PLANTILLA GUÍA TRANSLÚCIDA (BOTELLA PATRÓN) ---
                 if (state.currentVisionMode === 'fine') {
-                    const scale = parseFloat(sliderTemplateScale.value) || 1.0;
+                    const scale = (sliderTemplateScale && sliderTemplateScale.value) ? parseFloat(sliderTemplateScale.value) : 1.0;
                     const w = canvas.width;
                     const h = canvas.height;
                     const midX = w / 2;
