@@ -2070,6 +2070,9 @@
 
         <!-- PANEL DE CONTROL FÍSICO DE CÁMARA & FALLBACK SMARTPHONE -->
         <div class="camera-control-row">
+            <button class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; font-weight: bold; font-size: 0.9rem; width: 100%; margin-bottom: 8px; border: 1px solid rgba(16,185,129,0.5); box-shadow: 0 4px 15px rgba(16,185,129,0.3);" onclick="if(window.requestCameraPermissionDirectly) window.requestCameraPermissionDirectly();">
+                🔓 AUTORIZAR CÁMARA EN CHROME (1-CLIC POPUP NATIVO)
+            </button>
             <input type="file" id="liveNativeFileInput" accept="image/*" capture="environment" class="d-none" onchange="window.handleLiveNativeFileSelect(event)">
             <button class="btn-action btn-action-success btn-camera-ctrl-bold" onclick="if(window.forceRetryCamera) window.forceRetryCamera();">
                 📸 ENCENDER CÁMARA EN VIVO

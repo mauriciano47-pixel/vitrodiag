@@ -23,7 +23,8 @@ import {
     openCameraPermissionModal,
     closeCameraPermissionModal,
     retryCameraPermissions,
-    checkCameraPermissions
+    checkCameraPermissions,
+    requestCameraPermissionDirectly
 } from './camera.js';
 import { 
     calculateSopMs, 
@@ -201,6 +202,7 @@ window.openCameraPermissionModal = openCameraPermissionModal;
 window.closeCameraPermissionModal = closeCameraPermissionModal;
 window.retryCameraPermissions = retryCameraPermissions;
 window.checkCameraPermissions = checkCameraPermissions;
+window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
 
 // Exponer funciones de módulos existentes al ámbito global
 window.DEFECTOS_DB = DEFECTOS_DB;

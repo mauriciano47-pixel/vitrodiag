@@ -10,6 +10,46 @@ const cameraConstraints = {
     audio: false 
 };
 
+/**
+ * Solicita permisos de cámara directamente al navegador Chrome mostrando el popup nativo (Allow/Block).
+ */
+export async function requestCameraPermissionDirectly() {
+    showToast("Solicitando permiso de cámara al navegador...", "info");
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        if (stream) {
+            state.diagnosticStream = stream;
+            const video = document.getElementById('webcam');
+            const status = document.getElementById('opencvStatus');
+            if (video) {
+                video.srcObject = stream;
+                video.muted = true;
+                video.volume = 0;
+                video.playsInline = true;
+                await video.play().catch(e => console.warn("[Camera] Play diferido:", e));
+            }
+            if (status) {
+                status.innerText = "Motor Visión: Cámara Autorizada y Activa";
+                status.style.color = "#10b981";
+            }
+            const btnTap = document.getElementById('btnTapCameraStart');
+            if (btnTap) btnTap.style.display = 'none';
+            showToast("✅ Permiso concedido. Cámara activada correctamente.", "success");
+            if (window.startProcessing) window.startProcessing();
+        }
+    } catch (err) {
+        console.error("Error al solicitar permiso directo:", err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            showToast("Permiso bloqueado por Chrome. Usa '📸 Foto Instantánea'.", "warning");
+            openCameraPermissionModal("🚨 Permiso Denegado por Chrome. Usa 'Foto Instantánea'", "danger");
+        } else {
+            showToast("No se pudo iniciar la cámara en vivo. Usa '📸 Foto Instantánea'.", "info");
+            openCameraPermissionModal("⚠️ No se pudo acceder a la cámara en vivo", "warning");
+        }
+    }
+}
+
+
 async function startDiagnosticCamera() {
     const btnTap = document.getElementById('btnTapCameraStart');
     if (state.diagnosticStream) {
