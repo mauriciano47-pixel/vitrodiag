@@ -25,7 +25,10 @@
 
 - **Organización y Disciplina del Escritorio (/learn)**: Cada vez que se generen o creen accesos directos (`.lnk` / `.url`), archivos o iconos dirigidos al Escritorio del usuario, el agente DEBE agruparlos automáticamente dentro de su carpeta por categoría correspondiente (ej. `Otros Prototipos` para proyectos finalizados, `Desarrollo e IA`, `Documentos y Utilidades`, `Navegadores y Ocio`, `proton`, `trading`, `tubemate`), manteniendo siempre la superficie principal del Escritorio limpia y ordenada.
 
-- **Gestión Autónoma y Silenciosa de Errores y Componentes MCP/CLI**: Cada vez que el sistema o las herramientas reporten alertas, advertencias de servidores MCP o actualizaciones disponibles de componentes CLI (ej. `gcloud components update`, dependencias Python/MCP faltantes), el agente debe proceder de forma autónoma a ejecutar las actualizaciones y correcciones en segundo plano sin interrumpir al usuario con avisos o popups repetitivos, manteniendo siempre el entorno de herramientas 100% actualizado y libre de errores.
+- **Mantenimiento Permanente de Servidores MCP y Entorno Sin Errores**:
+  - **REGLA ABSOLUTA DE MANTENIMIENTO MCP SILENCIOSO Y CERO ERRORES:** El agente debe mantener todos los proyectos 100% libres de alertas y errores de servidores MCP (`connect ENOENT`, `EOF`, tuberías `datacloud-mcp-*`, `context`, `notebooks`, `visualization`).
+  - Ante cualquier fallo de conexión con servidores MCP o tuberías IPC, el agente procederá de manera autónoma y en segundo plano a auditar el estado de los conectores, reparar o limpiar las configuraciones de `mcp_config.json`, verificar/reiniciar los proxies o reconectar la extensión sin emitir popups ni requerir intervención del usuario.
+  - Esta regla es permanente y aplica automáticamente a TODOS los proyectos del usuario.
 
 - **Directidad Técnica y Cero Obviedades en Diagnósticos**: Cuando el usuario reporte un fallo, discrepancia de versión o error en sus aplicaciones, se DEBE asumir automáticamente que ya ejecutó todas las acciones de cliente obvias (recargar navegador, presionar botones de reset de caché o F5). Queda prohibido responder con sugerencias o explicaciones redundantes de nivel usuario. El agente debe proceder de inmediato a auditar código, infraestructura, headers, Service Workers o aplicar soluciones alternativas técnicas avanzadas de fondo.
 
