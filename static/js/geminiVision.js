@@ -27,8 +27,8 @@ export function preprocessGlassImage(source) {
     let width = source.videoWidth || source.naturalWidth || source.width || 1024;
     let height = source.videoHeight || source.naturalHeight || source.height || 1024;
 
-    // Escalar manteniendo proporción hasta máx 1024px para respuesta óptima de Gemini
-    const maxDim = 1024;
+    // Escalar manteniendo proporción hasta máx 800px para respuestas ultra-rápidas (1.5s) en red móvil
+    const maxDim = 800;
     if (width > maxDim || height > maxDim) {
         if (width > height) {
             height = Math.round((height * maxDim) / width);
@@ -48,16 +48,14 @@ export function preprocessGlassImage(source) {
     const data = imgData.data;
 
     // Filtro de Realce Óptico Industrial para Vidrio (CLAHE Simulación)
-    // Aumenta contraste en tonos medios y resalta micro-sombras de refracción
-    const contrastFactor = 1.35; 
-    const brightnessOffset = -10;
+    const contrastFactor = 1.30; 
+    const brightnessOffset = -5;
 
     for (let i = 0; i < data.length; i += 4) {
         let r = data[i];
         let g = data[i+1];
         let b = data[i+2];
 
-        // Ecualización adaptativa de contraste RGB
         r = Math.min(255, Math.max(0, contrastFactor * (r - 128) + 128 + brightnessOffset));
         g = Math.min(255, Math.max(0, contrastFactor * (g - 128) + 128 + brightnessOffset));
         b = Math.min(255, Math.max(0, contrastFactor * (b - 128) + 128 + brightnessOffset));
@@ -68,7 +66,7 @@ export function preprocessGlassImage(source) {
     }
 
     ctx.putImageData(imgData, 0, 0);
-    return canvas.toDataURL('image/jpeg', 0.90);
+    return canvas.toDataURL('image/jpeg', 0.75);
 }
 
 /**
@@ -460,19 +458,23 @@ export async function runDeepDiagnosis(imageBase64) {
                 }
             };
 
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout estricto
+
             const response = await fetch(`${GEMINI_API_URL}?key=${state.geminiApiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
+                body: JSON.stringify(requestBody),
+                signal: controller.signal
+            }).finally(() => clearTimeout(timeoutId));
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 const errorMsg = errorData?.error?.message || `HTTP ${response.status}`;
-                if (response.status === 401 || response.status === 403) {
-                    showToast("API Key de Gemini inválida o sin permisos.", "danger");
+                if (response.status === 400 || response.status === 401 || response.status === 403) {
+                    showToast("🚨 API Key inválida/vencida. Ingresa tu clave gratuita en '🔑 Configurar Gemini IA'.", "danger");
                 } else if (response.status === 429) {
-                    showToast("Límite de solicitudes alcanzado. Espera unos segundos.", "warning");
+                    showToast("⚠️ Límite de cuota alcanzado. Reintenta en 5 segundos.", "warning");
                 } else {
                     showToast(`Error Gemini API: ${errorMsg}`, "danger");
                 }

@@ -2130,111 +2130,81 @@
         <button class="tab-btn" onclick="switchView('directory')">📖 Catálogo</button>
     </div>
 
-    <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO -->
+    <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO (ERGONOMÍA INDUSTRIAL) -->
     <div id="liveView" class="view-content active">
-        <div class="camera-wrapper" onclick="if(window.startDiagnosticCamera) { window.startDiagnosticCamera(); } if(window.startProcessing) { window.startProcessing(); }" title="Toca para iniciar cámara en celular">
-            <div id="opencvStatus" class="opencv-status">Motor Visión: Esperando Envase en Guías...</div>
-            <button id="btnTapCameraStart" onclick="event.stopPropagation(); if(window.forceRetryCamera) window.forceRetryCamera();" class="btn-action btn-action-success btn-tap-camera-start">📸 TOCAR PARA INICIAR CÁMARA</button>
-            <video id="webcam" autoplay muted playsinline webkit-playsinline></video>
+        
+        <!-- VISOR UNIFICADO EN LA PARTE SUPERIOR (FOCO DIRECTO EN ENVASE) -->
+        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="if(!window.state?.diagnosticStream) { document.getElementById('nexusCaptureInput').click(); }" style="position: relative; width: 100%; height: 380px; margin: 0 auto 12px auto; overflow: hidden; border-radius: 16px; border: 2px solid var(--primary); background: #000; box-shadow: 0 8px 25px rgba(0,0,0,0.6); cursor: pointer;" title="Toca para tomar foto del envase">
+            
+            <!-- Video en vivo si hay stream WebRTC -->
+            <video id="webcam" autoplay muted playsinline webkit-playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
             <canvas id="canvasOutput" class="d-none"></canvas>
-            
-            <div class="overlay-guide">
-                <div class="guide-neck"></div>
-                <div class="guide-body"></div>
+
+            <!-- Preview de foto si se tomó foto con cámara nativa -->
+            <img id="nexusPreviewImg" src="" alt="Preview del envase" class="nexus-preview-img" style="display:none; width: 100%; height: 100%; object-fit: contain;" />
+            <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+
+            <!-- Placeholder cuando está en espera -->
+            <div id="nexusPlaceholder" class="nexus-placeholder" style="position: absolute; top:45%; left:50%; transform:translate(-50%, -50%); text-align:center; width:90%; pointer-events:none;">
+                <div class="nexus-placeholder-icon" style="font-size:3rem; margin-bottom:8px;">📸</div>
+                <p class="nexus-placeholder-text" style="font-size:1.1rem; font-weight:bold; color:#fff; margin:0;">TOCA AQUÍ PARA DISPARAR FOTO</p>
+                <span style="font-size:0.8rem; color:#10b981; margin-top:4px; display:block;">(Mirando directo el envase — 1-Clic Sin Desplazarte)</span>
             </div>
-            <div class="scan-laser"></div>
-            <!-- Nuevo indicador visual de escaneo activo -->
-            <div id="diagCursor" class="diag-cursor">
-                <div class="crosshair crosshair-x"></div>
-                <div class="crosshair crosshair-y"></div>
-                <div class="cursor-text">ESPERANDO ENVASE</div>
+
+            <!-- Retícula de Enfoque Visual HUD para Vidrio -->
+            <div class="overlay-guide" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border: 2px dashed rgba(255,111,0,0.3);">
+                <div class="guide-neck" style="position: absolute; top: 12%; left: 35%; width: 30%; height: 25%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 8px;"></div>
+                <div class="guide-body" style="position: absolute; top: 40%; left: 22%; width: 56%; height: 50%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 12px;"></div>
+            </div>
+
+            <div id="opencvStatus" class="opencv-status" style="position: absolute; top:10px; left:10px; background:rgba(0,0,0,0.75); padding:4px 10px; border-radius:6px; font-size:0.75rem; color:#10b981; border:1px solid rgba(16,185,129,0.3);">Motor Visión: Listo para Disparo</div>
+
+            <!-- BOTÓN DE DISPARO SUPERPUESTO (ESTILO CÁMARA NATIVA SMARTPHONE) -->
+            <div style="position: absolute; bottom: 12px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; padding: 0 12px; box-sizing: border-box; z-index: 10;">
+                <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none" onchange="if(window.handleNexusCaptureSelect) window.handleNexusCaptureSelect(event)">
+                <input type="file" id="nexusUploadInput" accept="image/*" class="d-none" onchange="if(window.handleNexusUploadSelect) window.handleNexusUploadSelect(event)">
+                
+                <button class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: bold; font-size: 0.92rem; padding: 12px 18px; border-radius: 30px; border: 2px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); flex: 2;" onclick="event.stopPropagation(); document.getElementById('nexusCaptureInput').click();">
+                    📸 FOTO INSTANTÁNEA (1-CLIC)
+                </button>
+                <button class="btn-action" style="background: rgba(30,34,42,0.85); color: #fff; font-weight: bold; font-size: 0.8rem; padding: 12px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); flex: 1;" onclick="event.stopPropagation(); document.getElementById('nexusUploadInput').click();">
+                    📁 GALERÍA
+                </button>
             </div>
         </div>
 
-        <!-- REUBICADO: Panel de Diagnóstico más cerca de la cámara -->
-        <div class="diagnostic-card" id="resultadoCard">
-            <div class="card-title" id="diagTitulo">📷 Buscando Envase...</div>
-            <div class="diag-status-row">
-                <span id="diagGravedad" class="status-alert status-warning">Sin Envase</span>
-            </div>
-            <div id="diagEstado" class="diag-state">Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.</div>
-            
-            <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
-            <ol class="actions-list" id="diagAcciones">
-                <li>Alinee el cuello y cuerpo de la botella dentro de la retícula de disparo.</li>
-                <li>Si la cámara no enciende, toca el visor superior o abre la web vía HTTPS.</li>
-            </ol>
-        </div>
-
-        <!-- PANEL DE CONTROL FÍSICO DE CÁMARA & FALLBACK SMARTPHONE -->
-        <div class="camera-control-row">
-            <button class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; font-weight: bold; font-size: 0.9rem; width: 100%; margin-bottom: 8px; border: 1px solid rgba(16,185,129,0.5); box-shadow: 0 4px 15px rgba(16,185,129,0.3);" onclick="if(window.requestCameraPermissionDirectly) window.requestCameraPermissionDirectly();">
-                🔓 AUTORIZAR CÁMARA EN CHROME (1-CLIC POPUP NATIVO)
-            </button>
-            <input type="file" id="liveNativeFileInput" accept="image/*" capture="environment" class="d-none" onchange="window.handleLiveNativeFileSelect(event)">
-            <button class="btn-action btn-action-success btn-camera-ctrl-bold" onclick="if(window.forceRetryCamera) window.forceRetryCamera();">
-                📸 ENCENDER CÁMARA EN VIVO
-            </button>
-            <button class="btn-action btn-action-alt btn-camera-ctrl" onclick="if(window.triggerLiveNativeFileSelect) window.triggerLiveNativeFileSelect();">
-                📷 TOMAR FOTO CON CELULAR
-            </button>
-            <button class="btn-action btn-camera-perm-help" onclick="if(window.openCameraPermissionModal) window.openCameraPermissionModal();" title="Ayuda y activación de permisos de cámara">
-                🔒 GUÍA DE PERMISOS
-            </button>
-        </div>
-
-        <!-- PANTALLA DE INSPECCIÓN NEXUS -->
-        <div class="nexus-header-container">
-            <h2 class="nexus-header-title">🔍 Inspección de Envase</h2>
-            <p class="nexus-header-subtitle">Toma o sube una foto del envase y la IA lo diagnosticará</p>
-        </div>
-
-        <!-- ÁREA DE PREVIEW DE IMAGEN (1-CLIC CÁMARA NATIVA CHROME) -->
-        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="document.getElementById('nexusCaptureInput').click()" style="cursor:pointer;" title="Toca aquí para tomar foto con la cámara de tu celular">
-            <div id="nexusPlaceholder" class="nexus-placeholder">
-                <div class="nexus-placeholder-icon">📸</div>
-                <p class="nexus-placeholder-text">TOCA AQUÍ PARA TOMAR FOTO DEL ENVASE</p>
-                <span style="font-size:0.75rem; color:#10b981; margin-top:4px;">(Modo Directo en Chrome — Cero Configuración de Permisos)</span>
-            </div>
-            <img id="nexusPreviewImg" src="" alt="Preview del envase" class="nexus-preview-img" />
-            <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas"></canvas>
-        </div>
-
-        <!-- BOTONES DE CAPTURA -->
-        <div class="nexus-actions-row">
-            <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none" aria-label="Capturar foto con cámara">
-            <input type="file" id="nexusUploadInput" accept="image/*" class="d-none" aria-label="Subir foto desde galería">
-            <button class="btn-action btn-action-success btn-nexus-capture" onclick="document.getElementById('nexusCaptureInput').click()">
-                📸 Tomar Foto
-            </button>
-            <button class="btn-action btn-action-alt btn-nexus-upload" onclick="document.getElementById('nexusUploadInput').click()">
-                📁 Subir Foto
-            </button>
-        </div>
-
-        <!-- BOTÓN DE DIAGNÓSTICO IA -->
-        <div class="nexus-btn-container">
-            <button class="btn-action btn-nexus-diagnose" id="btnNexusDiagnose" onclick="window.nexusDiagnoseWithAI()" disabled>
+        <!-- BOTÓN DE DIAGNÓSTICO PROFUNDO CON GEMINI IA -->
+        <div style="margin-bottom: 12px;">
+            <button id="btnRunDiagnosis" class="btn-action btn-action-primary" style="width: 100%; padding: 14px; font-size: 0.95rem; font-weight: bold; background: linear-gradient(135deg, #ff6f00, #d97706); border-radius: 12px; box-shadow: 0 4px 15px rgba(255,111,0,0.4);" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()" disabled>
                 ⚡ DIAGNOSTICAR CON IA (GEMINI 2.0)
             </button>
         </div>
 
-        <!-- TARJETA DE RESULTADO DE DIAGNÓSTICO -->
-        <div id="nexusResultCard" class="diagnostic-card nexus-result-card">
-            <div id="nexusDiagTitulo" class="nexus-diag-title"></div>
-            <div id="nexusDiagGravedad" class="nexus-diag-gravity"></div>
-            <div id="nexusDiagEstado" class="nexus-diag-state"></div>
-            <div id="nexusDiagAcciones" class="nexus-diag-actions"></div>
-            <div class="nexus-result-buttons">
-                <button class="btn-action btn-action-alt btn-nexus-result-action" onclick="window.nexusSaveToBitacora()">📋 Guardar en Bitácora</button>
-                <button class="btn-action btn-action-alt btn-nexus-result-action" onclick="window.nexusSaveToDataset()">📸 Agregar al Banco IA</button>
+        <!-- TARJETA DE RESULTADO DE DIAGNÓSTICO EN PLANTA -->
+        <div class="diagnostic-card" id="resultadoCard">
+            <div class="card-title" id="diagTitulo">📷 Esperando Fotografía del Envase...</div>
+            <div class="diag-status-row">
+                <span id="diagGravedad" class="status-alert status-warning">En Espera</span>
             </div>
+            <div id="diagEstado" class="diag-state">Enfoca la botella en el visor superior y toca '📸 FOTO INSTANTÁNEA'. La IA analizará la refracción en 2 segundos.</div>
+            
+            <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
+            <ol class="actions-list" id="diagAcciones">
+                <li>Alinee el cuello y cuerpo de la botella dentro de la retícula dorada superior.</li>
+                <li>Presione 'FOTO INSTANTÁNEA' sin quitar la vista de la botella.</li>
+            </ol>
         </div>
 
-        <!-- INDICADOR DE ESTADO -->
-        <div class="nexus-status-container">
-            <span id="tfjsStatus" class="nexus-status-text">Motor Gemini IA: Listo</span>
+        <!-- OPCIONES SECUNDARIAS / PERMISOS DE NAVEGADOR -->
+        <div class="camera-control-row" style="margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
+            <button class="btn-action" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.78rem;" onclick="if(window.requestCameraPermissionDirectly) window.requestCameraPermissionDirectly();">
+                🎥 Activar Cámara en Vivo Continua (WebRTC)
+            </button>
+            <button class="btn-action btn-camera-perm-help" style="font-size: 0.78rem;" onclick="if(window.openCameraPermissionModal) window.openCameraPermissionModal();" title="Ayuda y activación de permisos de cámara">
+                🔒 Guía de Permisos de Navegador
+            </button>
         </div>
+    </div>
     </div>
 
     <div id="toolsView" class="view-content">
