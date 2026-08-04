@@ -24,7 +24,9 @@ import {
 import { 
     calculateSopMs, 
     validateBdfTiming, 
-    populateDefectSelector 
+    populateDefectSelector,
+    loadBdfPreset,
+    showDefectRemedy
 } from './timing.js';
 import { 
     setScannerSource, 
@@ -217,6 +219,8 @@ window.filterDefects = filterDefects;
 
 window.validateBdfTiming = validateBdfTiming;
 window.calculateSopMs = calculateSopMs;
+window.loadBdfPreset = loadBdfPreset;
+window.showDefectRemedy = showDefectRemedy;
 
 window.setScannerSource = setScannerSource;
 window.captureScannerSnapshot = captureScannerSnapshot;

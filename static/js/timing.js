@@ -232,5 +232,146 @@ function populateDefectSelector() {
             selector.innerHTML = html;
         }
 
-export { calculateSopMs, validateBdfTiming, populateDefectSelector };
+/**
+ * Carga un preset de escenario BDF en los inputs de la calculadora.
+ * Parámetros: plungerUp, plungerDown, blankOpen, invertStart,
+ *             blowClose, neckOpen, blowOn, blowOff (todos en grados 0-360)
+ */
+function loadBdfPreset(plungerUp, plungerDown, blankOpen, invertStart, blowClose, neckOpen, blowOn, blowOff) {
+    const fields = {
+        valPlungerUp:   plungerUp,
+        valPlungerDown: plungerDown,
+        valBlankOpen:   blankOpen,
+        valInvertStart: invertStart,
+        valBlowClose:   blowClose,
+        valNeckOpen:    neckOpen,
+        valBlowOn:      blowOn,
+        valBlowOff:     blowOff
+    };
 
+    Object.entries(fields).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    });
+
+    // Recalcular y actualizar el diagrama Gantt automáticamente
+    validateBdfTiming();
+}
+
+/**
+ * Mapa de defectos de moldería con título, descripción física y acción correctiva BDF.
+ */
+const DEFECT_REMEDY_MAP = {
+    bajo_boca: {
+        titulo: '⚠️ Boca Incompleta / Bajo Boca (NNPB)',
+        descripcion: 'La preforma llega fría al molde de boca o el plunger sube demasiado tarde, dejando vidrio insuficiente en la zona de la corona.',
+        accion: 'Adelantar Plunger Up 3–5°. Aumentar temperatura de gota 2–3°C. Verificar temperatura del molde de boca.'
+    },
+    cuello_torcido: {
+        titulo: '🔴 Botella Colgada / Cuello Torcido',
+        descripcion: 'La inversión ocurre antes de que el plunger haya bajado completamente, causando arrastre mecánico del cuello.',
+        accion: 'Retrasar Invert Start mínimo 15° después de Plunger Down. Verificar desfase mecánico sección a sección.'
+    },
+    espesor_desigual: {
+        titulo: '⚠️ Espesor de Pared Desigual / Parison Frío',
+        descripcion: 'La gota llega fría al molde de soplo o el soplado final es insuficiente para distribuir el vidrio uniformemente.',
+        accion: 'Aumentar Blow On 5–8° antes. Verificar temperatura de moldes de soplo. Ajustar posición del Baffle.'
+    },
+    rebaba_boca: {
+        titulo: '🔴 Rebaba en Molde de Boca (NNPB)',
+        descripcion: 'El plunger sube tarde o el Blank Open es prematuro, permitiendo que el vidrio fluya fuera del molde de boca.',
+        accion: 'Retrasar Blank Open 3–5°. Verificar fuerza de cierre de molde de boca. Revisar estado de sellos.'
+    },
+    fondo_deforme: {
+        titulo: '⚠️ Fondo Deformado, Hundido o Caído',
+        descripcion: 'El soplado final llega tarde o el molde de soplo abre antes de que el vidrio esté estabilizado.',
+        accion: 'Adelantar Blow On 3°. Verificar presión de soplado final. Retrasar la apertura del Blow Mold 5°.'
+    },
+    grieta_cuello: {
+        titulo: '🔴 Grietas o Fisuras en el Cuello',
+        descripcion: 'El anillo de boca (Neck Ring) abre antes de que el molde de soplo esté cerrado, sometiendo el vidrio caliente a tensión.',
+        accion: 'Adelantar Blow Close 5–10° para cerrar el molde antes del Neck Open. Verificar sincronía de inversión.'
+    },
+    boca_hinchada: {
+        titulo: '⚠️ Boca Hinchada o Deformada',
+        descripcion: 'Exceso de vidrio en la zona de boca por Plunger Up tardío o temperatura excesiva.',
+        accion: 'Retrasar Plunger Up 2–3°. Reducir temperatura de gota 1–2°C. Verificar longitud de corte.'
+    },
+    rosca_partida: {
+        titulo: '🔴 Rosca Partida (Split Thread)',
+        descripcion: 'El plunger ejerce presión excesiva sobre la boca del molde, o la sincronía de apertura del Blank es incorrecta.',
+        accion: 'Verificar presión del plunger. Retrasar Blank Open 3–5°. Inspeccionar desgaste del molde de boca.'
+    },
+    boca_ovalada: {
+        titulo: '⚠️ Boca Ovalada (Out of Round Finish)',
+        descripcion: 'El molde de boca (Neck Ring) abre demasiado pronto cuando el vidrio aún está blando.',
+        accion: 'Retrasar Neck Open 5–8° hasta que el vidrio esté más rígido. Reducir temperatura del enfriamiento de boca.'
+    },
+    hombro_caido: {
+        titulo: '⚠️ Hombro Caído / Pliegues en Hombro',
+        descripcion: 'Tiempo insuficiente de soplado final o temperatura excesiva en zona de hombro.',
+        accion: 'Aumentar duración de Blow On–Off 5°. Verificar distribución de vidrio en preforma. Ajustar temperatura.'
+    },
+    heavy_joint: {
+        titulo: '⚠️ Costura de Cuerpo Sobresaliente (Heavy Joint)',
+        descripcion: 'Las mitades del molde de soplo no cierran con suficiente fuerza o hay desgaste en las guías.',
+        accion: 'Verificar fuerza de cierre del Blow Mold. Adelantar Blow Close 3°. Revisar desgaste de las caras de cierre.'
+    },
+    thin_bottom: {
+        titulo: '🔴 Fondo Delgado (Thin Bottom)',
+        descripcion: 'El vidrio no llega suficientemente al fondo del molde durante el soplado final.',
+        accion: 'Aumentar presión de soplado final. Adelantar Blow On 5°. Verificar temperatura del molde de fondo.'
+    },
+    neck_wave: {
+        titulo: '⚠️ Pliegue u Onda en el Cuello (Neck Wave)',
+        descripcion: 'La inversión es demasiado rápida o el vidrio en el cuello está demasiado frío al momento de la inversión.',
+        accion: 'Retrasar Invert Start 3–5°. Aumentar temperatura de gota 1–2°C. Verificar tiempo de enfriamiento del Baffle.'
+    },
+    marcas_vacio: {
+        titulo: '⚠️ Marcas de Vacío en Boca (Vacuum Marks)',
+        descripcion: 'El sistema de vacío del molde de boca es insuficiente o el vidrio está demasiado viscoso.',
+        accion: 'Verificar tuberías de vacío (presión mínima 0.5 bar). Aumentar temperatura de gota 2°C. Revisar sellos.'
+    },
+    grieta_boca: {
+        titulo: '🔴 Grieta en la Boca o Corona (Corkage Check)',
+        descripcion: 'El Neck Ring abre demasiado pronto causando tensión térmica en la corona, o hay desgaste del molde de boca.',
+        accion: 'Retrasar Neck Open 5–10°. Verificar temperatura de enfriamiento del molde de boca. Inspeccionar molde.'
+    }
+};
+
+/**
+ * Muestra la tarjeta de diagnóstico y corrección BDF del defecto seleccionado en el Asistente Expert.
+ */
+function showDefectRemedy() {
+    const selector = document.getElementById('defectSelector');
+    const card = document.getElementById('defectRemedyCard');
+    const titleEl = document.getElementById('remedyTitle');
+    const descEl = document.getElementById('remedyDescription');
+    const actionEl = document.getElementById('remedyAction');
+    const applyBtn = document.getElementById('applyRemedyBtn');
+
+    if (!selector || !card) return;
+
+    const defectId = selector.value;
+    if (!defectId || !DEFECT_REMEDY_MAP[defectId]) {
+        card.style.display = 'none';
+        return;
+    }
+
+    const remedy = DEFECT_REMEDY_MAP[defectId];
+
+    if (titleEl)  titleEl.innerText  = remedy.titulo;
+    if (descEl)   descEl.innerText   = remedy.descripcion;
+    if (actionEl) actionEl.innerText = remedy.accion;
+
+    card.style.display = 'block';
+
+    // Botón "Simular Ajuste en Ciclo": re-ejecuta la validación para refrescar el diagrama Gantt
+    if (applyBtn) {
+        applyBtn.onclick = () => {
+            validateBdfTiming();
+        };
+    }
+}
+
+export { calculateSopMs, validateBdfTiming, populateDefectSelector, loadBdfPreset, showDefectRemedy };
