@@ -171,7 +171,7 @@ export async function exportDatasetJSON() {
         const datasetPayload = {
             metadata: {
                 app: 'VitroDiag',
-                version: '1.2.0',
+                version: '2.0.0',
                 fechaExportacion: new Date().toISOString(),
                 totalMuestras: samples.length,
                 empresa: 'Cristal Chile (Planta Caliente / Fría)'
@@ -476,7 +476,7 @@ export async function analyzeSampleWithGeminiFromModal() {
         
         // Cambiar a la pestaña de diagnóstico en vivo e invocar el diagnóstico IA con la imagen
         if (typeof window.switchView === 'function') {
-            await window.switchView('live');
+            await window.switchView('nexus');
         }
 
         showToast('Enviando muestra del banco a Gemini Vision IA para análisis profundo...', 'info');

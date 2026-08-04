@@ -369,13 +369,12 @@ export async function analyzeWithGemini(canvas, videoElement) {
 }
 
 /**
- * Análisis bajo demanda (botón "Diagnóstico Profundo").
+ * Análisis bajo demanda (botón "Diagnóstico Profundo" o flujo NEXUS).
  * Ignora cooldown y fuerza un nuevo análisis.
+ * @param {string} [imageBase64] - Base64 completo (con prefijo data:...) de la imagen a analizar.
+ *                                  Si se omite, captura del canvas/webcam activos.
  */
-export async function runDeepDiagnosis() {
-    const canvas = document.getElementById('canvasOutput');
-    const video = document.getElementById('webcam');
-
+export async function runDeepDiagnosis(imageBase64) {
     if (!state.geminiApiKey) {
         showToast("Primero configura tu API Key de Gemini en el Panel de IA.", "warning");
         return null;
@@ -385,7 +384,94 @@ export async function runDeepDiagnosis() {
     lastAnalysisTimestamp = 0;
 
     showToast("Ejecutando diagnóstico profundo con Gemini Vision...", "info");
-    const result = await analyzeWithGemini(canvas, video);
+
+    let result;
+
+    if (imageBase64) {
+        // Flujo NEXUS: imagen base64 pasada directamente
+        state.geminiAnalyzing = true;
+        updateAnalyzingUI(true);
+        try {
+            const cleanB64 = imageBase64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+            const glassPrompt = buildGlassDefectPrompt();
+            const articleName = state.activeArticle ? state.activeArticle.nombre : "Artículo genérico";
+            const contextPrompt = `\nContexto: El artículo en inspección es "${articleName}". Considera tolerancias NNPB de Cristal Chile.\n`;
+
+            // Obtener ejemplos Few-Shot RAG del Banco de Entrenamiento local
+            let fewShotParts = [];
+            try {
+                const samples = await getFewShotExamplesForDefect(null, 2);
+                if (samples && samples.length > 0) {
+                    samples.forEach((sample) => {
+                        if (sample.fotoBase64) {
+                            const sampleB64 = sample.fotoBase64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+                            fewShotParts.push({
+                                inline_data: { mime_type: "image/jpeg", data: sampleB64 }
+                            });
+                        }
+                    });
+                }
+            } catch (fsErr) {
+                console.warn('[runDeepDiagnosis] No se pudieron cargar ejemplos Few-Shot:', fsErr);
+            }
+
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: glassPrompt + contextPrompt },
+                        ...fewShotParts,
+                        { inline_data: { mime_type: "image/jpeg", data: cleanB64 } }
+                    ]
+                }],
+                generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 1024,
+                    responseMimeType: "application/json"
+                }
+            };
+
+            const response = await fetch(`${GEMINI_API_URL}?key=${state.geminiApiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData?.error?.message || `HTTP ${response.status}`;
+                if (response.status === 401 || response.status === 403) {
+                    showToast("API Key de Gemini inválida o sin permisos.", "danger");
+                } else if (response.status === 429) {
+                    showToast("Límite de solicitudes alcanzado. Espera unos segundos.", "warning");
+                } else {
+                    showToast(`Error Gemini API: ${errorMsg}`, "danger");
+                }
+                return null;
+            }
+
+            const data = await response.json();
+            const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!rawText) return null;
+
+            result = parseGeminiResponse(rawText);
+            if (result) {
+                state.lastGeminiResult = result;
+                lastAnalysisTimestamp = Date.now();
+            }
+        } catch (err) {
+            console.error('[runDeepDiagnosis] Error en análisis con base64:', err);
+            showToast(`Error al analizar imagen: ${err.message}`, "danger");
+            return null;
+        } finally {
+            state.geminiAnalyzing = false;
+            updateAnalyzingUI(false);
+        }
+    } else {
+        // Flujo legado: captura desde canvas/webcam
+        const canvas = document.getElementById('canvasOutput');
+        const video = document.getElementById('webcam');
+        result = await analyzeWithGemini(canvas, video);
+    }
 
     if (result) {
         renderGeminiResult(result);
@@ -395,6 +481,7 @@ export async function runDeepDiagnosis() {
 
     return result;
 }
+
 
 /**
  * Análisis automático periódico (llamado desde el loop de diagnóstico).
