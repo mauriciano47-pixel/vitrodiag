@@ -179,6 +179,19 @@ function stopDiagnosticCamera() {
     }
 }
 
+function stopScannerCamera() {
+    if (state.scannerStream) {
+        state.scannerStream.getTracks().forEach(track => track.stop());
+        state.scannerStream = null;
+    }
+    const video = document.getElementById('scannerVideo');
+    if (video) {
+        video.srcObject = null;
+        try { video.load(); } catch (e) {}
+    }
+}
+
+
 async function startScannerCamera() {
     const video = document.getElementById('scannerVideo');
     if (!video) return;
