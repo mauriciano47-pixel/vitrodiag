@@ -19,7 +19,11 @@ import {
 } from './ui.js';
 import { 
     startScannerCamera, 
-    stopScannerCamera
+    stopScannerCamera,
+    openCameraPermissionModal,
+    closeCameraPermissionModal,
+    retryCameraPermissions,
+    checkCameraPermissions
 } from './camera.js';
 import { 
     calculateSopMs, 
@@ -188,11 +192,15 @@ function nexusSaveToDataset() {
     showToast('Navega al Banco IA para etiquetar y guardar esta muestra.', 'info');
 }
 
-// Exponer funciones NEXUS al ámbito global
+// Exponer funciones NEXUS y Permisos al ámbito global
 window.nexusHandleImageSelect = nexusHandleImageSelect;
 window.nexusDiagnoseWithAI = nexusDiagnoseWithAI;
 window.nexusSaveToBitacora = nexusSaveToBitacora;
 window.nexusSaveToDataset = nexusSaveToDataset;
+window.openCameraPermissionModal = openCameraPermissionModal;
+window.closeCameraPermissionModal = closeCameraPermissionModal;
+window.retryCameraPermissions = retryCameraPermissions;
+window.checkCameraPermissions = checkCameraPermissions;
 
 // Exponer funciones de módulos existentes al ámbito global
 window.DEFECTOS_DB = DEFECTOS_DB;

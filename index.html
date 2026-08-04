@@ -1833,10 +1833,77 @@
             flex-wrap: wrap;
             margin-top: 10px;
         }
-        .btn-modal-diagnose {
-            flex: 1;
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            color: #ffffff;
+        /* Modal Diagnóstico de Permisos de Cámara */
+        .camera-perm-modal-content {
+            max-width: 520px;
+            background: #0f172a;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+        }
+        .perm-status-badge {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.88rem;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .perm-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .perm-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .perm-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .perm-modal-intro {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+        .perm-guide-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .perm-guide-header {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+        .perm-guide-steps {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        .text-success { color: #10b981; }
+        .perm-modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .btn-camera-perm-help {
+            background: rgba(245, 158, 11, 0.15) !important;
+            color: #f59e0b !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        .btn-camera-perm-help:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
         }
     </style>
 </head>
@@ -2009,6 +2076,9 @@
             </button>
             <button class="btn-action btn-action-alt btn-camera-ctrl" onclick="if(window.triggerLiveNativeFileSelect) window.triggerLiveNativeFileSelect();">
                 📷 TOMAR FOTO CON CELULAR
+            </button>
+            <button class="btn-action btn-camera-perm-help" onclick="if(window.openCameraPermissionModal) window.openCameraPermissionModal();" title="Ayuda y activación de permisos de cámara">
+                🔒 GUÍA DE PERMISOS
             </button>
         </div>
 
@@ -2588,6 +2658,56 @@
                     <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.updateSampleNotesFromModal()">💾 Guardar Notas</button>
                     <button class="btn-action btn-modal-diagnose" onclick="window.analyzeSampleWithGeminiFromModal()">🧠 Diagnosticar con Gemini IA</button>
                     <button class="btn-action btn-action-danger btn-dataset-flex" onclick="window.deleteSampleFromModal()">🗑️ Eliminar</button>
+                </div>
+            </div>
+    <!-- MODAL DE AYUDA DE PERMISOS DE CÁMARA Y DIAGNÓSTICO -->
+    <div id="cameraPermissionModal" class="modal-overlay">
+        <div class="modal-content camera-perm-modal-content">
+            <div class="modal-header">
+                <span class="modal-title">📹 Diagnóstico de Permisos de Cámara</span>
+                <button class="modal-close" onclick="window.closeCameraPermissionModal()">&times;</button>
+            </div>
+            <div class="modal-body perm-modal-body">
+                <div id="permStatusBadge" class="perm-status-badge perm-warning">
+                    ⚠️ Permiso de Cámara: Bloqueado o Denegado
+                </div>
+                
+                <p class="perm-modal-intro">
+                    Para transmitir la cámara en vivo desde tu navegador, el sistema operativo requiere autorización. Sigue las instrucciones según tu navegador:
+                </p>
+
+                <!-- GUÍA PASO A PASO CHROME (ANDROID / DESKTOP) -->
+                <div class="perm-guide-card">
+                    <div class="perm-guide-header">🌐 En Google Chrome (Android / PC):</div>
+                    <ol class="perm-guide-steps">
+                        <li>Toca el icono de <b>Candado / Ajustes 🔒</b> a la izquierda de la barra de direcciones (arriba).</li>
+                        <li>Entra en <b>"Permisos del sitio"</b> o <b>"Configuración del sitio"</b>.</li>
+                        <li>Busca <b>"Cámara"</b> y cambia la opción a <b class="text-success">Permitir</b>.</li>
+                        <li>Regresa aquí y presiona <b>"Reintentar Cámara"</b>.</li>
+                    </ol>
+                </div>
+
+                <!-- GUÍA PASO A PASO SAFARI (IOS / IPHONE) -->
+                <div class="perm-guide-card">
+                    <div class="perm-guide-header">🍏 En Safari (iPhone / iPad):</div>
+                    <ol class="perm-guide-steps">
+                        <li>Toca el icono <b>"aA" / Ajustes ⚙️</b> en la barra de direcciones superior.</li>
+                        <li>Entra en <b>"Ajustes del sitio web"</b> → <b>"Cámara"</b>.</li>
+                        <li>Selecciona <b class="text-success">Permitir</b>.</li>
+                        <li>Recarga la pantalla o presiona <b>"Reintentar Cámara"</b>.</li>
+                    </ol>
+                </div>
+
+                <div class="perm-modal-actions">
+                    <button class="btn-action btn-action-success" onclick="window.retryCameraPermissions()">
+                        🔄 Reintentar Cámara en Vivo
+                    </button>
+                    <button class="btn-action btn-action-alt" onclick="window.triggerLiveNativeFileSelect(); window.closeCameraPermissionModal();">
+                        📸 Usar Foto Nativa con Celular (Sin Permisos WebRTC)
+                    </button>
+                    <button class="btn-action" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="window.closeCameraPermissionModal()">
+                        👁️ Explorar la App (Modo Galería)
+                    </button>
                 </div>
             </div>
         </div>

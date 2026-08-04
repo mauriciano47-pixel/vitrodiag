@@ -71,15 +71,55 @@ async function startDiagnosticCamera() {
             if (!isSecure) {
                 status.innerText = "Visión: Requiere HTTPS o Localhost";
                 status.style.color = "#f59e0b";
-                showToast("Para usar la cámara, abre la app desde HTTPS (GitHub Pages).", "warning");
+                showToast("Para usar la cámara en vivo, abre la app desde HTTPS (GitHub Pages).", "warning");
+                openCameraPermissionModal("🔒 Se requiere conexión segura HTTPS para activar la cámara en vivo", "warning");
+            } else if (fallbackErr.name === 'NotAllowedError' || fallbackErr.name === 'PermissionDeniedError') {
+                status.innerText = "Visión: Permiso Denegado por el Navegador";
+                status.style.color = "#ef4444";
+                showToast("Permiso de cámara bloqueado. Toca para ver la guía de activación.", "danger");
+                openCameraPermissionModal("🚨 Permiso de Cámara Bloqueado por el Navegador", "danger");
             } else {
-                status.innerText = "Visión: Toca el botón verde para reactivar";
+                status.innerText = "Visión: Toca para reintentar o usa Foto Nativa";
                 status.style.color = "#f59e0b";
-                showToast("Si el navegador bloquea la cámara continua, usa el botón '📁 Cargar Foto de Envase' para analizar directamente.", "info");
+                showToast("No se pudo acceder a la cámara en vivo. Puedes usar 'Tomar Foto con Celular'.", "info");
+                openCameraPermissionModal("⚠️ No se pudo acceder a la cámara en vivo del dispositivo", "warning");
             }
         }
     }
 }
+
+export function openCameraPermissionModal(customMessage = null, statusType = 'warning') {
+    const modal = document.getElementById('cameraPermissionModal');
+    const badge = document.getElementById('permStatusBadge');
+    if (badge) {
+        if (customMessage) badge.innerText = customMessage;
+        badge.className = `perm-status-badge perm-${statusType}`;
+    }
+    if (modal) modal.classList.add('active');
+}
+
+export function closeCameraPermissionModal() {
+    const modal = document.getElementById('cameraPermissionModal');
+    if (modal) modal.classList.remove('active');
+}
+
+export function retryCameraPermissions() {
+    closeCameraPermissionModal();
+    forceRetryCamera();
+}
+
+export async function checkCameraPermissions() {
+    if (!navigator.permissions || !navigator.permissions.query) {
+        return 'unknown';
+    }
+    try {
+        const result = await navigator.permissions.query({ name: 'camera' });
+        return result.state; // 'granted', 'prompt', 'denied'
+    } catch (e) {
+        return 'unknown';
+    }
+}
+
 
 export function forceRetryCamera() {
     state.diagnosticStream = null;
