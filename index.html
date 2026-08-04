@@ -2037,7 +2037,7 @@
         <div class="camera-wrapper" onclick="if(window.startDiagnosticCamera) { window.startDiagnosticCamera(); } if(window.startProcessing) { window.startProcessing(); }" title="Toca para iniciar cámara en celular">
             <div id="opencvStatus" class="opencv-status">Motor Visión: Esperando Envase en Guías...</div>
             <button id="btnTapCameraStart" onclick="event.stopPropagation(); if(window.forceRetryCamera) window.forceRetryCamera();" class="btn-action btn-action-success btn-tap-camera-start">📸 TOCAR PARA INICIAR CÁMARA</button>
-            <video id="webcam" autoplay muted></video>
+            <video id="webcam" autoplay muted playsinline webkit-playsinline></video>
             <canvas id="canvasOutput" class="d-none"></canvas>
             
             <div class="overlay-guide">
@@ -2336,7 +2336,7 @@
 
             <!-- CONTENEDOR DE CÁMARA Y CAPTURA -->
             <div id="scannerCameraArea" class="scanner-camera-container">
-                <video id="scannerVideo" autoplay muted class="scanner-video"></video>
+                <video id="scannerVideo" autoplay muted playsinline webkit-playsinline class="scanner-video"></video>
                 <canvas id="scannerCanvas" class="scanner-canvas"></canvas>
                 
                 <!-- Guía de encuadre translúcida -->

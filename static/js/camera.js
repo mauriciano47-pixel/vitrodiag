@@ -55,16 +55,29 @@ async function startDiagnosticCamera() {
 
     if (stream) {
         state.diagnosticStream = stream;
-        video.srcObject = stream;
         video.muted = true;
         video.volume = 0;
-        video.setAttribute('playsinline', '');
-        video.setAttribute('muted', '');
+        video.playsInline = true;
+        video.srcObject = stream;
+
+        // Esperar metadata en Android 14 (Motorola Moto G85) para evitar fallos de play()
+        await new Promise((resolve) => {
+            if (video.readyState >= 1) {
+                resolve();
+            } else {
+                video.onloadedmetadata = () => resolve();
+                setTimeout(resolve, 800);
+            }
+        });
+
         try {
             await video.play();
         } catch (e) {
-            console.log("[Camera] Play webcam interrumpido:", e);
+            console.warn("[Camera] Play webcam diferido en Chrome, reintentando...", e);
+            video.muted = true;
+            await video.play().catch(err => console.error("[Camera] Error final en play():", err));
         }
+
         status.innerText = "Motor Visión: Cámara en Vivo Activa (Chrome)";
         status.style.color = "#10b981";
         if (btnTap) btnTap.style.display = 'none';
@@ -98,6 +111,21 @@ async function startDiagnosticCamera() {
         }
     }
 }
+
+// Escuchar cambios de visibilidad para liberar el hardware al cambiar de app en el celular (Motorola Android 14)
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        console.log("[Camera] App en segundo plano. Liberando hardware de cámara...");
+        stopDiagnosticCamera();
+        stopScannerCamera();
+    }
+});
+
+document.addEventListener('pagehide', () => {
+    stopDiagnosticCamera();
+    stopScannerCamera();
+});
+
 
 
 export function openCameraPermissionModal(customMessage = null, statusType = 'warning') {
