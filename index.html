@@ -2088,11 +2088,12 @@
             <p class="nexus-header-subtitle">Toma o sube una foto del envase y la IA lo diagnosticará</p>
         </div>
 
-        <!-- ÁREA DE PREVIEW DE IMAGEN -->
-        <div id="nexusPreviewArea" class="nexus-preview-area">
+        <!-- ÁREA DE PREVIEW DE IMAGEN (1-CLIC CÁMARA NATIVA CHROME) -->
+        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="document.getElementById('nexusCaptureInput').click()" style="cursor:pointer;" title="Toca aquí para tomar foto con la cámara de tu celular">
             <div id="nexusPlaceholder" class="nexus-placeholder">
-                <div class="nexus-placeholder-icon">📷</div>
-                <p class="nexus-placeholder-text">Captura o sube una foto del envase para iniciar el diagnóstico con IA</p>
+                <div class="nexus-placeholder-icon">📸</div>
+                <p class="nexus-placeholder-text">TOCA AQUÍ PARA TOMAR FOTO DEL ENVASE</p>
+                <span style="font-size:0.75rem; color:#10b981; margin-top:4px;">(Modo Directo en Chrome — Cero Configuración de Permisos)</span>
             </div>
             <img id="nexusPreviewImg" src="" alt="Preview del envase" class="nexus-preview-img" />
             <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas"></canvas>

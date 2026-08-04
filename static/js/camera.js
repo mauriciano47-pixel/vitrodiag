@@ -18,75 +18,87 @@ async function startDiagnosticCamera() {
     }
 
     if (btnTap) {
-        btnTap.innerText = "⏳ Iniciando cámara...";
+        btnTap.innerText = "⏳ Conectando cámara en Chrome...";
         btnTap.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
     }
     
     // Detener cualquier stream anterior colgado
     stopDiagnosticCamera();
-
-    // Grace period para liberar el hardware si se acaba de apagar otra cámara
     await new Promise(res => setTimeout(res, 200));
 
     const video = document.getElementById('webcam');
     const status = document.getElementById('opencvStatus');
     if (!video || !status) return;
 
-    status.innerText = "Solicitando cámara en celular...";
+    status.innerText = "Iniciando cámara en Chrome...";
     status.style.color = "rgba(255, 111, 0, 0.7)";
-    
-    try {
-        state.diagnosticStream = await navigator.mediaDevices.getUserMedia(cameraConstraints);
-        video.srcObject = state.diagnosticStream;
+
+    // Cascada de 3 niveles de constraints para compatibilidad 100% en Chrome Android/iOS
+    const constraintLevels = [
+        { video: { facingMode: { exact: "environment" } }, audio: false },
+        { video: { facingMode: "environment" }, audio: false },
+        { video: true, audio: false }
+    ];
+
+    let stream = null;
+    let lastError = null;
+
+    for (const constraints of constraintLevels) {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            if (stream) break; // Conexión exitosa
+        } catch (err) {
+            lastError = err;
+            console.warn("[Camera] Constraint fallido en Chrome, intentando siguiente nivel...", constraints, err);
+        }
+    }
+
+    if (stream) {
+        state.diagnosticStream = stream;
+        video.srcObject = stream;
         video.muted = true;
         video.volume = 0;
         video.setAttribute('playsinline', '');
         video.setAttribute('muted', '');
-        await video.play().catch(e => console.log("Play webcam interrumpido:", e));
-        status.innerText = "Motor Visión: Activo (Nativo)";
+        try {
+            await video.play();
+        } catch (e) {
+            console.log("[Camera] Play webcam interrumpido:", e);
+        }
+        status.innerText = "Motor Visión: Cámara en Vivo Activa (Chrome)";
         status.style.color = "#10b981";
         if (btnTap) btnTap.style.display = 'none';
-    } catch (err) {
-        console.warn("Fallo al cargar constraints recomendados de cámara. Probando fallback simple...", err);
-        try {
-            state.diagnosticStream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = state.diagnosticStream;
-            video.muted = true;
-            video.volume = 0;
-            video.setAttribute('playsinline', '');
-            video.setAttribute('muted', '');
-            await video.play().catch(e => console.log("Play webcam fallback interrumpido:", e));
-            status.innerText = "Motor Visión: Activo (Nativo)";
+        showToast("🎥 Cámara en vivo activada correctamente.", "success");
+    } else {
+        console.error("Chrome denegó o no pudo acceder a la cámara WebRTC:", lastError);
+        state.diagnosticStream = null;
+        
+        if (btnTap) {
+            btnTap.style.display = 'block';
+            btnTap.innerText = "📸 TOCAR AQUÍ PARA TOMAR FOTO CON CELULAR (MODO DIRECTO)";
+            btnTap.style.background = "linear-gradient(135deg, #10b981, #059669)";
+            btnTap.onclick = () => {
+                triggerLiveNativeFileSelect();
+            };
+        }
+
+        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (!isSecure) {
+            status.innerText = "Cámara: Requiere HTTPS (GitHub Pages)";
+            status.style.color = "#f59e0b";
+            showToast("Abre la app desde la URL HTTPS oficial para activar la cámara en vivo.", "warning");
+        } else if (lastError && (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError')) {
+            status.innerText = "Cámara Chrome: Permiso Bloqueado (Usa 'Tomar Foto')";
+            status.style.color = "#ef4444";
+            showToast("Chrome tiene la cámara bloqueada. Usa el botón '📸 Tomar Foto' que funciona sin permisos.", "info");
+        } else {
+            status.innerText = "Cámara: Modo Fotográfico Directo Activo";
             status.style.color = "#10b981";
-            if (btnTap) btnTap.style.display = 'none';
-        } catch (fallbackErr) {
-            console.error("No se pudo iniciar la cámara en el dispositivo: ", fallbackErr);
-            state.diagnosticStream = null;
-            if (btnTap) {
-                btnTap.style.display = 'block';
-                btnTap.innerText = "📸 TOCAR PARA INICIAR CÁMARA";
-                btnTap.style.background = "linear-gradient(135deg, #10b981, #059669)";
-            }
-            const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-            if (!isSecure) {
-                status.innerText = "Visión: Requiere HTTPS o Localhost";
-                status.style.color = "#f59e0b";
-                showToast("Para usar la cámara en vivo, abre la app desde HTTPS (GitHub Pages).", "warning");
-                openCameraPermissionModal("🔒 Se requiere conexión segura HTTPS para activar la cámara en vivo", "warning");
-            } else if (fallbackErr.name === 'NotAllowedError' || fallbackErr.name === 'PermissionDeniedError') {
-                status.innerText = "Visión: Permiso Denegado por el Navegador";
-                status.style.color = "#ef4444";
-                showToast("Permiso de cámara bloqueado. Toca para ver la guía de activación.", "danger");
-                openCameraPermissionModal("🚨 Permiso de Cámara Bloqueado por el Navegador", "danger");
-            } else {
-                status.innerText = "Visión: Toca para reintentar o usa Foto Nativa";
-                status.style.color = "#f59e0b";
-                showToast("No se pudo acceder a la cámara en vivo. Puedes usar 'Tomar Foto con Celular'.", "info");
-                openCameraPermissionModal("⚠️ No se pudo acceder a la cámara en vivo del dispositivo", "warning");
-            }
+            showToast("Usa '📸 Tomar Foto' para capturar fotos en alta resolución sin depender de WebRTC.", "info");
         }
     }
 }
+
 
 export function openCameraPermissionModal(customMessage = null, statusType = 'warning') {
     const modal = document.getElementById('cameraPermissionModal');
