@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.0.0 — Inspección IA</title>
+    <title>VitroDiag NEXUS v2.0.2 — Inspección IA</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -17,16 +17,16 @@
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v2.0.0')) {
+                if (!name.includes('v2.0.2')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
             });
         });
     }
-    // Autopurga de versión anterior en localStorage si detecta v1.1.x
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.0') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.0.0');
+    // Autopurga de versión anterior en localStorage si detecta v2.0.1 o inferior
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.2') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.0.2');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(regs) {
                 for (let r of regs) r.unregister();
@@ -44,14 +44,14 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará ahora en v2.0.0.');
+        alert('Caché eliminada con éxito. La app se recargará ahora en v2.0.2.');
         window.location.reload(true);
     };
 
     // Inyectar dinámicamente el manifiesto PWA y la metaetiqueta theme-color para compatibilidad estática PWA y GitHub Pages
     const manifestLink = document.createElement('link');
     manifestLink.rel = 'manifest';
-    manifestLink.href = 'manifest.webmanifest?v=2.0.0';
+    manifestLink.href = 'manifest.webmanifest?v=2.0.2';
     document.head.appendChild(manifestLink);
 
     const themeMeta = document.createElement('meta');

@@ -1,5 +1,5 @@
-// VitroDiag NEXUS v2.0.0 — Service Worker (Network-First + Cache Fallback)
-const CACHE_NAME = 'vitrodiag-nexus-v2.0.0';
+// VitroDiag NEXUS v2.0.2 — Service Worker (Network-First + Cache Fallback)
+const CACHE_NAME = 'vitrodiag-nexus-v2.0.2';
 
 const ASSETS_TO_CACHE = [
   './',

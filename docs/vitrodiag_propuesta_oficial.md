@@ -1,9 +1,9 @@
-# VitroDiag NEXUS v2.0.0 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.0.2 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
-**URL de Producción PWA:** [https://mauriciano47-pixel.github.io/vitrodiag/](https://mauriciano47-pixel.github.io/vitrodiag/)  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.0.0 — NEXUS)  
+**URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.0.2 — NEXUS Cero Advertencias)  
 
 ---
 
@@ -27,9 +27,10 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 ---
 
-## 3. Catálogo Completo de Funciones (v2.0.0)
+## 3. Catálogo Completo de Funciones (v2.0.2)
 
 ### Tab 1 — Inspección NEXUS (Motor Principal)
+
 1. **Diagnóstico IA Multimodal Fotográfico con Gemini 2.0 Flash:**  
    El operador toma o sube una foto del envase. Gemini 2.0 Flash evalúa la textura, transparencia y refracción contra el **catálogo oficial de 96 defectos industriales** y devuelve: defecto detectado, zona anatómica (Corona, Cuello, Hombro, Cuerpo, Fondo), nivel de gravedad, confianza y acciones correctivas específicas para la máquina I.S.
 
@@ -40,6 +41,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
    Inyección opcional de muestras reales etiquetadas en planta como contexto adicional a Gemini para maximizar la precisión en defectos minuciosos.
 
 ### Tab 2 — Herramientas Industriales
+
 4. **Calculadora SOP & Swabbing:**  
    Algoritmo de cálculo de tiempos de soplo (SOP) según BPM, cavidades y peso. Sugiere intervalos óptimos de lubricación de moldes (swabbing) y previene sobrecalentamiento.
 
@@ -50,16 +52,22 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
    Registro estructurado de paradas, defectos de moldeo y ajustes realizados. Exporta reportes formateados instantáneamente para ser enviados por WhatsApp a jefes de turno y mantenimiento.
 
 ### Tab 3 — Catálogo de 96 Defectos Industriales
+
 7. **Directorio filtrable de defectos:**  
    Base de conocimiento con los 96 defectos estándar de la industria vidriera, clasificados por zona, gravedad y tipo (geométrico, superficial, distribución de vidrio). Con tarjetas expandibles y buscador.
 
 ### Tab 4 — Banco IA (Few-Shot RAG)
+
 8. **Módulo de Entrenamiento IA & Calibración Few-Shot RAG:**  
    Gestor en IndexedDB para capturar, etiquetar y exportar fotos de defectos reales en planta. Inyecta muestras reales de calibración en la API de Gemini Vision para máxima certeza.
 
 ### Sistema Base
-9. **PWA Offline Autónomo (Service Worker v2.0.0):**  
+
+9. **PWA Offline Autónomo (Service Worker v2.0.2):**  
    Instalación de app nativa con caché inteligente HTML5 pura. Purga automática de caché de versiones anteriores. Permite operar al 100% de capacidad en zonas ciegas sin cobertura de red o Wi-Fi.
+
+10. **Interfaz de Usuario Limpia y Cero Errores:**  
+    Arquitectura de CSS modular sin estilos inline, optimizada para un renderizado ultra-rápido en dispositivos móviles de planta.
 
 ---
 
@@ -69,7 +77,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
   - `main.js` (Orquestador NEXUS), `geminiVision.js` (Gemini 2.0 Flash API + Bounding Boxes), `db.js` (96 defectos + IndexedDB), `ai.js` (motor diagnóstico), `datasetManager.js` (Banco IA Few-Shot RAG), `ui.js` (navegación y modales), `camera.js` (cámara nativa), `vision.js` (visión contornos), `timing.js` (Calculadora SOP), `log.js` (Bitácora), `ocr.js` (Tesseract.js), `swab.js` (Swabbing), `state.js` (estado global), `geometry.js` (detector geométrico).
 - **Backend / Django Server (Opcional Local):** Django 5.x con `django-axes` para protección contra fuerza bruta.
 - **Persistencia Local:** `IndexedDB` y `LocalStorage` para operación 100% sin conexión.
-- **Service Worker:** `sw.js` v2.0.0 con estrategia Cache First y purga automática de versiones anteriores.
+- **Service Worker:** `sw.js` v2.0.2 con estrategia Cache First y purga automática de versiones anteriores.
 
 ---
 
@@ -88,6 +96,8 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 | Versión | Descripción |
 |---------|-------------|
+| **v2.0.2** | Extracción total de estilos inline a CSS modular, limpieza completa de advertencias del linter y optimización PWA. |
+| v2.0.1 | Refactorización de UI/CSS e integración de modal de diagnóstico de cámara WebRTC. |
 | **v2.0.0** | Transformación completa a NEXUS. Flujo Foto→Gemini→Diagnóstico. 4 tabs limpias. Eliminación de código muerto CNN/calibración. |
 | v1.3.1 | Fix bucle infinito de Service Worker. |
 | v1.3.0 | Solución integral de cámara móvil con panel físico de botones. |
@@ -99,7 +109,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 ## 7. Visión a Futuro y Hoja de Ruta (Roadmap)
 
-- **Fase 1 (Actual — v2.0.0):** Inspector NEXUS con Gemini 2.0 Flash, 4 tabs, 96 defectos, OCR de consolas, calculadora SOP y Banco IA.
+- **Fase 1 (Actual — v2.0.2):** Inspector NEXUS con Gemini 2.0 Flash, 4 tabs, 96 defectos, OCR de consolas, calculadora SOP y Banco IA.
 - **Fase 2 — Integración Térmica Infrarroja:** Compatibilidad con sensores infrarrojos portátiles (Flir One/Seek Thermal) para mapas de temperatura en gotas de vidrio y moldes.
 - **Fase 3 — Dataset Cuantizado de Cristal Chile:** Recolección y entrenamiento de miles de imágenes de defectos reales de planta.
 - **Fase 4 — Conexión IoT & SCADA:** Integración opcional vía WebSockets con consolas de máquina I.S.
