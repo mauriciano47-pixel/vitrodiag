@@ -19,7 +19,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 ## 2. Flujo Principal NEXUS
 
-```
+```text
 1. 📸  Tomar Foto  →  El operador captura el envase con la cámara nativa del celular
 2. ⚡  Diagnosticar  →  Gemini 2.0 Flash analiza contra el catálogo de 96 defectos
 3. 📋  Resultado    →  Defecto · Zona · Gravedad · Confianza · Acciones correctivas I.S.
@@ -42,32 +42,32 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 ### Tab 2 — Herramientas Industriales
 
-4. **Calculadora SOP & Swabbing:**  
+1. **Calculadora SOP & Swabbing:**  
    Algoritmo de cálculo de tiempos de soplo (SOP) según BPM, cavidades y peso. Sugiere intervalos óptimos de lubricación de moldes (swabbing) y previene sobrecalentamiento.
 
-5. **Escáner OCR de Consolas BDF (Tesseract.js):**  
+2. **Escáner OCR de Consolas BDF (Tesseract.js):**  
    Reconocimiento óptico de caracteres para digitalizar pantallas de control BDF. Convierte fotografías de consolas I.S. en datos numéricos editables de tiempos de soplo y enfriamiento.
 
-6. **Bitácora de Incidencias & WhatsApp:**  
+3. **Bitácora de Incidencias & WhatsApp:**  
    Registro estructurado de paradas, defectos de moldeo y ajustes realizados. Exporta reportes formateados instantáneamente para ser enviados por WhatsApp a jefes de turno y mantenimiento.
 
 ### Tab 3 — Catálogo de 96 Defectos Industriales
 
-7. **Directorio filtrable de defectos:**  
+1. **Directorio filtrable de defectos:**  
    Base de conocimiento con los 96 defectos estándar de la industria vidriera, clasificados por zona, gravedad y tipo (geométrico, superficial, distribución de vidrio). Con tarjetas expandibles y buscador.
 
 ### Tab 4 — Banco IA (Few-Shot RAG)
 
-8. **Módulo de Entrenamiento IA & Calibración Few-Shot RAG:**  
+1. **Módulo de Entrenamiento IA & Calibración Few-Shot RAG:**  
    Gestor en IndexedDB para capturar, etiquetar y exportar fotos de defectos reales en planta. Inyecta muestras reales de calibración en la API de Gemini Vision para máxima certeza.
 
 ### Sistema Base
 
-9. **PWA Offline Autónomo (Service Worker v2.0.2):**  
+1. **PWA Offline Autónomo (Service Worker v2.0.2):**  
    Instalación de app nativa con caché inteligente HTML5 pura. Purga automática de caché de versiones anteriores. Permite operar al 100% de capacidad en zonas ciegas sin cobertura de red o Wi-Fi.
 
-10. **Interfaz de Usuario Limpia y Cero Errores:**  
-    Arquitectura de CSS modular sin estilos inline, optimizada para un renderizado ultra-rápido en dispositivos móviles de planta.
+2. **Interfaz de Usuario Limpia y Cero Errores:**  
+   Arquitectura de CSS modular sin estilos inline, optimizada para un renderizado ultra-rápido en dispositivos móviles de planta.
 
 ---
 
@@ -95,7 +95,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 ## 6. Historial de Versiones
 
 | Versión | Descripción |
-|---------|-------------|
+| --- | --- |
 | **v2.0.2** | Extracción total de estilos inline a CSS modular, limpieza completa de advertencias del linter y optimización PWA. |
 | v2.0.1 | Refactorización de UI/CSS e integración de modal de diagnóstico de cámara WebRTC. |
 | **v2.0.0** | Transformación completa a NEXUS. Flujo Foto→Gemini→Diagnóstico. 4 tabs limpias. Eliminación de código muerto CNN/calibración. |
