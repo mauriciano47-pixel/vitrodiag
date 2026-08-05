@@ -134,6 +134,27 @@
         .footer-cell-wide { flex: 2; }
         .footer-cell-narrow { flex: 1; }
         .footer-row-separator { border-top: 1.5px solid rgba(255, 111, 0, 0.2); }
+        .nexus-preview-area { position: relative; width: 100%; height: 380px; margin: 0 auto 12px auto; overflow: hidden; border-radius: 16px; border: 2px solid var(--primary); background: #000; box-shadow: 0 8px 25px rgba(0,0,0,0.6); cursor: pointer; }
+        .webcam-video { width: 100%; height: 100%; object-fit: cover; }
+        .nexus-preview-img { display: none; width: 100%; height: 100%; object-fit: contain; }
+        .nexus-bbox-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .nexus-placeholder { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 90%; pointer-events: none; }
+        .nexus-placeholder-icon { font-size: 3rem; margin-bottom: 8px; }
+        .nexus-placeholder-text { font-size: 1.1rem; font-weight: bold; color: #fff; margin: 0; }
+        .nexus-placeholder-sub { font-size: 0.8rem; color: #10b981; margin-top: 4px; display: block; }
+        .overlay-guide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; border: 2px dashed rgba(255,111,0,0.3); }
+        .guide-neck { position: absolute; top: 12%; left: 35%; width: 30%; height: 25%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 8px; }
+        .guide-body { position: absolute; top: 40%; left: 22%; width: 56%; height: 50%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 12px; }
+        .opencv-status { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.75); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .nexus-controls-overlay { position: absolute; bottom: 12px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; padding: 0 12px; box-sizing: border-box; z-index: 10; }
+        .btn-action-shot { background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: bold; font-size: 0.92rem; padding: 12px 18px; border-radius: 30px; border: 2px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); flex: 2; }
+        .btn-action-gallery { background: rgba(30,34,42,0.85); color: #fff; font-weight: bold; font-size: 0.8rem; padding: 12px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); flex: 1; }
+        .diag-btn-container { margin-bottom: 12px; }
+        .btn-nexus-diag { width: 100%; padding: 14px; font-size: 0.95rem; font-weight: bold; background: linear-gradient(135deg, #ff6f00, #d97706); border-radius: 12px; box-shadow: 0 4px 15px rgba(255,111,0,0.4); }
+        .camera-control-row { margin-top: 15px; display: flex; flex-direction: column; gap: 6px; }
+        .btn-webrtc-toggle { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.78rem; }
+        .btn-camera-perm-help { font-size: 0.78rem; }
+        .btn-modal-explore { background: rgba(255,255,255,0.1); color: #fff; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -2134,48 +2155,48 @@
     <div id="liveView" class="view-content active">
         
         <!-- VISOR UNIFICADO EN LA PARTE SUPERIOR (FOCO DIRECTO EN ENVASE) -->
-        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="if(!window.state?.diagnosticStream) { document.getElementById('nexusCaptureInput').click(); }" style="position: relative; width: 100%; height: 380px; margin: 0 auto 12px auto; overflow: hidden; border-radius: 16px; border: 2px solid var(--primary); background: #000; box-shadow: 0 8px 25px rgba(0,0,0,0.6); cursor: pointer;" title="Toca para tomar foto del envase">
+        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="if(!window.state?.diagnosticStream) { document.getElementById('nexusCaptureInput').click(); }" title="Toca para tomar foto del envase">
             
             <!-- Video en vivo si hay stream WebRTC -->
-            <video id="webcam" autoplay muted playsinline webkit-playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+            <video id="webcam" autoplay muted playsinline webkit-playsinline class="webcam-video"></video>
             <canvas id="canvasOutput" class="d-none"></canvas>
 
             <!-- Preview de foto si se tomó foto con cámara nativa -->
-            <img id="nexusPreviewImg" src="" alt="Preview del envase" class="nexus-preview-img" style="display:none; width: 100%; height: 100%; object-fit: contain;" />
-            <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></canvas>
+            <img id="nexusPreviewImg" src="" alt="Preview del envase" class="nexus-preview-img" />
+            <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas"></canvas>
 
             <!-- Placeholder cuando está en espera -->
-            <div id="nexusPlaceholder" class="nexus-placeholder" style="position: absolute; top:45%; left:50%; transform:translate(-50%, -50%); text-align:center; width:90%; pointer-events:none;">
-                <div class="nexus-placeholder-icon" style="font-size:3rem; margin-bottom:8px;">📸</div>
-                <p class="nexus-placeholder-text" style="font-size:1.1rem; font-weight:bold; color:#fff; margin:0;">TOCA AQUÍ PARA DISPARAR FOTO</p>
-                <span style="font-size:0.8rem; color:#10b981; margin-top:4px; display:block;">(Mirando directo el envase — 1-Clic Sin Desplazarte)</span>
+            <div id="nexusPlaceholder" class="nexus-placeholder">
+                <div class="nexus-placeholder-icon">📸</div>
+                <p class="nexus-placeholder-text">TOCA AQUÍ PARA DISPARAR FOTO</p>
+                <span class="nexus-placeholder-sub">(Mirando directo el envase — 1-Clic Sin Desplazarte)</span>
             </div>
 
             <!-- Retícula de Enfoque Visual HUD para Vidrio -->
-            <div class="overlay-guide" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border: 2px dashed rgba(255,111,0,0.3);">
-                <div class="guide-neck" style="position: absolute; top: 12%; left: 35%; width: 30%; height: 25%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 8px;"></div>
-                <div class="guide-body" style="position: absolute; top: 40%; left: 22%; width: 56%; height: 50%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 12px;"></div>
+            <div class="overlay-guide">
+                <div class="guide-neck"></div>
+                <div class="guide-body"></div>
             </div>
 
-            <div id="opencvStatus" class="opencv-status" style="position: absolute; top:10px; left:10px; background:rgba(0,0,0,0.75); padding:4px 10px; border-radius:6px; font-size:0.75rem; color:#10b981; border:1px solid rgba(16,185,129,0.3);">Motor Visión: Listo para Disparo</div>
+            <div id="opencvStatus" class="opencv-status">Motor Visión: Listo para Disparo</div>
 
             <!-- BOTÓN DE DISPARO SUPERPUESTO (ESTILO CÁMARA NATIVA SMARTPHONE) -->
-            <div style="position: absolute; bottom: 12px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; padding: 0 12px; box-sizing: border-box; z-index: 10;">
+            <div class="nexus-controls-overlay">
                 <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none" onchange="if(window.handleNexusCaptureSelect) window.handleNexusCaptureSelect(event)">
                 <input type="file" id="nexusUploadInput" accept="image/*" class="d-none" onchange="if(window.handleNexusUploadSelect) window.handleNexusUploadSelect(event)">
                 
-                <button class="btn-action" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: bold; font-size: 0.92rem; padding: 12px 18px; border-radius: 30px; border: 2px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); flex: 2;" onclick="event.stopPropagation(); document.getElementById('nexusCaptureInput').click();">
+                <button class="btn-action btn-action-shot" onclick="event.stopPropagation(); document.getElementById('nexusCaptureInput').click();">
                     📸 FOTO INSTANTÁNEA (1-CLIC)
                 </button>
-                <button class="btn-action" style="background: rgba(30,34,42,0.85); color: #fff; font-weight: bold; font-size: 0.8rem; padding: 12px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); flex: 1;" onclick="event.stopPropagation(); document.getElementById('nexusUploadInput').click();">
+                <button class="btn-action btn-action-gallery" onclick="event.stopPropagation(); document.getElementById('nexusUploadInput').click();">
                     📁 GALERÍA
                 </button>
             </div>
         </div>
 
         <!-- BOTÓN DE DIAGNÓSTICO PROFUNDO CON GEMINI IA -->
-        <div style="margin-bottom: 12px;">
-            <button id="btnRunDiagnosis" class="btn-action btn-action-primary" style="width: 100%; padding: 14px; font-size: 0.95rem; font-weight: bold; background: linear-gradient(135deg, #ff6f00, #d97706); border-radius: 12px; box-shadow: 0 4px 15px rgba(255,111,0,0.4);" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()" disabled>
+        <div class="diag-btn-container">
+            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()" disabled>
                 ⚡ DIAGNOSTICAR CON IA (GEMINI 2.0)
             </button>
         </div>
@@ -2196,11 +2217,11 @@
         </div>
 
         <!-- OPCIONES SECUNDARIAS / PERMISOS DE NAVEGADOR -->
-        <div class="camera-control-row" style="margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
-            <button class="btn-action" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.78rem;" onclick="if(window.requestCameraPermissionDirectly) window.requestCameraPermissionDirectly();">
+        <div class="camera-control-row">
+            <button class="btn-action btn-webrtc-toggle" onclick="if(window.requestCameraPermissionDirectly) window.requestCameraPermissionDirectly();">
                 🎥 Activar Cámara en Vivo Continua (WebRTC)
             </button>
-            <button class="btn-action btn-camera-perm-help" style="font-size: 0.78rem;" onclick="if(window.openCameraPermissionModal) window.openCameraPermissionModal();" title="Ayuda y activación de permisos de cámara">
+            <button class="btn-action btn-camera-perm-help" onclick="if(window.openCameraPermissionModal) window.openCameraPermissionModal();" title="Ayuda y activación de permisos de cámara">
                 🔒 Guía de Permisos de Navegador
             </button>
         </div>
@@ -2732,6 +2753,7 @@
                     <button class="btn-action btn-action-danger btn-dataset-flex" onclick="window.deleteSampleFromModal()">🗑️ Eliminar</button>
                 </div>
             </div>
+        </div>
     <!-- MODAL DE AYUDA DE PERMISOS DE CÁMARA Y DIAGNÓSTICO -->
     <div id="cameraPermissionModal" class="modal-overlay">
         <div class="modal-content camera-perm-modal-content">
@@ -2777,7 +2799,7 @@
                     <button class="btn-action btn-action-alt" onclick="window.triggerLiveNativeFileSelect(); window.closeCameraPermissionModal();">
                         📸 Usar Foto Nativa con Celular (Sin Permisos WebRTC)
                     </button>
-                    <button class="btn-action" style="background:rgba(255,255,255,0.1); color:#fff;" onclick="window.closeCameraPermissionModal()">
+                    <button class="btn-action btn-modal-explore" onclick="window.closeCameraPermissionModal()">
                         👁️ Explorar la App (Modo Galería)
                     </button>
                 </div>
