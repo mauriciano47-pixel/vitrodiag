@@ -538,24 +538,36 @@ function processFrame() {
                 console.error(`Error en frame de vision nativa mejorada [Consecutivo: ${consecutiveErrors}]: `, err);
                 
                 if (consecutiveErrors >= 10) {
-                    console.error("[Vision] Demasiados errores consecutivos. Deteniendo motor de visión por estabilidad.");
-                    showToast("El motor de visión se ha detenido debido a múltiples fallos de renderizado. Intente reactivar el contorno.", "danger");
-                    state.streamActive = false;
-                    state.animationFrameId = null;
+                    console.warn("[Vision] Re-inicializando buffers y DOM refs por errores de renderizado...");
+                    _domRefsInit = false;
                     consecutiveErrors = 0;
+                    setTimeout(() => {
+                        if (state.diagnosticStream) {
+                            startProcessing();
+                        }
+                    }, 1000);
                     return;
                 }
 
-                // Solo continuar si el stream sigue activo y el canvas sigue disponible
-                if (state.streamActive && canvas && ctx) {
+                // Reintentar frame si el stream está configurado
+                if (state.streamActive) {
                     state.animationFrameId = requestAnimationFrame(processFrame);
                 } else {
-                    console.warn('[Vision] Loop de frames detenido por error persistente.');
-                    state.streamActive = false;
                     state.animationFrameId = null;
                 }
             }
         }
+
+// Watchdog autónomo de hardware de cámara: garantiza que si el stream de WebRTC está activo pero el loop se detuvo, se auto-recupere de inmediato.
+setInterval(() => {
+    const video = document.getElementById('webcam');
+    if (state.diagnosticStream && video && video.readyState >= 2 && !video.paused) {
+        if (!state.streamActive || !state.animationFrameId) {
+            console.log('[Vision Watchdog] Reactivando loop de renderizado de cámara congelada...');
+            startProcessing();
+        }
+    }
+}, 2500);
 
 export function setVisionMode(mode) {
     state.currentVisionMode = mode;

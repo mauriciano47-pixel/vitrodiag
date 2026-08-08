@@ -97,11 +97,11 @@ function nexusHandleImageSelect(event) {
         nexusCurrentImageBase64 = e.target.result;
         
         // Mostrar preview
-        const previewImg = document.getElementById('nexusPreviewImg');
+        const previewImg = document.getElementById('nexusPreviewImg') || document.getElementById('scannerPreviewImg');
         const placeholder = document.getElementById('nexusPlaceholder');
         const bboxCanvas = document.getElementById('nexusBboxCanvas');
-        const btnDiagnose = document.getElementById('btnNexusDiagnose');
-        const resultCard = document.getElementById('nexusResultCard');
+        const btnDiagnose = document.getElementById('btnRunDiagnosis') || document.getElementById('btnNexusDiagnose');
+        const resultCard = document.getElementById('resultadoCard') || document.getElementById('nexusResultCard');
         
         if (previewImg) {
             previewImg.src = nexusCurrentImageBase64;
@@ -127,18 +127,41 @@ function nexusHandleImageSelect(event) {
  * Ejecuta el diagnóstico con Gemini 2.0 Flash sobre la imagen capturada.
  */
 async function nexusDiagnoseWithAI() {
+    // Si no hay imagen cargada explícitamente, intentar capturar del canvas / webcam en vivo
+    if (!nexusCurrentImageBase64) {
+        const canvas = document.getElementById('canvasOutput');
+        const video = document.getElementById('webcam');
+        if (canvas && canvas.width > 0) {
+            nexusCurrentImageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        } else if (video && video.readyState >= 2 && video.videoWidth > 0) {
+            const capCanvas = document.createElement('canvas');
+            capCanvas.width = Math.min(video.videoWidth, 800);
+            capCanvas.height = Math.round(capCanvas.width * (video.videoHeight / video.videoWidth));
+            const ctx = capCanvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(video, 0, 0, capCanvas.width, capCanvas.height);
+                nexusCurrentImageBase64 = capCanvas.toDataURL('image/jpeg', 0.85);
+            }
+        }
+    }
+
     if (!nexusCurrentImageBase64) {
         showToast('Primero toma o sube una foto del envase.', 'warning');
         return;
     }
     
+    // Cargar API Key si no está en estado
+    if (!state.geminiApiKey) {
+        loadGeminiApiKey();
+    }
+
     if (!state.geminiApiKey) {
         promptSaveGeminiApiKey();
         return;
     }
 
-    const btnDiagnose = document.getElementById('btnNexusDiagnose');
-    const resultCard = document.getElementById('nexusResultCard');
+    const btnDiagnose = document.getElementById('btnRunDiagnosis') || document.getElementById('btnNexusDiagnose');
+    const resultCard = document.getElementById('resultadoCard') || document.getElementById('nexusResultCard');
     
     if (btnDiagnose) {
         btnDiagnose.disabled = true;
@@ -155,7 +178,7 @@ async function nexusDiagnoseWithAI() {
         if (resultCard) resultCard.style.display = 'block';
         
         // Dibujar bounding boxes sobre la preview
-        const previewImg = document.getElementById('nexusPreviewImg');
+        const previewImg = document.getElementById('nexusPreviewImg') || document.getElementById('scannerPreviewImg');
         const bboxCanvas = document.getElementById('nexusBboxCanvas');
         if (previewImg && bboxCanvas && state.lastGeminiResult) {
             bboxCanvas.width = previewImg.naturalWidth || previewImg.width;
@@ -195,7 +218,10 @@ function nexusSaveToDataset() {
 
 // Exponer funciones NEXUS y Permisos al ámbito global
 window.nexusHandleImageSelect = nexusHandleImageSelect;
+window.handleNexusCaptureSelect = nexusHandleImageSelect;
+window.handleNexusUploadSelect = nexusHandleImageSelect;
 window.nexusDiagnoseWithAI = nexusDiagnoseWithAI;
+window.triggerNexusDiagnosis = nexusDiagnoseWithAI;
 window.nexusSaveToBitacora = nexusSaveToBitacora;
 window.nexusSaveToDataset = nexusSaveToDataset;
 window.openCameraPermissionModal = openCameraPermissionModal;

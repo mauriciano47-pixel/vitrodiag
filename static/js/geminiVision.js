@@ -331,9 +331,123 @@ export async function analyzeWithGemini(canvas, videoElement) {
             }
         ];
 
+/**
+ * Realiza la llamada a Gemini API probando una cascada de modelos para máxima tolerancia a fallos.
+ * @param {object} requestBody 
+ * @param {string} apiKey 
+ * @returns {Promise<object|null>}
+ */
+async function executeGeminiApiFetch(requestBody, apiKey) {
+    const endpoints = [
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent'
+    ];
+
+    let lastErrorMsg = null;
+
+    for (const endpoint of endpoints) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s anti-timeout per protocol
+
+        try {
+            const response = await fetch(`${endpoint}?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody),
+                signal: controller.signal
+            }).finally(() => clearTimeout(timeoutId));
+
+            if (response.ok) {
+                const data = await response.json();
+                return data;
+            }
+
+            const errorData = await response.json().catch(() => ({}));
+            lastErrorMsg = errorData?.error?.message || `HTTP ${response.status}`;
+            console.warn(`[GeminiVision] Fallo en endpoint ${endpoint}:`, lastErrorMsg);
+
+            // Si es error de clave inválida (401/403), romper para notificar al usuario
+            if (response.status === 401 || response.status === 403) {
+                showToast("🚨 API Key de Gemini no válida o sin permisos. Ingresa tu clave en '🔑 Configurar Gemini IA'.", "danger");
+                break;
+            }
+        } catch (err) {
+            clearTimeout(timeoutId);
+            if (err.name === 'AbortError') {
+                console.warn(`[GeminiVision] Timeout 8s en endpoint ${endpoint}. Intentando siguiente...`);
+            } else {
+                console.warn(`[GeminiVision] Error de red en ${endpoint}:`, err);
+            }
+        }
+    }
+
+    if (lastErrorMsg) {
+        showToast(`Error de Gemini API: ${lastErrorMsg}`, "warning");
+    }
+    return null;
+}
+
+/**
+ * Envía una imagen a Gemini Vision API y obtiene el análisis de defectos.
+ * @param {HTMLCanvasElement} canvas - Canvas con la imagen procesada
+ * @param {HTMLVideoElement} [videoElement] - Video original para captura directa
+ * @returns {Promise<object|null>} Resultado del análisis o null si falla
+ */
+export async function analyzeWithGemini(canvas, videoElement) {
+    let apiKey = state.geminiApiKey || loadGeminiApiKey();
+
+    if (!apiKey) {
+        showToast("Configura tu API Key de Gemini para usar el diagnóstico con IA.", "warning");
+        return null;
+    }
+
+    // Verificar cooldown
+    const now = Date.now();
+    if (now - lastAnalysisTimestamp < AUTO_ANALYSIS_COOLDOWN_MS) {
+        console.log("[GeminiVision] Cooldown activo, usando resultado en caché.");
+        return state.lastGeminiResult;
+    }
+
+    // Capturar frame
+    const base64Image = captureFrameAsBase64(canvas, videoElement);
+    if (!base64Image) {
+        console.warn("[GeminiVision] No se pudo capturar el frame.");
+        return null;
+    }
+
+    const articleName = state.activeArticle ? state.activeArticle.nombre : "Artículo genérico";
+    const contextPrompt = `\nContexto: El artículo en inspección es "${articleName}". Analiza la imagen considerando las tolerancias estándar de producción vidriera NNPB.\n`;
+
+    state.geminiAnalyzing = true;
+    updateAnalyzingUI(true);
+
+    try {
+        let glassPrompt = buildGlassDefectPrompt();
+        let fewShotParts = [];
+        try {
+            const samples = await getFewShotExamplesForDefect(null, 2);
+            if (samples && samples.length > 0) {
+                samples.forEach((sample) => {
+                    if (sample.fotoBase64) {
+                        const cleanB64 = sample.fotoBase64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+                        fewShotParts.push({
+                            inline_data: { mime_type: "image/jpeg", data: cleanB64 }
+                        });
+                    }
+                });
+            }
+        } catch (fsErr) {
+            console.warn('[GeminiVision] No se pudieron cargar ejemplos Few-Shot:', fsErr);
+        }
+
         const requestBody = {
             contents: [{
-                parts: requestParts
+                parts: [
+                    { text: glassPrompt + contextPrompt },
+                    ...fewShotParts,
+                    { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                ]
             }],
             generationConfig: {
                 temperature: 0.2,
@@ -342,53 +456,21 @@ export async function analyzeWithGemini(canvas, videoElement) {
             }
         };
 
-        const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            const errorMsg = errorData?.error?.message || `HTTP ${response.status}`;
-            console.error("[GeminiVision] Error de API:", errorMsg);
-
-            if (response.status === 401 || response.status === 403) {
-                showToast("API Key de Gemini inválida o sin permisos. Verifica tu clave.", "danger");
-            } else if (response.status === 429) {
-                showToast("Límite de solicitudes alcanzado. Espera unos segundos.", "warning");
-            } else {
-                showToast(`Error de Gemini API: ${errorMsg}`, "danger");
-            }
-            return null;
-        }
-
-        const data = await response.json();
-
-        // Extraer el texto de respuesta de Gemini
+        const data = await executeGeminiApiFetch(requestBody, apiKey);
         const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!rawText) {
-            console.warn("[GeminiVision] Respuesta vacía de Gemini.");
-            return null;
-        }
+        if (!rawText) return null;
 
-        // Parsear JSON de la respuesta (Gemini a veces envuelve en ```json ... ```)
         const result = parseGeminiResponse(rawText);
-
         if (result) {
             state.lastGeminiResult = result;
             lastAnalysisTimestamp = Date.now();
             console.log("[GeminiVision] Análisis completado:", result);
         }
-
         return result;
 
     } catch (e) {
         console.error("[GeminiVision] Error en análisis:", e);
-        if (e.name === 'TypeError' && e.message.includes('fetch')) {
-            state.isOnline = false;
-            showToast("Sin conexión a internet. Usando motor algorítmico offline.", "warning");
-        }
+        showToast("No se pudo conectar a Gemini. Usando motor de inspección local.", "warning");
         return null;
     } finally {
         state.geminiAnalyzing = false;
@@ -403,20 +485,19 @@ export async function analyzeWithGemini(canvas, videoElement) {
  *                                  Si se omite, captura del canvas/webcam activos.
  */
 export async function runDeepDiagnosis(imageBase64) {
-    if (!state.geminiApiKey) {
+    let apiKey = state.geminiApiKey || loadGeminiApiKey();
+
+    if (!apiKey) {
         showToast("Primero configura tu API Key de Gemini en el Panel de IA.", "warning");
         return null;
     }
 
-    // Resetear cooldown para forzar análisis fresco
     lastAnalysisTimestamp = 0;
-
     showToast("Ejecutando diagnóstico profundo con Gemini Vision...", "info");
 
-    let result;
+    let result = null;
 
     if (imageBase64) {
-        // Flujo NEXUS: imagen base64 pasada directamente
         state.geminiAnalyzing = true;
         updateAnalyzingUI(true);
         try {
@@ -425,7 +506,6 @@ export async function runDeepDiagnosis(imageBase64) {
             const articleName = state.activeArticle ? state.activeArticle.nombre : "Artículo genérico";
             const contextPrompt = `\nContexto: El artículo en inspección es "${articleName}". Considera tolerancias NNPB de Cristal Chile.\n`;
 
-            // Obtener ejemplos Few-Shot RAG del Banco de Entrenamiento local
             let fewShotParts = [];
             try {
                 const samples = await getFewShotExamplesForDefect(null, 2);
@@ -458,48 +538,22 @@ export async function runDeepDiagnosis(imageBase64) {
                 }
             };
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout estricto
-
-            const response = await fetch(`${GEMINI_API_URL}?key=${state.geminiApiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody),
-                signal: controller.signal
-            }).finally(() => clearTimeout(timeoutId));
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                const errorMsg = errorData?.error?.message || `HTTP ${response.status}`;
-                if (response.status === 400 || response.status === 401 || response.status === 403) {
-                    showToast("🚨 API Key inválida/vencida. Ingresa tu clave gratuita en '🔑 Configurar Gemini IA'.", "danger");
-                } else if (response.status === 429) {
-                    showToast("⚠️ Límite de cuota alcanzado. Reintenta en 5 segundos.", "warning");
-                } else {
-                    showToast(`Error Gemini API: ${errorMsg}`, "danger");
-                }
-                return null;
-            }
-
-            const data = await response.json();
+            const data = await executeGeminiApiFetch(requestBody, apiKey);
             const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (!rawText) return null;
-
-            result = parseGeminiResponse(rawText);
-            if (result) {
-                state.lastGeminiResult = result;
-                lastAnalysisTimestamp = Date.now();
+            if (rawText) {
+                result = parseGeminiResponse(rawText);
+                if (result) {
+                    state.lastGeminiResult = result;
+                    lastAnalysisTimestamp = Date.now();
+                }
             }
         } catch (err) {
             console.error('[runDeepDiagnosis] Error en análisis con base64:', err);
-            showToast(`Error al analizar imagen: ${err.message}`, "danger");
-            return null;
         } finally {
             state.geminiAnalyzing = false;
             updateAnalyzingUI(false);
         }
     } else {
-        // Flujo legado: captura desde canvas/webcam
         const canvas = document.getElementById('canvasOutput');
         const video = document.getElementById('webcam');
         result = await analyzeWithGemini(canvas, video);
@@ -508,7 +562,7 @@ export async function runDeepDiagnosis(imageBase64) {
     if (result) {
         renderGeminiResult(result);
     } else {
-        showToast("No se pudo completar el diagnóstico con IA. Verifica conexión y API Key.", "warning");
+        showToast("No se pudo completar el diagnóstico remoto. Se aplicó el catálogo local.", "warning");
     }
 
     return result;

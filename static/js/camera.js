@@ -208,6 +208,15 @@ export function forceRetryCamera() {
 }
 
 function stopDiagnosticCamera() {
+    if (window.stopProcessing) {
+        try { window.stopProcessing(); } catch(e) {}
+    } else {
+        state.streamActive = false;
+        if (state.animationFrameId) {
+            cancelAnimationFrame(state.animationFrameId);
+            state.animationFrameId = null;
+        }
+    }
     if (state.diagnosticStream) {
         state.diagnosticStream.getTracks().forEach(track => track.stop());
         state.diagnosticStream = null;
