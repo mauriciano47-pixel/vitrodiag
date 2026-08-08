@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag v1.2.0 - Operador IS</title>
+    <title>VitroDiag NEXUS v2.0.2 — Inspección IA</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- Carga de TensorFlow.js para Redes Neuronales Offline -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js" defer></script>
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
@@ -19,16 +17,16 @@
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v1.2.0')) {
+                if (!name.includes('v2.0.2')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
             });
         });
     }
-    // Autopurga de versión anterior en localStorage si detecta v1.1.x
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '1.2.0') {
-        localStorage.setItem('vitrodiag_sys_ver', '1.2.0');
+    // Autopurga de versión anterior en localStorage si detecta v2.0.1 o inferior
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.2') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.0.2');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(regs) {
                 for (let r of regs) r.unregister();
@@ -46,14 +44,14 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará ahora en v1.2.0.');
+        alert('Caché eliminada con éxito. La app se recargará ahora en v2.0.2.');
         window.location.reload(true);
     };
 
     // Inyectar dinámicamente el manifiesto PWA y la metaetiqueta theme-color para compatibilidad estática PWA y GitHub Pages
     const manifestLink = document.createElement('link');
     manifestLink.rel = 'manifest';
-    manifestLink.href = 'manifest.webmanifest?v=1.2.0';
+    manifestLink.href = 'manifest.webmanifest?v=2.0.2';
     document.head.appendChild(manifestLink);
 
     const themeMeta = document.createElement('meta');
@@ -136,6 +134,27 @@
         .footer-cell-wide { flex: 2; }
         .footer-cell-narrow { flex: 1; }
         .footer-row-separator { border-top: 1.5px solid rgba(255, 111, 0, 0.2); }
+        .nexus-preview-area { position: relative; width: 100%; height: 380px; margin: 0 auto 12px auto; overflow: hidden; border-radius: 16px; border: 2px solid var(--primary); background: #000; box-shadow: 0 8px 25px rgba(0,0,0,0.6); cursor: pointer; }
+        .webcam-video { width: 100%; height: 100%; object-fit: cover; }
+        .nexus-preview-img { display: none; width: 100%; height: 100%; object-fit: contain; }
+        .nexus-bbox-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .nexus-placeholder { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 90%; pointer-events: none; }
+        .nexus-placeholder-icon { font-size: 3rem; margin-bottom: 8px; }
+        .nexus-placeholder-text { font-size: 1.1rem; font-weight: bold; color: #fff; margin: 0; }
+        .nexus-placeholder-sub { font-size: 0.8rem; color: #10b981; margin-top: 4px; display: block; }
+        .overlay-guide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; border: 2px dashed rgba(255,111,0,0.3); }
+        .guide-neck { position: absolute; top: 12%; left: 35%; width: 30%; height: 25%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 8px; }
+        .guide-body { position: absolute; top: 40%; left: 22%; width: 56%; height: 50%; border: 1.5px solid rgba(255,111,0,0.6); border-radius: 12px; }
+        .opencv-status { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.75); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .nexus-controls-overlay { position: absolute; bottom: 12px; left: 0; width: 100%; display: flex; justify-content: center; gap: 8px; padding: 0 12px; box-sizing: border-box; z-index: 10; }
+        .btn-action-shot { background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: bold; font-size: 0.92rem; padding: 12px 18px; border-radius: 30px; border: 2px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.6); flex: 2; }
+        .btn-action-gallery { background: rgba(30,34,42,0.85); color: #fff; font-weight: bold; font-size: 0.8rem; padding: 12px 12px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); flex: 1; }
+        .diag-btn-container { margin-bottom: 12px; }
+        .btn-nexus-diag { width: 100%; padding: 14px; font-size: 0.95rem; font-weight: bold; background: linear-gradient(135deg, #ff6f00, #d97706); border-radius: 12px; box-shadow: 0 4px 15px rgba(255,111,0,0.4); }
+        .camera-control-row { margin-top: 15px; display: flex; flex-direction: column; gap: 6px; }
+        .btn-webrtc-toggle { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.78rem; }
+        .btn-camera-perm-help { font-size: 0.78rem; }
+        .btn-modal-explore { background: rgba(255,255,255,0.1); color: #fff; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -227,6 +246,11 @@
         .view-content.active {
             display: flex;
         }
+
+        .tool-subtab { border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; }
+        .tool-subtab.active { background: linear-gradient(135deg, var(--primary), var(--secondary)) !important; color: white !important; border-color: var(--primary); }
+        .tool-content { display: none; width: 100%; }
+        .tool-content.active { display: block; }
 
         /* VISTA 1: DIAGNÓSTICO EN VIVO */
         .camera-wrapper {
@@ -552,7 +576,7 @@
         }
 
         .defect-item.open .defect-body {
-            max-height: 500px; /* Suficiente altura máxima */
+            max-height: 2000px; /* Suficiente altura para incluir todas las causas, acciones e ilustraciones */
             border-color: var(--glass-border);
         }
 
@@ -1129,24 +1153,122 @@
             100% { transform: scale(0.9); opacity: 0.2; }
         }
         
-        /* Ajuste responsivo para pantallas pequeñas de celular */
-        @media (max-width: 480px) {
-            .defect-grid-layout {
-                flex-direction: column-reverse;
-                gap: 12px;
+        /* 📱 REGLAS DE AJUSTE GLOBAL RESPONSIVO PARA PANTALLAS DE CELULAR */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden !important;
+            box-sizing: border-box;
+        }
+
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 4px 6px;
             }
-            .defect-visual-col {
-                height: 110px;
-                flex-direction: row;
-                gap: 16px;
-                padding: 6px 14px;
+
+            header h1 {
+                font-size: 1.4rem;
             }
-            .defect-svg-demo {
-                width: 50px;
-                height: 90px;
+
+            .active-article-bar {
+                flex-wrap: wrap;
+                margin: 6px auto;
+                padding: 8px 10px;
+                gap: 6px;
+                width: 100%;
+            }
+
+            .article-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .article-select {
+                max-width: 100%;
+                font-size: 0.8rem;
+            }
+
+            .btn-manage-articles {
+                flex: 1 1 calc(50% - 6px);
+                font-size: 0.72rem;
+                padding: 6px 4px;
+                text-align: center;
+            }
+
+            .tabs {
+                width: 100%;
+                max-width: 100%;
+                margin: 0 auto 12px auto;
+            }
+
+            .tab-btn {
+                font-size: 0.75rem;
+                padding: 8px 2px;
+            }
+
+            .view-content {
+                width: 100%;
+                padding: 0 4px 20px 4px;
+                overflow-x: hidden;
+            }
+
+            .camera-wrapper, .nexus-preview-area {
+                width: 100%;
+                max-width: 100%;
+                height: 380px;
+                border-radius: 14px;
+            }
+
+            .camera-control-row, .nexus-actions-row, .nexus-result-buttons {
+                width: 100%;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .btn-camera-ctrl, .btn-camera-ctrl-bold, .btn-nexus-capture, .btn-nexus-upload {
+                width: 100% !important;
+                font-size: 0.85rem !important;
+                padding: 10px !important;
+            }
+
+            .sop-calculator, .bitacora-panel, .bdf-expert-section {
+                width: 100%;
+                padding: 12px 10px;
+                border-radius: 12px;
+            }
+
+            .gantt-container {
+                padding: 8px 6px;
+            }
+
+            .gantt-label {
+                width: 65px;
+                font-size: 0.68rem;
+            }
+
+            .gantt-value {
+                width: 55px;
+                font-size: 0.68rem;
+            }
+
+            .gantt-track {
+                margin: 0 4px;
+            }
+
+            .defects-list {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 14px;
+                border-radius: 12px;
             }
         }
-    
 
         /* Estilos de Firma Estilo Cajetín de Plano de Ingeniería CAD */
         .industrial-footer {
@@ -1551,6 +1673,357 @@
         .scanner-result-actions { display: flex; gap: 8px; }
         .btn-load-to-calc { flex: 1; padding: 8px; background: rgba(6,182,212,0.15); border-color: #06b6d4; color: #22d3ee; font-size: 0.75rem; }
         .btn-clear-scanner { flex: 1; padding: 8px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--text-muted); font-size: 0.75rem; }
+
+        /* Estilos del Panel de Control de Cámara y Fallback */
+        .btn-tap-camera-start {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            font-size: 0.9rem;
+            padding: 12px 18px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffffff;
+        }
+        .camera-control-row {
+            width: 100%;
+            max-width: 480px;
+            margin: 10px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-camera-ctrl {
+            flex: 1;
+            min-width: 160px;
+        }
+        .btn-camera-ctrl-bold {
+            flex: 1;
+            min-width: 160px;
+            font-weight: bold;
+        }
+
+        /* Estilos de la Pantalla de Inspección NEXUS */
+        .nexus-header-container {
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .nexus-header-title {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin: 0 0 4px 0;
+        }
+        .nexus-header-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+        .nexus-preview-area {
+            width: 100%;
+            max-width: 480px;
+            min-height: 280px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            border: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .nexus-placeholder {
+            text-align: center;
+            padding: 30px;
+        }
+        .nexus-placeholder-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .nexus-placeholder-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .nexus-preview-img {
+            display: none;
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+        .nexus-bbox-canvas {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .nexus-actions-row {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-nexus-capture {
+            flex: 1;
+            font-weight: bold;
+            font-size: 0.95rem;
+            padding: 14px;
+        }
+        .btn-nexus-upload {
+            flex: 1;
+            font-size: 0.95rem;
+            padding: 14px;
+        }
+        .nexus-btn-container {
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 16px;
+        }
+        .btn-nexus-diagnose {
+            width: 100%;
+            font-weight: bold;
+            font-size: 1.05rem;
+            padding: 16px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #ffffff;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        .nexus-result-card {
+            width: 100%;
+            max-width: 480px;
+            display: none;
+        }
+        .nexus-diag-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .nexus-diag-gravity {
+            margin-bottom: 8px;
+        }
+        .nexus-diag-state {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .nexus-diag-actions {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+        .nexus-result-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-nexus-result-action {
+            flex: 1;
+            font-size: 0.8rem;
+            padding: 10px;
+        }
+        .nexus-status-container {
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            margin-top: 8px;
+        }
+        .nexus-status-text {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        /* Subtabs de Herramientas */
+        .tools-subtabs-row {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-tool-subtab {
+            flex: 1;
+            font-size: 0.8rem;
+            padding: 10px;
+        }
+
+        /* Banco de Entrenamiento Dataset */
+        .dataset-intro-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+        .dataset-btn-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .dataset-preview-container {
+            text-align: center;
+            display: none;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed var(--border-color);
+        }
+        .dataset-preview-img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 6px;
+            object-fit: contain;
+        }
+        .dataset-notes-input {
+            width: 100%;
+        }
+        .dataset-actions-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .btn-dataset-flex {
+            flex: 1;
+        }
+        .dataset-gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dataset-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        /* Modal Muestra IA */
+        .sample-modal-content {
+            max-width: 550px;
+        }
+        .sample-modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .sample-modal-img-container {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .sample-modal-img {
+            max-width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+        .sample-modal-defect-title {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        .sample-modal-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .sample-modal-notes {
+            width: 100%;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .sample-modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        /* Modal Diagnóstico de Permisos de Cámara */
+        .camera-perm-modal-content {
+            max-width: 520px;
+            background: #0f172a;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 20px rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+        }
+        .perm-status-badge {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.88rem;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        .perm-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .perm-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .perm-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .perm-modal-intro {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+        .perm-guide-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .perm-guide-header {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+        .perm-guide-steps {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        .text-success { color: #10b981; }
+        .perm-modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .btn-camera-perm-help {
+            background: rgba(245, 158, 11, 0.15) !important;
+            color: #f59e0b !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+        }
+        .btn-camera-perm-help:hover {
+            background: rgba(245, 158, 11, 0.25) !important;
+        }
     </style>
 </head>
 <body>
@@ -1564,8 +2037,8 @@
     </div>
 
     <header>
-        <h1>VitroDiag <span class="version-badge">v1.2.0</span></h1>
-        <div class="subtitle">Asistente Óptico y Control de Moldería I.S.</div>
+        <h1>VitroDiag NEXUS <span class="version-badge">v2.0.0</span></h1>
+        <div class="subtitle">Inspección Asistida por IA — Moldería I.S.</div>
     </header>
 
     <!-- BARRA DE ARTÍCULO EN PRODUCCIÓN -->
@@ -1579,6 +2052,9 @@
         </div>
         <button class="btn-manage-articles" onclick="openArticlesModal()">
             ⚙️ Fichas Técnicas
+        </button>
+        <button class="btn-manage-articles" onclick="window.promptSaveGeminiApiKey()" title="Configurar API Key de Gemini IA">
+            🔑 Configurar Gemini IA
         </button>
         <button class="btn-manage-articles btn-reset-cache" onclick="clearAppCache()" title="Purgar caché antigua en celular">
             🔄 Reset Caché Celular
@@ -1669,178 +2145,99 @@
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchView('live')">Diagnóstico</button>
-        <button class="tab-btn" onclick="switchView('sop')">Calculadora SOP</button>
-        <button class="tab-btn" onclick="switchView('scanner')">Escáner Panel</button>
-        <button class="tab-btn" onclick="switchView('log')">Bitácora</button>
-        <button class="tab-btn" onclick="switchView('directory')">Directorio</button>
+        <button class="tab-btn active" onclick="switchView('live')">🔍 Inspección</button>
+        <button class="tab-btn" onclick="switchView('tools')">📊 Herramientas</button>
+        <button class="tab-btn" onclick="switchView('dataset')">📸 Banco IA</button>
+        <button class="tab-btn" onclick="switchView('directory')">📖 Catálogo</button>
     </div>
 
-    <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO -->
+    <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO (ERGONOMÍA INDUSTRIAL) -->
     <div id="liveView" class="view-content active">
-        <div class="camera-wrapper" onclick="if(window.startDiagnosticCamera) { window.startDiagnosticCamera(); } if(window.startProcessing) { window.startProcessing(); }" title="Toca para iniciar cámara en celular">
-            <div id="opencvStatus" class="opencv-status">Motor Visión: Esperando Envase en Guías...</div>
-            <video id="webcam" autoplay muted playsinline webkit-playsinline></video>
-            <canvas id="canvasOutput" class="d-none"></canvas>
+        
+        <!-- VISOR UNIFICADO EN LA PARTE SUPERIOR (FOCO DIRECTO EN ENVASE) -->
+        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="if(!window.state?.diagnosticStream) { document.getElementById('nexusCaptureInput').click(); }" title="Toca para tomar foto del envase">
             
+            <!-- Video en vivo si hay stream WebRTC -->
+            <video id="webcam" autoplay muted playsinline webkit-playsinline class="webcam-video"></video>
+            <canvas id="canvasOutput" class="d-none"></canvas>
+
+            <!-- Preview de foto si se tomó foto con cámara nativa -->
+            <img id="nexusPreviewImg" src="" alt="Preview del envase" class="nexus-preview-img" />
+            <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas"></canvas>
+
+            <!-- Placeholder cuando está en espera -->
+            <div id="nexusPlaceholder" class="nexus-placeholder">
+                <div class="nexus-placeholder-icon">📸</div>
+                <p class="nexus-placeholder-text">TOCA AQUÍ PARA DISPARAR FOTO</p>
+                <span class="nexus-placeholder-sub">(Mirando directo el envase — 1-Clic Sin Desplazarte)</span>
+            </div>
+
+            <!-- Retícula de Enfoque Visual HUD para Vidrio -->
             <div class="overlay-guide">
                 <div class="guide-neck"></div>
                 <div class="guide-body"></div>
             </div>
-            <div class="scan-laser"></div>
-            <!-- Nuevo indicador visual de escaneo activo -->
-            <div id="diagCursor" class="diag-cursor">
-                <div class="crosshair crosshair-x"></div>
-                <div class="crosshair crosshair-y"></div>
-                <div class="cursor-text">ESPERANDO ENVASE</div>
+
+            <div id="opencvStatus" class="opencv-status">Motor Visión: Listo para Disparo</div>
+
+            <!-- BOTÓN DE DISPARO SUPERPUESTO (ESTILO CÁMARA NATIVA SMARTPHONE) -->
+            <div class="nexus-controls-overlay">
+                <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none" onchange="if(window.handleNexusCaptureSelect) window.handleNexusCaptureSelect(event)">
+                <input type="file" id="nexusUploadInput" accept="image/*" class="d-none" onchange="if(window.handleNexusUploadSelect) window.handleNexusUploadSelect(event)">
+                
+                <button class="btn-action btn-action-shot" onclick="event.stopPropagation(); document.getElementById('nexusCaptureInput').click();">
+                    📸 FOTO INSTANTÁNEA (1-CLIC)
+                </button>
+                <button class="btn-action btn-action-gallery" onclick="event.stopPropagation(); document.getElementById('nexusUploadInput').click();">
+                    📁 GALERÍA
+                </button>
             </div>
         </div>
 
-        <!-- REUBICADO: Panel de Diagnóstico más cerca de la cámara -->
+        <!-- BOTÓN DE DIAGNÓSTICO PROFUNDO CON GEMINI IA -->
+        <div class="diag-btn-container">
+            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()" disabled>
+                ⚡ DIAGNOSTICAR CON IA (GEMINI 2.0)
+            </button>
+        </div>
+
+        <!-- TARJETA DE RESULTADO DE DIAGNÓSTICO EN PLANTA -->
         <div class="diagnostic-card" id="resultadoCard">
-            <div class="card-title" id="diagTitulo">📷 Buscando Envase...</div>
+            <div class="card-title" id="diagTitulo">📷 Esperando Fotografía del Envase...</div>
             <div class="diag-status-row">
-                <span id="diagGravedad" class="status-alert status-warning">Sin Envase</span>
+                <span id="diagGravedad" class="status-alert status-warning">En Espera</span>
             </div>
-            <div id="diagEstado" class="diag-state">Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.</div>
+            <div id="diagEstado" class="diag-state">Enfoca la botella en el visor superior y toca '📸 FOTO INSTANTÁNEA'. La IA analizará la refracción en 2 segundos.</div>
             
             <div class="section-title">🛠️ Ajuste de Máquina IS Sugerido:</div>
             <ol class="actions-list" id="diagAcciones">
-                <li>Alinee el cuello y cuerpo de la botella dentro de la retícula de disparo.</li>
-                <li>Si la cámara no enciende, toca el visor superior o abre la web vía HTTPS.</li>
+                <li>Alinee el cuello y cuerpo de la botella dentro de la retícula dorada superior.</li>
+                <li>Presione 'FOTO INSTANTÁNEA' sin quitar la vista de la botella.</li>
             </ol>
         </div>
 
-        <div class="toggle-container">
-            <span class="toggle-label">Ver Bordes de Silueta (Visión Artificial)</span>
-            <label class="switch">
-                <input type="checkbox" id="silhouetteToggle" checked title="Ver bordes de silueta" aria-label="Ver bordes de silueta">
-                <span class="slider round"></span>
-            </label>
-        </div>
-        <div class="toggle-container toggle-extra">
-            <span class="toggle-label">Optimizar para Pantalla de Luz (Backlight)</span>
-            <label class="switch">
-                <input type="checkbox" id="backlightToggle" title="Optimizar para pantalla de luz" aria-label="Optimizar para pantalla de luz">
-                <span class="slider round"></span>
-            </label>
-        </div>
-
-
-
-        <!-- PANEL DE CALIBRACIÓN ÓPTICA PARA LA PLANTA -->
-        <div class="calibration-panel visible" id="calibrationPanel">
-            <div class="calibration-title">⚙️ Calibración Óptica (Anti-Reflejos de Planta)</div>
-            
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Filtro de Contraste (Ganancia)</span>
-                    <span class="slider-value" id="valContrast">1.5x</span>
-                </div>
-                <input type="range" id="sliderContrast" class="range-input" min="1.0" max="3.0" step="0.1" value="1.5" title="Filtro de Contraste" aria-label="Filtro de Contraste">
-            </div>
-
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Compensación de Brillo</span>
-                    <span class="slider-value" id="valBrightness">+10</span>
-                </div>
-                <input type="range" id="sliderBrightness" class="range-input" min="-50" max="50" step="5" value="10" title="Compensación de Brillo" aria-label="Compensación de Brillo">
-            </div>
-
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Sensibilidad / Umbral Canny</span>
-                    <span class="slider-value" id="valCanny">50</span>
-                </div>
-                <input type="range" id="sliderCanny" class="range-input" min="20" max="150" step="5" value="50" title="Sensibilidad Canny" aria-label="Sensibilidad Canny">
-            </div>
-
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Tolerancia de Asimetría (Sensibilidad)</span>
-                    <span class="slider-value" id="valTolerance">5%</span>
-                </div>
-                <input type="range" id="sliderTolerance" class="range-input" min="2" max="15" step="1" value="5" title="Tolerancia de Asimetría" aria-label="Tolerancia de Asimetría">
-            </div>
-            
-            <div class="slider-group">
-                <div class="slider-header">
-                    <span>Escala de Plantilla Guía</span>
-                    <span class="slider-value" id="valTemplateScale">1.0x</span>
-                </div>
-                <input type="range" id="sliderTemplateScale" class="range-input" min="0.5" max="1.5" step="0.05" value="1.0" title="Escala de Plantilla Guía" aria-label="Escala de Plantilla Guía">
-            </div>
-            <div class="slider-group slider-group-spaced">
-                <div class="slider-header slider-header-spaced">
-                    <span>Modo de Visión Artificial</span>
-                </div>
-                <div class="vision-mode-options">
-                    <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="fine" checked aria-label="Modo de visión Fine Contours">
-                        <span class="vision-mode-tab active" id="tabModeFine" onclick="setVisionMode('fine')">Silueta Fina</span>
-                    </label>
-                    <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="sobel" aria-label="Modo de visión Sobel Filter">
-                        <span class="vision-mode-tab" id="tabModeSobel" onclick="setVisionMode('sobel')">Sobel</span>
-                    </label>
-                    <label class="vision-mode-option">
-                        <input class="vision-mode-radio" type="radio" name="visionMode" value="thermal" aria-label="Modo de visión Térmica Simulada">
-                        <span class="vision-mode-tab" id="tabModeThermal" onclick="setVisionMode('thermal')">Térmico</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- PANEL INTERACTIVO DE EXPLICACIÓN Y DEMOSTRACIÓN -->
-            <div class="vision-demo-panel" id="visionDemoPanel">
-                <div id="demoText" class="demo-description">
-                    <b>Silueta Fina (Contorno Técnico)</b>
-                    Limpia destellos y ruidos de planta. Dibuja contornos de 1 píxel para superponer con la guía verde y detectar cuellos doblados o bocas caídas.
-                </div>
-                <div class="demo-preview-container">
-                    <div id="demoVisual" class="bottle-demo-svg mode-fine"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="tfjsStatus" class="tfjs-status">
-            Iniciando motor de IA TensorFlow.js...
-        </div>
-
-        <!-- PANEL DE CONTROL DE IA TENSORFLOW.JS (OPCIONES DE PRECISIÓN) -->
-        <div class="ia-panel">
-            <div class="ia-panel-header">
-                <span>⚙️ Panel del Motor de IA</span>
-                <span id="iaConfidenceBadge" class="ia-confidence-badge">Filtro: &gt;75%</span>
-            </div>
-            
-            <div class="ia-panel-desc">
-                Permite conectar modelos de visión artificial entrenados con fotos reales de CristalChile (formato TensorFlow.js) para evitar falsos positivos por brillos o reflejos en el Hot End.
-            </div>
-
-            <div class="form-row ia-form-row">
-                <div class="ia-upload-col">
-                    <label for="uploadModelJson" class="ia-upload-label">Archivo model.json</label>
-                    <input type="file" id="uploadModelJson" accept=".json" class="ia-upload-input" aria-label="Subir modelo TensorFlow JSON">
-                </div>
-                <div class="ia-upload-col">
-                    <label for="uploadModelBin" class="ia-upload-label">Pesos (.bin)</label>
-                    <input type="file" id="uploadModelBin" accept=".bin" multiple class="ia-upload-input" aria-label="Subir pesos del modelo TensorFlow BIN">
-                </div>
-            </div>
-
-            <div class="ia-threshold-row">
-                <button class="filter-btn btn-load-nn" onclick="loadCustomUploadedModel()">Cargar Red Neuronal</button>
-                <div class="ia-threshold-group">
-                    <span class="ia-threshold-label">Umbral:</span>
-                    <input type="range" id="confidenceThreshold" min="50" max="95" value="75" title="Umbral de confianza" aria-label="Umbral de confianza de detección" oninput="updateConfidenceThresholdDisplay(this.value)" class="ia-threshold-slider">
-                </div>
-            </div>
+        <!-- OPCIONES SECUNDARIAS / PERMISOS DE NAVEGADOR -->
+        <div class="camera-control-row">
+            <button class="btn-action btn-webrtc-toggle" onclick="if(window.requestCameraPermissionDirectly) window.requestCameraPermissionDirectly();">
+                🎥 Activar Cámara en Vivo Continua (WebRTC)
+            </button>
+            <button class="btn-action btn-camera-perm-help" onclick="if(window.openCameraPermissionModal) window.openCameraPermissionModal();" title="Ayuda y activación de permisos de cámara">
+                🔒 Guía de Permisos de Navegador
+            </button>
         </div>
     </div>
+    </div>
+
+    <div id="toolsView" class="view-content">
+        <!-- Sub-tabs de Herramientas -->
+        <div class="tools-subtabs-row">
+            <button class="btn-action btn-action-alt tool-subtab active btn-tool-subtab" onclick="switchToolTab('sop')">⚙️ Calculadora SOP</button>
+            <button class="btn-action btn-action-alt tool-subtab btn-tool-subtab" onclick="switchToolTab('scanner')">📡 Escáner</button>
+            <button class="btn-action btn-action-alt tool-subtab btn-tool-subtab" onclick="switchToolTab('log')">📋 Bitácora</button>
+        </div>
 
     <!-- PESTAÑA 1.5: CALCULADORA DE TEMPORIZACIÓN SOP -->
-    <div id="sopView" class="view-content">
+    <div id="toolSopContent" class="tool-content active">
         <div class="sop-calculator">
             <div class="calibration-title">📊 Calculadora de Sincronización BDF Industries</div>
             
@@ -2014,7 +2411,7 @@
     </div>
 
     <!-- PESTAÑA 1.7: ESCÁNER DE FICHA TÉCNICA Y CONSOLA BDF -->
-    <div id="scannerView" class="view-content">
+    <div id="toolScannerContent" class="tool-content">
         <div class="sop-calculator">
             <div class="calibration-title">🔍 Escáner Digital de Consola & Fichas Técnicas</div>
             
@@ -2101,7 +2498,7 @@
 
             <!-- PREVISUALIZACIÓN DE IMAGEN SELECCIONADA/CAPTURADA -->
             <div id="scannerPreviewArea" class="scanner-preview-container">
-                <img id="scannerPreviewImg" class="scanner-preview-img">
+                <img id="scannerPreviewImg" class="scanner-preview-img" alt="Vista previa de imagen del escáner">
                 <button class="btn-close-preview" onclick="resetScannerImage()">&times;</button>
             </div>
 
@@ -2199,7 +2596,7 @@
     </div>
 
     <!-- PESTAÑA 1.8: BITÁCORA DE TURNO (REPORTE DE MAQUINARIA) -->
-    <div id="logView" class="view-content">
+    <div id="toolLogContent" class="tool-content">
         <div class="bitacora-panel">
             <div class="calibration-title">📋 Bitácora de Incidencias en Turno</div>
             
@@ -2261,6 +2658,54 @@
             <div id="swabLastTime" class="swab-last-time">Último Swabbing registrado: Ninguno</div>
         </div>
     </div>
+</div>
+    <!-- PESTAÑA 1.9: BANCO DE ENTRENAMIENTO IA & DATASET INDUSTRIAL -->
+    <div id="datasetView" class="view-content">
+        <div class="bitacora-panel">
+            <div class="calibration-title">📸 Banco de Entrenamiento IA (Dataset Industrial)</div>
+            <p class="dataset-intro-text">
+                Captura y cataloga fotos reales de defectos en la planta de Cristal Chile. Las muestras se almacenan offline y calibran Gemini Vision mediante <b>Few-Shot RAG</b> para defectos minuciosos.
+            </p>
+
+            <div class="form-group">
+                <label>Fotografía de Muestra de Defecto</label>
+                <input type="file" id="datasetFileInput" accept="image/*" class="d-none" onchange="window.handleDatasetFileSelect(event)">
+                <div class="dataset-btn-row">
+                    <button class="btn-action btn-dataset-flex" id="btnCaptureDatasetSample" onclick="window.captureDatasetFromCamera()">📸 Foto de Cámara</button>
+                    <button class="btn-action btn-action-alt btn-dataset-flex" id="btnUploadDatasetFile" onclick="window.triggerDatasetFileSelect()">📁 Subir Foto (Galería)</button>
+                </div>
+                <div id="datasetPreviewContainer" class="dataset-preview-container">
+                    <img id="datasetPreviewImg" src="" alt="Previsualización Muestra" class="dataset-preview-img" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="datasetDefectSelect">Defecto Observado (Catálogo 96)</label>
+                <select id="datasetDefectSelect" class="select-input" title="Seleccionar defecto del catálogo 96" aria-label="Seleccionar defecto del catálogo 96">
+                    <!-- Se poblará dinámicamente con JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="datasetNotes">Notas u Observaciones de Planta (Opcional)</label>
+                <input type="text" id="datasetNotes" class="search-input dataset-notes-input" placeholder="Ej: Sección 4, Cavidad B - Falla recurrente en soplo final..." title="Notas de la muestra" aria-label="Notas de la muestra" />
+            </div>
+
+            <div class="dataset-actions-row">
+                <button class="btn-action btn-action-success btn-dataset-flex" id="btnSaveDatasetSample" onclick="window.saveDatasetSample()">💾 Guardar Muestra</button>
+                <button class="btn-action btn-action-alt btn-dataset-flex" id="btnExportDatasetJSON" onclick="window.exportDatasetJSON()">📥 Exportar Dataset (.JSON)</button>
+            </div>
+        </div>
+
+        <div class="swab-config-panel">
+            <div class="calibration-title dataset-gallery-header">
+                <span>📂 Muestras Registradas (<span id="datasetCountBadge">0</span>)</span>
+            </div>
+            <div id="datasetGalleryContainer" class="dataset-gallery-grid">
+                <!-- Cards de muestras dinámicas -->
+            </div>
+        </div>
+    </div>
 
     <!-- PESTAÑA 2: DIRECTORIO DE DEFECTOS -->
     <div id="directoryView" class="view-content">
@@ -2280,6 +2725,85 @@
 
         <div class="defects-list" id="defectsContainer">
             <!-- Los defectos se renderizarán dinámicamente mediante JS -->
+        </div>
+    </div>
+
+    <!-- MODAL INTERACTIVO DE INSPECCIÓN DE MUESTRA BANCO IA -->
+    <div id="sampleModal" class="modal-overlay">
+        <div class="modal-content sample-modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="sampleModalTitle">📸 Inspección de Muestra Moldería</span>
+                <button class="modal-close" onclick="window.closeSampleModal()">&times;</button>
+            </div>
+            <div class="modal-body sample-modal-body">
+                <div class="sample-modal-img-container">
+                    <img id="sampleModalImg" src="" alt="Muestra Defecto" class="sample-modal-img" />
+                </div>
+                <div class="sample-modal-defect-title" id="sampleModalDefectName">Defecto</div>
+                <div class="sample-modal-meta" id="sampleModalMeta">Fecha</div>
+                
+                <div class="form-group">
+                    <label for="sampleModalNotes">Notas u Observaciones de Planta</label>
+                    <textarea id="sampleModalNotes" class="search-input sample-modal-notes" rows="3" title="Notas de la muestra" aria-label="Notas de la muestra"></textarea>
+                </div>
+
+                <div class="sample-modal-actions">
+                    <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.updateSampleNotesFromModal()">💾 Guardar Notas</button>
+                    <button class="btn-action btn-modal-diagnose" onclick="window.analyzeSampleWithGeminiFromModal()">🧠 Diagnosticar con Gemini IA</button>
+                    <button class="btn-action btn-action-danger btn-dataset-flex" onclick="window.deleteSampleFromModal()">🗑️ Eliminar</button>
+                </div>
+            </div>
+        </div>
+    <!-- MODAL DE AYUDA DE PERMISOS DE CÁMARA Y DIAGNÓSTICO -->
+    <div id="cameraPermissionModal" class="modal-overlay">
+        <div class="modal-content camera-perm-modal-content">
+            <div class="modal-header">
+                <span class="modal-title">📹 Diagnóstico de Permisos de Cámara</span>
+                <button class="modal-close" onclick="window.closeCameraPermissionModal()">&times;</button>
+            </div>
+            <div class="modal-body perm-modal-body">
+                <div id="permStatusBadge" class="perm-status-badge perm-warning">
+                    ⚠️ Permiso de Cámara: Bloqueado o Denegado
+                </div>
+                
+                <p class="perm-modal-intro">
+                    Para transmitir la cámara en vivo desde tu navegador, el sistema operativo requiere autorización. Sigue las instrucciones según tu navegador:
+                </p>
+
+                <!-- GUÍA PASO A PASO CHROME (ANDROID / DESKTOP) -->
+                <div class="perm-guide-card">
+                    <div class="perm-guide-header">🌐 En Google Chrome (Android / PC):</div>
+                    <ol class="perm-guide-steps">
+                        <li>Toca el icono de <b>Candado / Ajustes 🔒</b> a la izquierda de la barra de direcciones (arriba).</li>
+                        <li>Entra en <b>"Permisos del sitio"</b> o <b>"Configuración del sitio"</b>.</li>
+                        <li>Busca <b>"Cámara"</b> y cambia la opción a <b class="text-success">Permitir</b>.</li>
+                        <li>Regresa aquí y presiona <b>"Reintentar Cámara"</b>.</li>
+                    </ol>
+                </div>
+
+                <!-- GUÍA PASO A PASO SAFARI (IOS / IPHONE) -->
+                <div class="perm-guide-card">
+                    <div class="perm-guide-header">🍏 En Safari (iPhone / iPad):</div>
+                    <ol class="perm-guide-steps">
+                        <li>Toca el icono <b>"aA" / Ajustes ⚙️</b> en la barra de direcciones superior.</li>
+                        <li>Entra en <b>"Ajustes del sitio web"</b> → <b>"Cámara"</b>.</li>
+                        <li>Selecciona <b class="text-success">Permitir</b>.</li>
+                        <li>Recarga la pantalla o presiona <b>"Reintentar Cámara"</b>.</li>
+                    </ol>
+                </div>
+
+                <div class="perm-modal-actions">
+                    <button class="btn-action btn-action-success" onclick="window.retryCameraPermissions()">
+                        🔄 Reintentar Cámara en Vivo
+                    </button>
+                    <button class="btn-action btn-action-alt" onclick="window.triggerLiveNativeFileSelect(); window.closeCameraPermissionModal();">
+                        📸 Usar Foto Nativa con Celular (Sin Permisos WebRTC)
+                    </button>
+                    <button class="btn-action btn-modal-explore" onclick="window.closeCameraPermissionModal()">
+                        👁️ Explorar la App (Modo Galería)
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2310,6 +2834,16 @@
         <div class="footer-subtext">PLANO DE CONTROL ÓPTICO - MÁQUINA I.S. CALIENTE</div>
     </footer>
 
-    <script type="module" src="static/js/main.js?v=1.2.0"></script>
+    <script>
+    function switchToolTab(tab) {
+        document.querySelectorAll('.tool-content').forEach(el => { el.style.display = 'none'; el.classList.remove('active'); });
+        document.querySelectorAll('.tool-subtab').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById('tool' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Content');
+        if (target) { target.style.display = 'block'; target.classList.add('active'); }
+        if (event && event.target) { event.target.classList.add('active'); }
+    }
+    window.switchToolTab = switchToolTab;
+    </script>
+    <script type="module" src="static/js/main.js?v=2.0.0"></script>
 </body>
 </html>

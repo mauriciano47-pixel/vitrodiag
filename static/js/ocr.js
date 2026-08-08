@@ -382,13 +382,13 @@ function parseScannerOcrText(fullText, digitText) {
     }
 
     // ─── Mostrar panel de confirmación para que el operador valide/corrija ───
-    document.getElementById('ocrValPlungerUp').value = state.scannerParsedValues.plungerUp;
-    document.getElementById('ocrValPlungerDown').value = state.scannerParsedValues.plungerDown;
-    document.getElementById('ocrValInvertStart').value = state.scannerParsedValues.invertStart;
-    document.getElementById('ocrValBlowClose').value = state.scannerParsedValues.blowClose;
-    document.getElementById('ocrValNeckRingOpen').value = state.scannerParsedValues.neckRingOpen;
-    document.getElementById('ocrValBlowOn').value = state.scannerParsedValues.blowOn;
-    document.getElementById('ocrValBlowOff').value = state.scannerParsedValues.blowOff;
+    document.getElementById('ocrValPlungerUp')?.value = state.scannerParsedValues.plungerUp;
+    document.getElementById('ocrValPlungerDown')?.value = state.scannerParsedValues.plungerDown;
+    document.getElementById('ocrValInvertStart')?.value = state.scannerParsedValues.invertStart;
+    document.getElementById('ocrValBlowClose')?.value = state.scannerParsedValues.blowClose;
+    document.getElementById('ocrValNeckRingOpen')?.value = state.scannerParsedValues.neckRingOpen;
+    document.getElementById('ocrValBlowOn')?.value = state.scannerParsedValues.blowOn;
+    document.getElementById('ocrValBlowOff')?.value = state.scannerParsedValues.blowOff;
 
     // Indicar visualmente cuáles valores fueron detectados vs rellenados
     const ocrFields = {
@@ -434,36 +434,36 @@ function parseScannerOcrText(fullText, digitText) {
     }
 
     // Mostrar el panel de confirmación y ocultar loader/tarjeta de resultados previa
-    document.getElementById('ocrLoader').style.display = 'none';
-    document.getElementById('scannerResultsCard').style.display = 'none';
-    document.getElementById('scannerOcrConfirmArea').style.display = 'block';
-    document.getElementById('scannerOcrConfirmArea').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('ocrLoader')?.style?.display = 'none';
+    document.getElementById('scannerResultsCard')?.style?.display = 'none';
+    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'block';
+    document.getElementById('scannerOcrConfirmArea')?.scrollIntoView({ behavior: 'smooth' });
 }
 
 function confirmOcrAndCompare() {
     // Leer valores validados por el operador
     state.scannerParsedValues = {
-        plungerUp: parseInt(document.getElementById('ocrValPlungerUp').value) || 80,
-        plungerDown: parseInt(document.getElementById('ocrValPlungerDown').value) || 150,
-        invertStart: parseInt(document.getElementById('ocrValInvertStart').value) || 190,
-        blowClose: parseInt(document.getElementById('ocrValBlowClose').value) || 240,
-        neckRingOpen: parseInt(document.getElementById('ocrValNeckRingOpen').value) || 245,
-        blowOn: parseInt(document.getElementById('ocrValBlowOn').value) || 270,
-        blowOff: parseInt(document.getElementById('ocrValBlowOff').value) || 325
+        plungerUp: parseInt(document.getElementById('ocrValPlungerUp')?.value) || 80,
+        plungerDown: parseInt(document.getElementById('ocrValPlungerDown')?.value) || 150,
+        invertStart: parseInt(document.getElementById('ocrValInvertStart')?.value) || 190,
+        blowClose: parseInt(document.getElementById('ocrValBlowClose')?.value) || 240,
+        neckRingOpen: parseInt(document.getElementById('ocrValNeckRingOpen')?.value) || 245,
+        blowOn: parseInt(document.getElementById('ocrValBlowOn')?.value) || 270,
+        blowOff: parseInt(document.getElementById('ocrValBlowOff')?.value) || 325
     };
 
     const defaultValues = {
-        plungerUp: parseInt(document.getElementById('valPlungerUp').value) || 80,
-        plungerDown: parseInt(document.getElementById('valPlungerDown').value) || 150,
-        invertStart: parseInt(document.getElementById('valInvertStart').value) || 190,
-        blowClose: parseInt(document.getElementById('valBlowClose').value) || 240,
-        neckRingOpen: parseInt(document.getElementById('valNeckOpen').value) || 245,
-        blowOn: parseInt(document.getElementById('valBlowOn').value) || 270,
-        blowOff: parseInt(document.getElementById('valBlowOff').value) || 325
+        plungerUp: parseInt(document.getElementById('valPlungerUp')?.value) || 80,
+        plungerDown: parseInt(document.getElementById('valPlungerDown')?.value) || 150,
+        invertStart: parseInt(document.getElementById('valInvertStart')?.value) || 190,
+        blowClose: parseInt(document.getElementById('valBlowClose')?.value) || 240,
+        neckRingOpen: parseInt(document.getElementById('valNeckOpen')?.value) || 245,
+        blowOn: parseInt(document.getElementById('valBlowOn')?.value) || 270,
+        blowOff: parseInt(document.getElementById('valBlowOff')?.value) || 325
     };
 
     // Ocultar confirmación y renderizar la comparación final
-    document.getElementById('scannerOcrConfirmArea').style.display = 'none';
+    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'none';
     renderScannerComparisonTable(defaultValues);
 
     showToast("Lectura validada con éxito por operador.", "success");
@@ -574,13 +574,13 @@ function renderScannerComparisonTable(defaults) {
 function applyScannerValuesToCalculator() {
     if (!state.scannerParsedValues || Object.keys(state.scannerParsedValues).length === 0) return;
 
-    document.getElementById('valPlungerUp').value = state.scannerParsedValues.plungerUp;
-    document.getElementById('valPlungerDown').value = state.scannerParsedValues.plungerDown;
-    document.getElementById('valInvertStart').value = state.scannerParsedValues.invertStart;
-    document.getElementById('valBlowClose').value = state.scannerParsedValues.blowClose;
-    document.getElementById('valNeckOpen').value = state.scannerParsedValues.neckRingOpen;
-    document.getElementById('valBlowOn').value = state.scannerParsedValues.blowOn;
-    document.getElementById('valBlowOff').value = state.scannerParsedValues.blowOff;
+    document.getElementById('valPlungerUp')?.value = state.scannerParsedValues.plungerUp;
+    document.getElementById('valPlungerDown')?.value = state.scannerParsedValues.plungerDown;
+    document.getElementById('valInvertStart')?.value = state.scannerParsedValues.invertStart;
+    document.getElementById('valBlowClose')?.value = state.scannerParsedValues.blowClose;
+    document.getElementById('valNeckOpen')?.value = state.scannerParsedValues.neckRingOpen;
+    document.getElementById('valBlowOn')?.value = state.scannerParsedValues.blowOn;
+    document.getElementById('valBlowOff')?.value = state.scannerParsedValues.blowOff;
 
     showToast("Valores escaneados de grados cargados en la calculadora", "success");
 
@@ -707,8 +707,8 @@ function resetScannerImage() {
     if (previewImg) previewImg.src = "";
     state.scannerImageBase64 = null;
 
-    document.getElementById('scannerOcrConfirmArea').style.display = 'none';
-    document.getElementById('scannerResultsCard').style.display = 'none';
+    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'none';
+    document.getElementById('scannerResultsCard')?.style?.display = 'none';
 
     if (runOcrBtn) {
         runOcrBtn.classList.add('d-none');
@@ -721,13 +721,13 @@ function resetScannerImage() {
 }
 
 function runScannerManualComparison() {
-    const plungerUp = parseInt(document.getElementById('manualPlungerUp').value);
-    const plungerDown = parseInt(document.getElementById('manualPlungerDown').value);
-    const neckRingOpen = parseInt(document.getElementById('manualNeckOpen').value);
-    const invertStart = parseInt(document.getElementById('manualInvertStart').value);
-    const blowClose = parseInt(document.getElementById('manualBlowClose').value);
-    const blowOn = parseInt(document.getElementById('manualBlowOn').value);
-    const blowOff = parseInt(document.getElementById('manualBlowOff').value);
+    const plungerUp = parseInt(document.getElementById('manualPlungerUp')?.value);
+    const plungerDown = parseInt(document.getElementById('manualPlungerDown')?.value);
+    const neckRingOpen = parseInt(document.getElementById('manualNeckOpen')?.value);
+    const invertStart = parseInt(document.getElementById('manualInvertStart')?.value);
+    const blowClose = parseInt(document.getElementById('manualBlowClose')?.value);
+    const blowOn = parseInt(document.getElementById('manualBlowOn')?.value);
+    const blowOff = parseInt(document.getElementById('manualBlowOff')?.value);
 
     if (isNaN(plungerUp) || isNaN(plungerDown) || isNaN(neckRingOpen) || isNaN(invertStart) || isNaN(blowClose) || isNaN(blowOn) || isNaN(blowOff)) {
         showToast("Por favor, ingresa los grados (0-360) para todas las variables del panel.", "warning");
@@ -760,7 +760,7 @@ function runScannerManualComparison() {
 }
 
 function cancelOcrConfirm() {
-    document.getElementById('scannerOcrConfirmArea').style.display = 'none';
+    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'none';
     resetScannerImage();
 }
 

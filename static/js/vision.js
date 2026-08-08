@@ -238,7 +238,7 @@ function processFrame() {
 
                     // 1. Si es modo 'backlight' (Mesa de Luz), aplicamos binarización adaptativa y compensación morfológica
                     const blurred = blurredBuffer;
-                    const isBacklight = document.getElementById('backlightToggle') && document.getElementById('backlightToggle').checked;
+                    const isBacklight = document.getElementById('backlightToggle') && document.getElementById('backlightToggle')?.checked;
                     
                     if (isBacklight) {
                         // A. Detección Dinámica de Fondo (Esquinas)

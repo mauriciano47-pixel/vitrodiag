@@ -458,7 +458,7 @@ function fallbackAlgorithmicDiagnosis() {
     const avgBaseDev = baseLayers > 0 ? (baseAsymmetrySum / baseLayers) : 0;
     const baseDevPercent = (avgBaseDev / avgBodyWidth) * 200;
 
-    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 5;
+    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance')?.value : 5;
     const toleranceLimit = parseInt(sliderVal) || 5;
 
     console.log(`[Patrón Moldería patronista1] ${articleName} | H: ${bottleHeight}px | Cuello: ${percentDeviation.toFixed(1)}% | Corona: ${mouthDevPercent.toFixed(1)}% | Hombro: ${shoulderDevPercent.toFixed(1)}% | Base: ${baseDevPercent.toFixed(1)}%`);
@@ -609,7 +609,7 @@ function runLegacyPixelCountDiagnosis(borders, width, height, avgBodyCenter) {
     }
 
     const pixelDiff = Math.abs(leftCount - rightCount) / (totalPixels || 1);
-    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance').value : 8;
+    const sliderVal = document.getElementById('sliderTolerance') ? document.getElementById('sliderTolerance')?.value : 8;
     const tolerancePercent = (parseInt(sliderVal) || 8) / 100;
 
     const cursorText = document.querySelector('.cursor-text');

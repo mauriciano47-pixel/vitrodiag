@@ -138,7 +138,7 @@ function changeActiveArticle(id) {
         }
 
 function openArticlesModal() {
-            document.getElementById('articlesModal').classList.add('active');
+            document.getElementById('articlesModal')?.classList?.add('active');
             const selectModal = document.getElementById('modalSelectArticle');
             if (selectModal) {
                 // Seleccionar por defecto el artículo activo
@@ -148,40 +148,40 @@ function openArticlesModal() {
         }
 
 function closeArticlesModal() {
-            document.getElementById('articlesModal').classList.remove('active');
+            document.getElementById('articlesModal')?.classList?.remove('active');
         }
 
 function loadArticleInModal(id) {
             const article = state.articulosList.find(a => a.id === id);
             if (!article) return;
 
-            document.getElementById('artId').value = article.id;
-            document.getElementById('artNombre').value = article.nombre;
-            document.getElementById('artBpm').value = article.bpm;
-            document.getElementById('artSecciones').value = article.secciones;
-            document.getElementById('artCavidades').value = article.cavidades;
-            document.getElementById('artSwab').value = article.swabInterval;
-            document.getElementById('artProceso').value = article.proceso;
-            document.getElementById('artAltura').value = article.altura;
-            document.getElementById('artCuerpo').value = article.diametroCuerpo;
-            document.getElementById('artBoca').value = article.diametroBoca;
+            document.getElementById('artId')?.value = article.id;
+            document.getElementById('artNombre')?.value = article.nombre;
+            document.getElementById('artBpm')?.value = article.bpm;
+            document.getElementById('artSecciones')?.value = article.secciones;
+            document.getElementById('artCavidades')?.value = article.cavidades;
+            document.getElementById('artSwab')?.value = article.swabInterval;
+            document.getElementById('artProceso')?.value = article.proceso;
+            document.getElementById('artAltura')?.value = article.altura;
+            document.getElementById('artCuerpo')?.value = article.diametroCuerpo;
+            document.getElementById('artBoca')?.value = article.diametroBoca;
         }
 
 function saveActiveArticleForm() {
-            const id = document.getElementById('artId').value;
+            const id = document.getElementById('artId')?.value;
             const article = state.articulosList.find(a => a.id === id);
             
             if (!article) return;
 
-            article.nombre = document.getElementById('artNombre').value;
-            article.bpm = parseFloat(document.getElementById('artBpm').value) || 120;
-            article.secciones = parseInt(document.getElementById('artSecciones').value) || 8;
-            article.cavidades = parseInt(document.getElementById('artCavidades').value) || 2;
-            article.swabInterval = parseInt(document.getElementById('artSwab').value) || 20;
-            article.proceso = document.getElementById('artProceso').value;
-            article.altura = parseFloat(document.getElementById('artAltura').value) || 200;
-            article.diametroCuerpo = parseFloat(document.getElementById('artCuerpo').value) || 70;
-            article.diametroBoca = parseFloat(document.getElementById('artBoca').value) || 26;
+            article.nombre = document.getElementById('artNombre')?.value;
+            article.bpm = parseFloat(document.getElementById('artBpm')?.value) || 120;
+            article.secciones = parseInt(document.getElementById('artSecciones')?.value) || 8;
+            article.cavidades = parseInt(document.getElementById('artCavidades')?.value) || 2;
+            article.swabInterval = parseInt(document.getElementById('artSwab')?.value) || 20;
+            article.proceso = document.getElementById('artProceso')?.value;
+            article.altura = parseFloat(document.getElementById('artAltura')?.value) || 200;
+            article.diametroCuerpo = parseFloat(document.getElementById('artCuerpo')?.value) || 70;
+            article.diametroBoca = parseFloat(document.getElementById('artBoca')?.value) || 26;
 
             localStorage.setItem('vitrodiag_articulos', JSON.stringify(state.articulosList));
             
@@ -193,7 +193,7 @@ function saveActiveArticleForm() {
 
             populateArticleSelects();
             // Mantener selección del modal en el editado
-            document.getElementById('modalSelectArticle').value = id;
+            document.getElementById('modalSelectArticle')?.value = id;
 
             showToast("Ficha técnica del artículo actualizada con éxito", "success");
             closeArticlesModal();
@@ -243,7 +243,7 @@ function setFilter(zone, buttonElement) {
         }
 
 function filterDefects() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const searchVal = document.getElementById('searchInput')?.value.toLowerCase();
             
             const filtered = DEFECTOS_DB.filter(defect => {
                 const matchesSearch = defect.nombre.toLowerCase().includes(searchVal) || 

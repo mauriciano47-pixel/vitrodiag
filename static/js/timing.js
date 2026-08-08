@@ -7,9 +7,9 @@ function calculateSopMs() {
         }
 
 function validateBdfTiming() {
-            const bpm = parseFloat(document.getElementById('calcBpm').value) || 396;
-            const sections = parseInt(document.getElementById('calcSections').value) || 11;
-            const cavity = parseInt(document.getElementById('calcCavities').value) || 3;
+            const bpm = parseFloat(document.getElementById('calcBpm')?.value) || 396;
+            const sections = parseInt(document.getElementById('calcSections')?.value) || 11;
+            const cavity = parseInt(document.getElementById('calcCavities')?.value) || 3;
 
             // FÓRMULA DE RELACIÓN: CPM de sección = BPM / (Secciones * Cavidades)
             const cpmSec = (bpm > 0) ? (bpm / (sections * cavity)) : 0;
@@ -27,14 +27,14 @@ function validateBdfTiming() {
             }
 
             // Capturar entradas de grados
-            const plungerUp = parseFloat(document.getElementById('valPlungerUp').value) || 0;
-            const plungerDown = parseFloat(document.getElementById('valPlungerDown').value) || 0;
-            const blankOpen = parseFloat(document.getElementById('valBlankOpen').value) || 0;
-            const invertStart = parseFloat(document.getElementById('valInvertStart').value) || 0;
-            const blowClose = parseFloat(document.getElementById('valBlowClose').value) || 0;
-            const neckOpen = parseFloat(document.getElementById('valNeckOpen').value) || 0;
-            const blowOn = parseFloat(document.getElementById('valBlowOn').value) || 0;
-            const blowOff = parseFloat(document.getElementById('valBlowOff').value) || 0;
+            const plungerUp = parseFloat(document.getElementById('valPlungerUp')?.value) || 0;
+            const plungerDown = parseFloat(document.getElementById('valPlungerDown')?.value) || 0;
+            const blankOpen = parseFloat(document.getElementById('valBlankOpen')?.value) || 0;
+            const invertStart = parseFloat(document.getElementById('valInvertStart')?.value) || 0;
+            const blowClose = parseFloat(document.getElementById('valBlowClose')?.value) || 0;
+            const neckOpen = parseFloat(document.getElementById('valNeckOpen')?.value) || 0;
+            const blowOn = parseFloat(document.getElementById('valBlowOn')?.value) || 0;
+            const blowOff = parseFloat(document.getElementById('valBlowOff')?.value) || 0;
 
             const resultsContainer = document.getElementById('bdfValidationResults');
             if (!resultsContainer) return;
