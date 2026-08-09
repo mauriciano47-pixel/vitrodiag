@@ -474,9 +474,9 @@ export async function analyzeSampleWithGeminiFromModal() {
 
         closeSampleModal();
         
-        // Cambiar a la pestaña de diagnóstico en vivo e invocar el diagnóstico IA con la imagen
+        // Cambiar a la vista de diagnóstico en vivo e invocar el diagnóstico IA con la imagen
         if (typeof window.switchView === 'function') {
-            await window.switchView('nexus');
+            await window.switchView('live');
         }
 
         showToast('Enviando muestra del banco a Gemini Vision IA para análisis profundo...', 'info');
