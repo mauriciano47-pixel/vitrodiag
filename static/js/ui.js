@@ -325,5 +325,35 @@ export function setupSilhouetteToggleListener() {
     }
 }
 
-export { showToast, initArticles, populateArticleSelects, applyActiveArticleParams, changeActiveArticle, openArticlesModal, closeArticlesModal, loadArticleInModal, saveActiveArticleForm, resetArticlesDefault, toggleDefectCard, setFilter, filterDefects, switchView };
+export function switchToolTab(tabName) {
+    try {
+        const subtabs = document.querySelectorAll('.tool-subtab');
+        subtabs.forEach(tab => {
+            const onclickAttr = tab.getAttribute('onclick') || '';
+            if (onclickAttr.includes(`'${tabName}'`)) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+
+        const contents = document.querySelectorAll('.tool-content');
+        contents.forEach(content => {
+            const targetId = `tool${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Content`;
+            if (content.id.toLowerCase() === targetId.toLowerCase() || content.id === `${tabName}Content`) {
+                content.classList.add('active');
+            } else {
+                content.classList.remove('active');
+            }
+        });
+    } catch (err) {
+        console.error("[NEXUS] Error cambiando subpestaña de herramientas:", err);
+    }
+}
+
+if (typeof window !== 'undefined') {
+    window.switchToolTab = switchToolTab;
+}
+
+export { showToast, initArticles, populateArticleSelects, applyActiveArticleParams, changeActiveArticle, openArticlesModal, closeArticlesModal, loadArticleInModal, saveActiveArticleForm, resetArticlesDefault, toggleDefectCard, setFilter, filterDefects, switchView, switchToolTab };
 

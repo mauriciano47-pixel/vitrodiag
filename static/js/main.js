@@ -15,7 +15,8 @@ import {
     toggleDefectCard, 
     setFilter, 
     filterDefects, 
-    switchView
+    switchView,
+    switchToolTab
 } from './ui.js';
 import { 
     startScannerCamera, 
@@ -243,6 +244,7 @@ window.triggerDeepAnalysisFileUpload = triggerDeepAnalysisFileUpload;
 window.handleDeepAnalysisFileSelect = handleDeepAnalysisFileSelect;
 window.drawDefectBoundingBoxes = drawDefectBoundingBoxes;
 window.switchView = switchView;
+window.switchToolTab = switchToolTab;
 window.changeActiveArticle = changeActiveArticle;
 window.openArticlesModal = openArticlesModal;
 window.closeArticlesModal = closeArticlesModal;
