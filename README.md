@@ -1,4 +1,4 @@
-# VitroDiag NEXUS v2.0.2
+# VitroDiag NEXUS v2.0.3
 
 Inspección Asistida por IA — Moldería I.S. para Operador de Cristal Chile.
 
@@ -26,7 +26,7 @@ Inspección Asistida por IA — Moldería I.S. para Operador de Cristal Chile.
 - Gemini 2.0 Flash Vision API (Inspección Multimodal con Bounding Boxes)
 - IndexedDB + Few-Shot RAG
 - Tesseract.js (OCR de pantalla BDF)
-- Service Worker v2.0.2 autónomo con autopurga de versiones previas
+- Service Worker v2.0.3 autónomo con PWA Cache Shield y autorrecarga transparente
 
 ## URL de Producción
 

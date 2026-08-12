@@ -1,9 +1,9 @@
-# VitroDiag NEXUS v2.0.2 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.0.3 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.0.2 — NEXUS Cero Advertencias)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.0.3 — PWA Cache Shield)  
 
 ---
 
@@ -96,6 +96,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 | Versión | Descripción |
 | --- | --- |
+| **v2.0.3** | Despliegue de PWA Cache Shield con autopurga de versiones previas, autorrecarga transparente en `controllerchange` y accesos directos de entrega. |
 | **v2.0.2** | Extracción total de estilos inline a CSS modular, limpieza completa de advertencias del linter y optimización PWA. |
 | v2.0.1 | Refactorización de UI/CSS e integración de modal de diagnóstico de cámara WebRTC. |
 | **v2.0.0** | Transformación completa a NEXUS. Flujo Foto→Gemini→Diagnóstico. 4 tabs limpias. Eliminación de código muerto CNN/calibración. |
@@ -109,7 +110,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 ## 7. Visión a Futuro y Hoja de Ruta (Roadmap)
 
-- **Fase 1 (Actual — v2.0.2):** Inspector NEXUS con Gemini 2.0 Flash, 4 tabs, 96 defectos, OCR de consolas, calculadora SOP y Banco IA.
+- **Fase 1 (Actual — v2.0.3):** Inspector NEXUS con Gemini 2.0 Flash, 4 tabs, 96 defectos, OCR de consolas, calculadora SOP, Banco IA y PWA Cache Shield.
 - **Fase 2 — Integración Térmica Infrarroja:** Compatibilidad con sensores infrarrojos portátiles (Flir One/Seek Thermal) para mapas de temperatura en gotas de vidrio y moldes.
 - **Fase 3 — Dataset Cuantizado de Cristal Chile:** Recolección y entrenamiento de miles de imágenes de defectos reales de planta.
 - **Fase 4 — Conexión IoT & SCADA:** Integración opcional vía WebSockets con consolas de máquina I.S.
