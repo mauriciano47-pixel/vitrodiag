@@ -1,4 +1,4 @@
-// VitroDiag NEXUS v2.0.0 — Punto de Entrada y Coordinador Principal
+// VitroDiag NEXUS v2.0.3 — Punto de Entrada y Coordinador Principal
 import { state } from './state.js';
 import { DEFECTOS_DB, renderDefectsList } from './db.js';
 import { 
@@ -316,5 +316,5 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    console.log("[NEXUS] VitroDiag NEXUS v2.0.0 inicializado correctamente.");
+    console.log("[NEXUS] VitroDiag NEXUS v2.0.3 inicializado correctamente.");
 });
