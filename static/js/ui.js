@@ -352,6 +352,7 @@ export function switchToolTab(tabName) {
 }
 
 if (typeof window !== 'undefined') {
+    window.switchView = switchView;
     window.switchToolTab = switchToolTab;
 }
 

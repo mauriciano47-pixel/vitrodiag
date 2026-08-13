@@ -273,8 +273,13 @@ window.cancelOcrConfirm = cancelOcrConfirm;
 
 window.saveGeminiApiKey = saveGeminiApiKey;
 window.clearGeminiApiKey = clearGeminiApiKey;
+window.promptSaveGeminiApiKey = promptSaveGeminiApiKey;
 window.runDeepDiagnosis = runDeepDiagnosis;
 window.showToast = showToast;
+window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
+window.openCameraPermissionModal = openCameraPermissionModal;
+window.closeCameraPermissionModal = closeCameraPermissionModal;
+window.retryCameraPermissions = retryCameraPermissions;
 
 // Configurar manejador global para promesas rechazadas
 window.addEventListener('unhandledrejection', function(event) {
