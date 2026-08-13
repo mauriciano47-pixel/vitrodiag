@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.1.0 — Inspección IA</title>
+    <title>VitroDiag NEXUS v2.1.1 — Inspección IA</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -13,11 +13,11 @@
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
-    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.1.0)
+    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.1.1)
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v2.1.0')) {
+                if (!name.includes('v2.1.1')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
@@ -25,8 +25,8 @@
         });
     }
     // Autopurga de versión anterior en localStorage
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.1.0') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.1.0');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.1.1') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.1.1');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(regs) {
                 for (let r of regs) r.unregister();
@@ -44,7 +44,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en v2.1.0.');
+        alert('Caché eliminada con éxito. La app se recargará en v2.1.1.');
         window.location.reload(true);
     };
 
@@ -180,6 +180,20 @@
             if (modal) modal.classList.remove('active');
         } catch (e) {
             console.error('[NEXUS UI] Error en closeArticlesModal:', e);
+        }
+    };
+
+    window.triggerNexusDiagnosis = function() {
+        try {
+            if (typeof window.runDeepDiagnosis === 'function') {
+                var imgB64 = window.nexusCurrentImageBase64 || (window.state ? window.state.scannerImageBase64 : null);
+                window.runDeepDiagnosis(imgB64);
+            } else {
+                var captureInput = document.getElementById('nexusCaptureInput');
+                if (captureInput) captureInput.click();
+            }
+        } catch (e) {
+            console.error('[NEXUS UI] Error en triggerNexusDiagnosis:', e);
         }
     };
 
@@ -2469,7 +2483,7 @@
 
         <!-- BOTÓN DE DIAGNÓSTICO PROFUNDO CON GEMINI IA -->
         <div class="diag-btn-container">
-            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()" disabled>
+            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()">
                 ⚡ DIAGNOSTICAR CON IA (GEMINI 2.0)
             </button>
         </div>
@@ -6285,6 +6299,6 @@
     }
     window.switchToolTab = switchToolTab;
     </script>
-    <script type="module" src="static/js/main.js?v=2.1.0"></script>
+    <script type="module" src="static/js/main.js?v=2.1.1"></script>
 </body>
 </html>

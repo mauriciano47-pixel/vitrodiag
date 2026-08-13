@@ -1012,3 +1012,17 @@ function updateConnectivityUI(online) {
     }
 }
 
+if (typeof window !== 'undefined') {
+    window.runDeepDiagnosis = runDeepDiagnosis;
+    window.analyzeWithGemini = analyzeWithGemini;
+    window.parseGeminiResponse = parseGeminiResponse;
+    window.renderGeminiResult = renderGeminiResult;
+    window.promptSaveGeminiApiKey = promptSaveGeminiApiKey;
+    window.loadGeminiApiKey = loadGeminiApiKey;
+    window.saveGeminiApiKey = saveGeminiApiKey;
+    window.captureAndAnalyzeWithAI = captureAndAnalyzeWithAI;
+    window.triggerDeepAnalysisFileUpload = triggerDeepAnalysisFileUpload;
+    window.handleDeepAnalysisFileSelect = handleDeepAnalysisFileSelect;
+    window.drawDefectBoundingBoxes = drawDefectBoundingBoxes;
+}
+
