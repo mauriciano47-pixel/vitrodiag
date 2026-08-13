@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.0.8 — Inspección IA</title>
+    <title>VitroDiag NEXUS v2.0.9 — Inspección IA</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -13,11 +13,11 @@
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
-    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.0.8)
+    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.0.9)
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v2.0.8')) {
+                if (!name.includes('v2.0.9')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
@@ -25,8 +25,8 @@
         });
     }
     // Autopurga de versión anterior en localStorage
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.8') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.0.8');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.9') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.0.9');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(regs) {
                 for (let r of regs) r.unregister();
@@ -44,7 +44,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en v2.0.8.');
+        alert('Caché eliminada con éxito. La app se recargará en v2.0.9.');
         window.location.reload(true);
     };
 
@@ -2472,9 +2472,6 @@
         <div class="camera-control-row">
             <button class="btn-action btn-webrtc-toggle" onclick="if(window.requestCameraPermissionDirectly) window.requestCameraPermissionDirectly();">
                 🎥 Activar Cámara en Vivo Continua (WebRTC)
-            </button>
-            <button class="btn-action btn-camera-perm-help" onclick="if(window.openCameraPermissionModal) window.openCameraPermissionModal();" title="Ayuda y activación de permisos de cámara">
-                🔒 Guía de Permisos de Navegador
             </button>
         </div>
     </div>
@@ -6229,58 +6226,6 @@
                 </div>
             </div>
         </div>
-    <!-- MODAL DE AYUDA DE PERMISOS DE CÁMARA Y DIAGNÓSTICO -->
-    <div id="cameraPermissionModal" class="modal-overlay">
-        <div class="modal-content camera-perm-modal-content">
-            <div class="modal-header">
-                <span class="modal-title">📹 Diagnóstico de Permisos de Cámara</span>
-                <button class="modal-close" onclick="window.closeCameraPermissionModal()">&times;</button>
-            </div>
-            <div class="modal-body perm-modal-body">
-                <div id="permStatusBadge" class="perm-status-badge perm-warning">
-                    ⚠️ Permiso de Cámara: Bloqueado o Denegado
-                </div>
-                
-                <p class="perm-modal-intro">
-                    Para transmitir la cámara en vivo desde tu navegador, el sistema operativo requiere autorización. Sigue las instrucciones según tu navegador:
-                </p>
-
-                <!-- GUÍA PASO A PASO CHROME (ANDROID / DESKTOP) -->
-                <div class="perm-guide-card">
-                    <div class="perm-guide-header">🌐 En Google Chrome (Android / PC):</div>
-                    <ol class="perm-guide-steps">
-                        <li>Toca el icono de <b>Candado / Ajustes 🔒</b> a la izquierda de la barra de direcciones (arriba).</li>
-                        <li>Entra en <b>"Permisos del sitio"</b> o <b>"Configuración del sitio"</b>.</li>
-                        <li>Busca <b>"Cámara"</b> y cambia la opción a <b class="text-success">Permitir</b>.</li>
-                        <li>Regresa aquí y presiona <b>"Reintentar Cámara"</b>.</li>
-                    </ol>
-                </div>
-
-                <!-- GUÍA PASO A PASO SAFARI (IOS / IPHONE) -->
-                <div class="perm-guide-card">
-                    <div class="perm-guide-header">🍏 En Safari (iPhone / iPad):</div>
-                    <ol class="perm-guide-steps">
-                        <li>Toca el icono <b>"aA" / Ajustes ⚙️</b> en la barra de direcciones superior.</li>
-                        <li>Entra en <b>"Ajustes del sitio web"</b> → <b>"Cámara"</b>.</li>
-                        <li>Selecciona <b class="text-success">Permitir</b>.</li>
-                        <li>Recarga la pantalla o presiona <b>"Reintentar Cámara"</b>.</li>
-                    </ol>
-                </div>
-
-                <div class="perm-modal-actions">
-                    <button class="btn-action btn-action-success" onclick="window.retryCameraPermissions()">
-                        🔄 Reintentar Cámara en Vivo
-                    </button>
-                    <button class="btn-action btn-action-alt" onclick="window.triggerLiveNativeFileSelect(); window.closeCameraPermissionModal();">
-                        📸 Usar Foto Nativa con Celular (Sin Permisos WebRTC)
-                    </button>
-                    <button class="btn-action btn-modal-explore" onclick="window.closeCameraPermissionModal()">
-                        👁️ Explorar la App (Modo Galería)
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <footer class="industrial-footer">
         <div class="footer-line"></div>
@@ -6319,6 +6264,6 @@
     }
     window.switchToolTab = switchToolTab;
     </script>
-    <script type="module" src="static/js/main.js?v=2.0.8"></script>
+    <script type="module" src="static/js/main.js?v=2.0.9"></script>
 </body>
 </html>
