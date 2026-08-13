@@ -354,6 +354,8 @@ export function switchToolTab(tabName) {
 if (typeof window !== 'undefined') {
     window.switchView = switchView;
     window.switchToolTab = switchToolTab;
+    window.renderDefectsList = renderDefectsList;
+    window.DEFECTOS_DB = DEFECTOS_DB;
 }
 
 export { showToast, initArticles, populateArticleSelects, applyActiveArticleParams, changeActiveArticle, openArticlesModal, closeArticlesModal, loadArticleInModal, saveActiveArticleForm, resetArticlesDefault, toggleDefectCard, setFilter, filterDefects, switchView, switchToolTab };

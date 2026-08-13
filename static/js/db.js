@@ -2201,5 +2201,10 @@
             return null;
         }
 
+if (typeof window !== 'undefined') {
+    window.DEFECTOS_DB = DEFECTOS_DB;
+    window.renderDefectsList = renderDefectsList;
+}
+
 
 

@@ -233,6 +233,7 @@ window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
 
 // Exponer funciones de módulos existentes al ámbito global
 window.DEFECTOS_DB = DEFECTOS_DB;
+window.renderDefectsList = renderDefectsList;
 window.openSampleModal = openSampleModal;
 window.closeSampleModal = closeSampleModal;
 window.updateSampleNotesFromModal = updateSampleNotesFromModal;
