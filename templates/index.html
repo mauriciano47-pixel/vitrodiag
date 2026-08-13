@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.0.3 — Inspección IA</title>
+    <title>VitroDiag NEXUS v2.0.4 — Inspección IA</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -13,11 +13,11 @@
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
-    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.0.3)
+    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.0.4)
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v2.0.3')) {
+                if (!name.includes('v2.0.4')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
@@ -25,8 +25,8 @@
         });
     }
     // Autopurga de versión anterior en localStorage
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.3') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.0.3');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.4') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.0.4');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(regs) {
                 for (let r of regs) r.unregister();
@@ -44,8 +44,64 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en v2.0.3.');
+        alert('Caché eliminada con éxito. La app se recargará en v2.0.4.');
         window.location.reload(true);
+    };
+
+    // DEFENSIVO IMMEDIATE INLINE TAB SWITCHING (Garantía Cero Congelamiento)
+    window.switchView = function(viewName) {
+        try {
+            var views = document.querySelectorAll('.view-content');
+            for (var i = 0; i < views.length; i++) {
+                views[i].classList.remove('active');
+                views[i].style.display = 'none';
+            }
+            var btns = document.querySelectorAll('.tab-btn');
+            for (var j = 0; j < btns.length; j++) {
+                btns[j].classList.remove('active');
+            }
+            var targetView = document.getElementById(viewName + 'View');
+            if (targetView) {
+                targetView.classList.add('active');
+                targetView.style.display = 'flex';
+            }
+            var targetBtn = Array.from(btns).find(function(b) {
+                return (b.getAttribute('onclick') || '').indexOf(viewName) !== -1;
+            });
+            if (targetBtn) targetBtn.classList.add('active');
+            if (viewName === 'directory' && typeof window.renderDefectsList === 'function' && window.DEFECTOS_DB) {
+                window.renderDefectsList(window.DEFECTOS_DB);
+            }
+        } catch (err) {
+            console.error('[NEXUS UI] Error en switchView:', err);
+        }
+    };
+
+    window.switchToolTab = function(tabName) {
+        try {
+            var contents = document.querySelectorAll('.tool-content');
+            for (var i = 0; i < contents.length; i++) {
+                var el = contents[i];
+                if (el.id.toLowerCase().indexOf(tabName.toLowerCase()) !== -1) {
+                    el.style.display = 'block';
+                    el.classList.add('active');
+                } else {
+                    el.style.display = 'none';
+                    el.classList.remove('active');
+                }
+            }
+            var subtabs = document.querySelectorAll('.tool-subtab');
+            for (var j = 0; j < subtabs.length; j++) {
+                var tab = subtabs[j];
+                if ((tab.getAttribute('onclick') || '').indexOf(tabName) !== -1) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            }
+        } catch (err) {
+            console.error('[NEXUS UI] Error en switchToolTab:', err);
+        }
     };
 
     // Recarga transparente cuando el Service Worker se actualiza
@@ -2982,6 +3038,6 @@
     }
     window.switchToolTab = switchToolTab;
     </script>
-    <script type="module" src="static/js/main.js?v=2.0.0"></script>
+    <script type="module" src="static/js/main.js?v=2.0.4"></script>
 </body>
 </html>

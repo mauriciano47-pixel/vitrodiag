@@ -34,6 +34,8 @@
 
 - **Sincronización Automática con Cerebros Obsidian (/learn)**: Cada vez que se realicen modificaciones, nuevas funciones o parches en cualquiera de las aplicaciones del usuario (Ataraxia, VitroDiag, CambioYa, Faro, HiDoctor, etc.), el agente DEBE actualizar de forma automática e inmediata el cerebro correspondiente en Obsidian ubicado en `C:\Users\mauro\OneDrive\Desktop\Cerebros_Obsidian\cerebro_<nombre_app>`, añadiendo o actualizando las notas markdown, MOCs y conexiones de arquitectura relevantes.
 
+- **REGLA ABSOLUTA DE CERO FALSOS POSITIVOS Y VALIDACIÓN EMPÍRICA EN VIVO (Zero-False-Positive Standard)**: Queda estrictamente prohibido declarar que un bug está corregido, o que un componente está "operativo", "descongelado" o "listo" basándose únicamente en edits de archivos o chequeos estáticos. El agente DEBE ejecutar comprobación empírica en tiempo de ejecución, inspeccionando la vinculación de eventos en el DOM y logs reales en vivo antes de emitir cualquier confirmación de éxito.
+
 
 
 
