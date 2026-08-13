@@ -1,5 +1,5 @@
-// VitroDiag NEXUS v2.0.6 — Service Worker (Network-First + Auto-Reload Shield)
-const CACHE_NAME = 'vitrodiag-nexus-v2.0.6';
+// VitroDiag NEXUS v2.0.7 — Service Worker (Network-First + Auto-Reload Shield)
+const CACHE_NAME = 'vitrodiag-nexus-v2.0.7';
 
 const ASSETS_TO_CACHE = [
   './',
