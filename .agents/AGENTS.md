@@ -18,6 +18,8 @@
 - **Seguridad Autónoma (centinela1)**: Si detectas que se ha escrito código que implique interacciones con bases de datos, APIs, manipulación de archivos, ingreso de datos de usuario o configuraciones de red, el agente debe invocar a `centinela1` de forma automática. Además, cualquier vulnerabilidad clara detectada por el IDE debe ser parcheada inmediatamente sin esperar confirmación.
 
 - **Refactorización (arquitecto1)**: Invocado para revisar deuda técnica o rediseñar funciones grandes.
+- **Aprendizaje Continuo y Memoria de Lecciones (memorioso1)**: Invocado para auditar la memoria de errores pasados (congelamiento por caché PWA, fallos por carga diferida de módulos ES6, renderizado dinámico en blanco) antes de cualquier refactorización o cambio estructural.
+- **Notificación Proactiva de Impacto, Alternativas y Consecuencias**: Si cualquier modificación o nueva función corre el riesgo de interferir, congelar o romper un módulo existente o la caché de producción, el agente DEBE detenerse y presentar explícitamente al usuario los riesgos, las alternativas disponibles y sus consecuencias ANTES de alterar el código.
 - **UI/UX (disenador1)**: Invocado al crear o modificar plantillas HTML, CSS o JS para garantizar estándares estéticos premium.
 - **Documentación (escriba1)**: Invocado automáticamente tras la aprobación de nuevas funciones para redactar manuales y docstrings.
 - **DevOps (piloto1)**: Invocado exclusivamente cuando el código está listo para ser preparado y desplegado a producción.
