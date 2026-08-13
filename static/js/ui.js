@@ -359,6 +359,15 @@ if (typeof window !== 'undefined') {
     window.toggleDefectCard = toggleDefectCard;
     window.setFilter = setFilter;
     window.filterDefects = filterDefects;
+    window.openArticlesModal = openArticlesModal;
+    window.closeArticlesModal = closeArticlesModal;
+    window.loadArticleInModal = loadArticleInModal;
+    window.saveActiveArticleForm = saveActiveArticleForm;
+    window.resetArticlesDefault = resetArticlesDefault;
+    window.changeActiveArticle = changeActiveArticle;
+    window.populateArticleSelects = populateArticleSelects;
+    window.applyActiveArticleParams = applyActiveArticleParams;
+    window.showToast = showToast;
 }
 
 export { showToast, initArticles, populateArticleSelects, applyActiveArticleParams, changeActiveArticle, openArticlesModal, closeArticlesModal, loadArticleInModal, saveActiveArticleForm, resetArticlesDefault, toggleDefectCard, setFilter, filterDefects, switchView, switchToolTab };

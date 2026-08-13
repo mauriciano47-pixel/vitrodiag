@@ -762,6 +762,20 @@ function runScannerManualComparison() {
 function cancelOcrConfirm() {
     document.getElementById('scannerOcrConfirmArea')?.style?.display = 'none';
     resetScannerImage();
+if (typeof window !== 'undefined') {
+    window.setScannerSource = setScannerSource;
+    window.captureScannerSnapshot = captureScannerSnapshot;
+    window.handleScannerFileSelect = handleScannerFileSelect;
+    window.resetScannerImage = resetScannerImage;
+    window.runScannerManualComparison = runScannerManualComparison;
+    window.runScannerOcr = runScannerOcr;
+    window.parseScannerOcrText = parseScannerOcrText;
+    window.confirmOcrAndCompare = confirmOcrAndCompare;
+    window.renderScannerComparisonTable = renderScannerComparisonTable;
+    window.applyScannerValuesToCalculator = applyScannerValuesToCalculator;
+    window.resetScannerReport = resetScannerReport;
+    window.cancelOcrConfirm = cancelOcrConfirm;
+    window.terminateTesseractWorker = terminateTesseractWorker;
 }
 
 export {

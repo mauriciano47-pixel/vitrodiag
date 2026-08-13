@@ -516,4 +516,17 @@ export function initDatasetUI() {
     console.log('[DatasetManager] Módulo Banco de Entrenamiento IA inicializado correctamente.');
 }
 
+if (typeof window !== 'undefined') {
+    window.captureDatasetFromCamera = captureDatasetFromCamera;
+    window.triggerDatasetFileSelect = triggerDatasetFileSelect;
+    window.handleDatasetFileSelect = handleDatasetFileSelect;
+    window.saveDatasetSample = handleSaveDatasetSample;
+    window.exportDatasetJSON = exportDatasetJSON;
+    window.openSampleModal = openSampleModal;
+    window.closeSampleModal = closeSampleModal;
+    window.updateSampleNotesFromModal = updateSampleNotesFromModal;
+    window.deleteSampleFromModal = deleteSampleFromModal;
+    window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
+}
+
 
