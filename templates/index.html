@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.0.7 — Inspección IA</title>
+    <title>VitroDiag NEXUS v2.0.8 — Inspección IA</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -13,11 +13,11 @@
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
-    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.0.7)
+    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.0.8)
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v2.0.7')) {
+                if (!name.includes('v2.0.8')) {
                     caches.delete(name);
                     console.log('[PWA] Purga de caché antigua ejecutada:', name);
                 }
@@ -25,8 +25,8 @@
         });
     }
     // Autopurga de versión anterior en localStorage
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.7') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.0.7');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.0.8') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.0.8');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(regs) {
                 for (let r of regs) r.unregister();
@@ -44,7 +44,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en v2.0.7.');
+        alert('Caché eliminada con éxito. La app se recargará en v2.0.8.');
         window.location.reload(true);
     };
 
@@ -121,6 +121,44 @@
             }
         } catch (e) {
             console.error('[NEXUS UI] Error en toggleDefectCard:', e);
+        }
+    };
+
+    window.currentFilterZone = 'todo';
+    window.setFilter = function(zone, buttonElement) {
+        try {
+            if (buttonElement) {
+                var buttons = document.querySelectorAll('.filter-btn');
+                for (var i = 0; i < buttons.length; i++) buttons[i].classList.remove('active');
+                buttonElement.classList.add('active');
+            }
+            window.currentFilterZone = zone || 'todo';
+            window.filterDefects();
+        } catch (e) {
+            console.error('[NEXUS UI] Error en setFilter:', e);
+        }
+    };
+
+    window.filterDefects = function() {
+        try {
+            var searchInput = document.getElementById('searchInput');
+            var searchVal = (searchInput ? searchInput.value : '').toLowerCase().trim();
+            var zone = (window.currentFilterZone || 'todo').toLowerCase();
+            var items = document.querySelectorAll('#defectsContainer .defect-item');
+            for (var j = 0; j < items.length; j++) {
+                var item = items[j];
+                var itemZone = (item.getAttribute('data-zone') || '').toLowerCase();
+                var itemText = item.textContent.toLowerCase();
+                var matchesZone = (zone === 'todo' || itemZone === zone);
+                var matchesSearch = (!searchVal || itemText.indexOf(searchVal) !== -1);
+                if (matchesZone && matchesSearch) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        } catch (e) {
+            console.error('[NEXUS UI] Error en filterDefects:', e);
         }
     };
 
@@ -6281,6 +6319,6 @@
     }
     window.switchToolTab = switchToolTab;
     </script>
-    <script type="module" src="static/js/main.js?v=2.0.7"></script>
+    <script type="module" src="static/js/main.js?v=2.0.8"></script>
 </body>
 </html>
