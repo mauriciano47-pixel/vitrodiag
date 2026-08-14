@@ -1,9 +1,9 @@
-# VitroDiag NEXUS v2.1.1 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.1.2 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.1.1 — Gemini Vision 100% Operativo & PWA Cache Shield)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.1.2 — Encendido Automático de Visor, Retícula Activa & PWA Cache Shield)  
 
 ---
 
@@ -11,7 +11,7 @@
 
 VitroDiag es una plataforma Progressive Web App (PWA) de precisión industrial diseñada para ser utilizada directamente en la planta caliente por el operador de máquina I.S. Su objetivo fundamental es proporcionar un diagnóstico óptico asistido por IA en tiempo real sobre la conformidad geométrica de los envases de vidrio recién soplados, permitiendo corregir a tiempo variaciones en la moldería, tiempos de soplado (SOP) y alineación antes de que el material ingrese al arca de recocido.
 
-El concepto **NEXUS** representa el punto de conexión inteligente entre el operador I.S., la inteligencia artificial de Gemini 2.0 Flash y la planta de producción. La filosofía es **inspección asistida, no automática**: el operador toma la foto, la IA diagnostica, el operador decide.
+El concepto **NEXUS** representa el punto de conexión inteligente entre el operador I.S., la inteligencia artificial de Gemini 2.0 Flash y la planta de producción. La filosofía es **inspección asistida, no automática**: el operador encuadra con la retícula táctica y visor en vivo, la IA diagnostica, el operador decide.
 
 Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemini 2.0 Flash Vision API en la nube con catálogo pre-renderizado de 104 defectos industriales), VitroDiag ejecuta todos sus motores de visión en el dispositivo móvil y permite diagnósticos profundos con IA multimodal cuando hay conexión activa.
 
@@ -20,10 +20,11 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 ## 2. Flujo Principal NEXUS
 
 ```text
-1. 📸  Tomar Foto  →  El operador captura el envase con la cámara nativa del celular (1-clic directo)
-2. ⚡  Diagnosticar  →  Gemini 2.0 Flash Vision analiza contra el catálogo de 104 defectos industriales
-3. 📋  Resultado    →  Defecto · Zona · Gravedad · Confianza · Bounding Boxes 2D · Acciones correctivas I.S.
+1. 📸  Visor & Retícula  →  El operador encuadra el envase con la retícula táctica por zonas anatómicas
+2. ⚡  Diagnosticar      →  Gemini 2.0 Flash Vision analiza contra el catálogo de 104 defectos industriales
+3. 📋  Resultado        →  Defecto · Zona · Gravedad · Confianza · Bounding Boxes 2D · Acciones correctivas I.S.
 ```
+
 
 ---
 
