@@ -196,6 +196,7 @@
             console.error('[NEXUS UI] Error en triggerNexusDiagnosis:', e);
         }
     };
+    window.triggerGeminiVisionAnalysis = window.triggerNexusDiagnosis;
 
     // Recarga transparente cuando el Service Worker se actualiza
     if ('serviceWorker' in navigator) {
