@@ -1,9 +1,9 @@
-# VitroDiag NEXUS v2.0.3 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.1.1 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.0.3 — PWA Cache Shield)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.1.1 — Gemini Vision 100% Operativo & PWA Cache Shield)  
 
 ---
 
@@ -13,16 +13,16 @@ VitroDiag es una plataforma Progressive Web App (PWA) de precisión industrial d
 
 El concepto **NEXUS** representa el punto de conexión inteligente entre el operador I.S., la inteligencia artificial de Gemini 2.0 Flash y la planta de producción. La filosofía es **inspección asistida, no automática**: el operador toma la foto, la IA diagnostica, el operador decide.
 
-Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemini 2.0 Flash Vision API opcional en la nube con catálogo dinámico de 96 defectos), VitroDiag ejecuta todos sus motores de visión en el dispositivo móvil y permite diagnósticos profundos con IA multimodal cuando hay conexión activa.
+Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemini 2.0 Flash Vision API en la nube con catálogo pre-renderizado de 104 defectos industriales), VitroDiag ejecuta todos sus motores de visión en el dispositivo móvil y permite diagnósticos profundos con IA multimodal cuando hay conexión activa.
 
 ---
 
 ## 2. Flujo Principal NEXUS
 
 ```text
-1. 📸  Tomar Foto  →  El operador captura el envase con la cámara nativa del celular
-2. ⚡  Diagnosticar  →  Gemini 2.0 Flash analiza contra el catálogo de 96 defectos
-3. 📋  Resultado    →  Defecto · Zona · Gravedad · Confianza · Acciones correctivas I.S.
+1. 📸  Tomar Foto  →  El operador captura el envase con la cámara nativa del celular (1-clic directo)
+2. ⚡  Diagnosticar  →  Gemini 2.0 Flash Vision analiza contra el catálogo de 104 defectos industriales
+3. 📋  Resultado    →  Defecto · Zona · Gravedad · Confianza · Bounding Boxes 2D · Acciones correctivas I.S.
 ```
 
 ---
