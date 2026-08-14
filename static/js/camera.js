@@ -99,8 +99,14 @@ async function startDiagnosticCamera() {
         video.volume = 0;
         video.playsInline = true;
         video.srcObject = stream;
+        video.style.display = 'block';
 
-        // Esperar metadata en Android 14 (Motorola Moto G85) para evitar fallos de play()
+        const previewImg = document.getElementById('nexusPreviewImg');
+        const placeholder = document.getElementById('nexusPlaceholder');
+        if (previewImg) previewImg.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'none';
+
+        // Esperar metadata en Android 14 / Chrome para evitar fallos de play()
         await new Promise((resolve) => {
             if (video.readyState >= 1) {
                 resolve();
@@ -118,10 +124,10 @@ async function startDiagnosticCamera() {
             await video.play().catch(err => console.error("[Camera] Error final en play():", err));
         }
 
-        status.innerText = "Motor Visión: Cámara en Vivo Activa (Chrome)";
+        status.innerText = "Motor Visión: Cámara en Vivo Activa (Apuntando al Envase)";
         status.style.color = "#10b981";
         if (btnTap) btnTap.style.display = 'none';
-        showToast("🎥 Cámara en vivo activada correctamente.", "success");
+        showToast("🎥 Visor de cámara en vivo activo. Apunta al envase.", "success");
     } else {
         console.error("Chrome denegó o no pudo acceder a la cámara WebRTC:", lastError);
         state.diagnosticStream = null;

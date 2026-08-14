@@ -72,6 +72,9 @@
             if (viewName === 'directory' && typeof window.renderDefectsList === 'function' && window.DEFECTOS_DB) {
                 window.renderDefectsList(window.DEFECTOS_DB);
             }
+            if (viewName === 'live' && typeof window.startDiagnosticCamera === 'function') {
+                window.startDiagnosticCamera();
+            }
         } catch (err) {
             console.error('[NEXUS UI] Error en switchView:', err);
         }
@@ -180,6 +183,32 @@
             if (modal) modal.classList.remove('active');
         } catch (e) {
             console.error('[NEXUS UI] Error en closeArticlesModal:', e);
+        }
+    };
+
+    window.openModal = function(modalId) {
+        try {
+            if (typeof modalId === 'string' && modalId) {
+                var m = document.getElementById(modalId);
+                if (m) m.classList.add('active');
+            } else {
+                window.openArticlesModal();
+            }
+        } catch (e) {
+            console.error('[NEXUS UI] Error en openModal:', e);
+        }
+    };
+
+    window.closeModal = function(modalId) {
+        try {
+            if (typeof modalId === 'string' && modalId) {
+                var m = document.getElementById(modalId);
+                if (m) m.classList.remove('active');
+            } else {
+                window.closeArticlesModal();
+            }
+        } catch (e) {
+            console.error('[NEXUS UI] Error en closeModal:', e);
         }
     };
 

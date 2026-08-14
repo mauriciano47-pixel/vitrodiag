@@ -361,6 +361,22 @@ if (typeof window !== 'undefined') {
     window.filterDefects = filterDefects;
     window.openArticlesModal = openArticlesModal;
     window.closeArticlesModal = closeArticlesModal;
+    window.openModal = function(modalId) {
+        if (typeof modalId === 'string' && modalId) {
+            const m = document.getElementById(modalId);
+            if (m) m.classList.add('active');
+        } else {
+            openArticlesModal();
+        }
+    };
+    window.closeModal = function(modalId) {
+        if (typeof modalId === 'string' && modalId) {
+            const m = document.getElementById(modalId);
+            if (m) m.classList.remove('active');
+        } else {
+            closeArticlesModal();
+        }
+    };
     window.loadArticleInModal = loadArticleInModal;
     window.saveActiveArticleForm = saveActiveArticleForm;
     window.resetArticlesDefault = resetArticlesDefault;

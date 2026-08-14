@@ -72,6 +72,9 @@
             if (viewName === 'directory' && typeof window.renderDefectsList === 'function' && window.DEFECTOS_DB) {
                 window.renderDefectsList(window.DEFECTOS_DB);
             }
+            if (viewName === 'live' && typeof window.startDiagnosticCamera === 'function') {
+                window.startDiagnosticCamera();
+            }
         } catch (err) {
             console.error('[NEXUS UI] Error en switchView:', err);
         }

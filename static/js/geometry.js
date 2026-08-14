@@ -87,23 +87,26 @@ function detectGeometricDefects(binaryBuffer, width, height) {
     }
 
     const slope = (n * sumYX - sumY * sumX) / (n * sumY2 - sumY * sumY || 1);
+    const intercept = (sumX - slope * sumY) / n;
     // Ángulo en grados respecto a la vertical
     const tiltAngle = Math.atan(slope) * (180 / Math.PI);
     const absTilt = Math.abs(tiltAngle);
 
     const isTilted = absTilt > 3.0; // Umbral de botella torcida/inclinada (> 3 grados)
 
-    // 3. Evaluar simetría entre lado izquierdo y derecho (Hombro / Cuerpo Hundido)
+    // 3. Evaluar simetría entre lado izquierdo y derecho contra el eje central (Hombro / Cuerpo Hundido)
     let maxAsymmetry = 0;
     let asymmetricZone = '';
 
     for (let i = 0; i < n; i++) {
-        const yFrac = rowYPositions[i] / height;
-        const leftDist = midpoints[i] - leftEdges[i];
-        const rightDist = rightEdges[i] - midpoints[i];
-        const totalW = leftDist + rightDist;
+        const y = rowYPositions[i];
+        const yFrac = y / height;
+        const centralAxisX = slope * y + intercept;
+        const leftDist = centralAxisX - leftEdges[i];
+        const rightDist = rightEdges[i] - centralAxisX;
+        const totalW = rightEdges[i] - leftEdges[i];
 
-        if (totalW > 20) {
+        if (totalW > 20 && leftDist > 0 && rightDist > 0) {
             const diffRatio = Math.abs(leftDist - rightDist) / (totalW / 2);
             if (diffRatio > maxAsymmetry) {
                 maxAsymmetry = diffRatio;

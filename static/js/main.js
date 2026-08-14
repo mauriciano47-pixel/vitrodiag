@@ -100,10 +100,12 @@ function nexusHandleImageSelect(event) {
         // Mostrar preview
         const previewImg = document.getElementById('nexusPreviewImg') || document.getElementById('scannerPreviewImg');
         const placeholder = document.getElementById('nexusPlaceholder');
+        const webcamVideo = document.getElementById('webcam');
         const bboxCanvas = document.getElementById('nexusBboxCanvas');
         const btnDiagnose = document.getElementById('btnRunDiagnosis') || document.getElementById('btnNexusDiagnose');
         const resultCard = document.getElementById('resultadoCard') || document.getElementById('nexusResultCard');
         
+        if (webcamVideo) webcamVideo.style.display = 'none';
         if (previewImg) {
             previewImg.src = nexusCurrentImageBase64;
             previewImg.style.display = 'block';
@@ -116,7 +118,7 @@ function nexusHandleImageSelect(event) {
         }
         if (resultCard) resultCard.style.display = 'none';
         
-        showToast('📷 Imagen cargada. Presiona DIAGNOSTICAR para analizar.', 'success');
+        showToast('📷 Fotografía capturada. Revisa el encuadre y presiona DIAGNOSTICAR.', 'success');
     };
     reader.readAsDataURL(file);
     
@@ -249,6 +251,22 @@ window.switchToolTab = switchToolTab;
 window.changeActiveArticle = changeActiveArticle;
 window.openArticlesModal = openArticlesModal;
 window.closeArticlesModal = closeArticlesModal;
+window.openModal = function(modalId) {
+    if (typeof modalId === 'string' && modalId) {
+        const m = document.getElementById(modalId);
+        if (m) m.classList.add('active');
+    } else {
+        openArticlesModal();
+    }
+};
+window.closeModal = function(modalId) {
+    if (typeof modalId === 'string' && modalId) {
+        const m = document.getElementById(modalId);
+        if (m) m.classList.remove('active');
+    } else {
+        closeArticlesModal();
+    }
+};
 window.loadArticleInModal = loadArticleInModal;
 window.saveActiveArticleForm = saveActiveArticleForm;
 window.resetArticlesDefault = resetArticlesDefault;
@@ -277,6 +295,8 @@ window.clearGeminiApiKey = clearGeminiApiKey;
 window.promptSaveGeminiApiKey = promptSaveGeminiApiKey;
 window.runDeepDiagnosis = runDeepDiagnosis;
 window.showToast = showToast;
+window.startDiagnosticCamera = startDiagnosticCamera;
+window.stopDiagnosticCamera = stopDiagnosticCamera;
 window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
 window.openCameraPermissionModal = openCameraPermissionModal;
 window.closeCameraPermissionModal = closeCameraPermissionModal;
@@ -312,7 +332,17 @@ window.addEventListener('DOMContentLoaded', () => {
     if (captureInput) captureInput.addEventListener('change', nexusHandleImageSelect);
     if (uploadInput) uploadInput.addEventListener('change', nexusHandleImageSelect);
 
-    // 4. Registrar Service Worker PWA
+    // 4. Intentar iniciar cámara en vivo si estamos en la vista de inspección
+    try {
+        const liveView = document.getElementById('liveView');
+        if (liveView && (liveView.classList.contains('active') || liveView.style.display !== 'none')) {
+            startDiagnosticCamera();
+        }
+    } catch (e) {
+        console.warn("[NEXUS] AutoStart Camera:", e);
+    }
+
+    // 5. Registrar Service Worker PWA
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(reg => {
             console.log("[NEXUS PWA] Service Worker registrado.");
@@ -322,5 +352,5 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    console.log("[NEXUS] VitroDiag NEXUS v2.0.4 inicializado correctamente.");
+    console.log("[NEXUS] VitroDiag NEXUS v2.1.1 inicializado correctamente con cámara en vivo activa.");
 });
