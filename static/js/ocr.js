@@ -382,13 +382,14 @@ function parseScannerOcrText(fullText, digitText) {
     }
 
     // ─── Mostrar panel de confirmación para que el operador valide/corrija ───
-    document.getElementById('ocrValPlungerUp')?.value = state.scannerParsedValues.plungerUp;
-    document.getElementById('ocrValPlungerDown')?.value = state.scannerParsedValues.plungerDown;
-    document.getElementById('ocrValInvertStart')?.value = state.scannerParsedValues.invertStart;
-    document.getElementById('ocrValBlowClose')?.value = state.scannerParsedValues.blowClose;
-    document.getElementById('ocrValNeckRingOpen')?.value = state.scannerParsedValues.neckRingOpen;
-    document.getElementById('ocrValBlowOn')?.value = state.scannerParsedValues.blowOn;
-    document.getElementById('ocrValBlowOff')?.value = state.scannerParsedValues.blowOff;
+    const setOcrVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v !== undefined ? v : ''; };
+    setOcrVal('ocrValPlungerUp', state.scannerParsedValues.plungerUp);
+    setOcrVal('ocrValPlungerDown', state.scannerParsedValues.plungerDown);
+    setOcrVal('ocrValInvertStart', state.scannerParsedValues.invertStart);
+    setOcrVal('ocrValBlowClose', state.scannerParsedValues.blowClose);
+    setOcrVal('ocrValNeckRingOpen', state.scannerParsedValues.neckRingOpen);
+    setOcrVal('ocrValBlowOn', state.scannerParsedValues.blowOn);
+    setOcrVal('ocrValBlowOff', state.scannerParsedValues.blowOff);
 
     // Indicar visualmente cuáles valores fueron detectados vs rellenados
     const ocrFields = {
@@ -434,9 +435,10 @@ function parseScannerOcrText(fullText, digitText) {
     }
 
     // Mostrar el panel de confirmación y ocultar loader/tarjeta de resultados previa
-    document.getElementById('ocrLoader')?.style?.display = 'none';
-    document.getElementById('scannerResultsCard')?.style?.display = 'none';
-    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'block';
+    const setDisplay = (id, d) => { const el = document.getElementById(id); if (el) el.style.display = d; };
+    setDisplay('ocrLoader', 'none');
+    setDisplay('scannerResultsCard', 'none');
+    setDisplay('scannerOcrConfirmArea', 'block');
     document.getElementById('scannerOcrConfirmArea')?.scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -463,7 +465,8 @@ function confirmOcrAndCompare() {
     };
 
     // Ocultar confirmación y renderizar la comparación final
-    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'none';
+    const ocrArea = document.getElementById('scannerOcrConfirmArea');
+    if (ocrArea) ocrArea.style.display = 'none';
     renderScannerComparisonTable(defaultValues);
 
     showToast("Lectura validada con éxito por operador.", "success");
@@ -574,13 +577,14 @@ function renderScannerComparisonTable(defaults) {
 function applyScannerValuesToCalculator() {
     if (!state.scannerParsedValues || Object.keys(state.scannerParsedValues).length === 0) return;
 
-    document.getElementById('valPlungerUp')?.value = state.scannerParsedValues.plungerUp;
-    document.getElementById('valPlungerDown')?.value = state.scannerParsedValues.plungerDown;
-    document.getElementById('valInvertStart')?.value = state.scannerParsedValues.invertStart;
-    document.getElementById('valBlowClose')?.value = state.scannerParsedValues.blowClose;
-    document.getElementById('valNeckOpen')?.value = state.scannerParsedValues.neckRingOpen;
-    document.getElementById('valBlowOn')?.value = state.scannerParsedValues.blowOn;
-    document.getElementById('valBlowOff')?.value = state.scannerParsedValues.blowOff;
+    const setCalcVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v !== undefined ? v : ''; };
+    setCalcVal('valPlungerUp', state.scannerParsedValues.plungerUp);
+    setCalcVal('valPlungerDown', state.scannerParsedValues.plungerDown);
+    setCalcVal('valInvertStart', state.scannerParsedValues.invertStart);
+    setCalcVal('valBlowClose', state.scannerParsedValues.blowClose);
+    setCalcVal('valNeckOpen', state.scannerParsedValues.neckRingOpen);
+    setCalcVal('valBlowOn', state.scannerParsedValues.blowOn);
+    setCalcVal('valBlowOff', state.scannerParsedValues.blowOff);
 
     showToast("Valores escaneados de grados cargados en la calculadora", "success");
 
@@ -707,8 +711,9 @@ function resetScannerImage() {
     if (previewImg) previewImg.src = "";
     state.scannerImageBase64 = null;
 
-    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'none';
-    document.getElementById('scannerResultsCard')?.style?.display = 'none';
+    const setAreaDisp = (id, d) => { const el = document.getElementById(id); if (el) el.style.display = d; };
+    setAreaDisp('scannerOcrConfirmArea', 'none');
+    setAreaDisp('scannerResultsCard', 'none');
 
     if (runOcrBtn) {
         runOcrBtn.classList.add('d-none');
@@ -760,8 +765,10 @@ function runScannerManualComparison() {
 }
 
 function cancelOcrConfirm() {
-    document.getElementById('scannerOcrConfirmArea')?.style?.display = 'none';
+    const ocrConf = document.getElementById('scannerOcrConfirmArea');
+    if (ocrConf) ocrConf.style.display = 'none';
     resetScannerImage();
+}
 if (typeof window !== 'undefined') {
     window.setScannerSource = setScannerSource;
     window.captureScannerSnapshot = captureScannerSnapshot;

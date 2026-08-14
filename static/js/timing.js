@@ -372,6 +372,8 @@ function showDefectRemedy() {
             validateBdfTiming();
         };
     }
+}
+
 if (typeof window !== 'undefined') {
     window.calculateSopMs = calculateSopMs;
     window.validateBdfTiming = validateBdfTiming;

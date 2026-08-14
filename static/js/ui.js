@@ -155,16 +155,21 @@ function loadArticleInModal(id) {
             const article = state.articulosList.find(a => a.id === id);
             if (!article) return;
 
-            document.getElementById('artId')?.value = article.id;
-            document.getElementById('artNombre')?.value = article.nombre;
-            document.getElementById('artBpm')?.value = article.bpm;
-            document.getElementById('artSecciones')?.value = article.secciones;
-            document.getElementById('artCavidades')?.value = article.cavidades;
-            document.getElementById('artSwab')?.value = article.swabInterval;
-            document.getElementById('artProceso')?.value = article.proceso;
-            document.getElementById('artAltura')?.value = article.altura;
-            document.getElementById('artCuerpo')?.value = article.diametroCuerpo;
-            document.getElementById('artBoca')?.value = article.diametroBoca;
+            const setVal = (elId, val) => {
+                const el = document.getElementById(elId);
+                if (el) el.value = val !== undefined && val !== null ? val : '';
+            };
+
+            setVal('artId', article.id);
+            setVal('artNombre', article.nombre);
+            setVal('artBpm', article.bpm);
+            setVal('artSecciones', article.secciones);
+            setVal('artCavidades', article.cavidades);
+            setVal('artSwab', article.swabInterval);
+            setVal('artProceso', article.proceso);
+            setVal('artAltura', article.altura);
+            setVal('artCuerpo', article.diametroCuerpo);
+            setVal('artBoca', article.diametroBoca);
         }
 
 function saveActiveArticleForm() {
@@ -193,7 +198,8 @@ function saveActiveArticleForm() {
 
             populateArticleSelects();
             // Mantener selección del modal en el editado
-            document.getElementById('modalSelectArticle')?.value = id;
+            const modalSel = document.getElementById('modalSelectArticle');
+            if (modalSel) modalSel.value = id;
 
             showToast("Ficha técnica del artículo actualizada con éxito", "success");
             closeArticlesModal();
