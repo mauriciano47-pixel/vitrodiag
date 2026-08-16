@@ -25,7 +25,6 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 3. 📋  Resultado        →  Defecto · Zona · Gravedad · Confianza · Bounding Boxes 2D · Acciones correctivas I.S.
 ```
 
-
 ---
 
 ## 3. Catálogo Completo de Funciones (v2.0.2)

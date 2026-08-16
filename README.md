@@ -34,4 +34,3 @@ Inspección Asistida por IA — Moldería I.S. para Operador de Cristal Chile.
 ## URL de Producción
 
 <https://mauriciano47-pixel.github.io/vitrodiag/>
-

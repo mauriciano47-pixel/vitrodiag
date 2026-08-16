@@ -2,14 +2,12 @@
 
 - **REGLA ABSOLUTA DE LIMPIEZA FINAL Y CERO ERRORES/PROBLEMAS**: Cada vez que se realice cualquier modificación, edición, parche o generación de archivos en el proyecto, el agente DEBE revisar de forma obligatoria y autónoma la pestaña de problemas del IDE (`@[current_problems]`), consolas y linters, resolviendo de inmediato el 100% de advertencias, lints, alertas y errores (Python, JavaScript, HTML, CSS, Markdown) antes de dar por concluida la tarea o entregar la respuesta.
 
-
 - **Corrección Proactiva de Lints y Advertencias**: Cada vez que se realicen cambios, auditorías o se generen archivos (código Python, JavaScript, HTML o Markdown) y el IDE/terminal reporte advertencias o problemas, el agente debe proceder de forma autónoma a corregirlos de inmediato para mantener el workspace libre de alertas, sin esperar a que el usuario lo delegue explícitamente y sin necesidad de pedir autorización o confirmación previa. Esto incluye, pero no se limita a:
   - **HTML/Accesibilidad**: Errores de tipo "Form elements must have labels" (falta de `title` o `aria-label` en `<input>`, `<select>`, `<textarea>`).
   - **CSS**: Advertencias de "CSS inline styles should not be used" (reemplazar `style="..."` por clases CSS dedicadas).
   - **Markdown**: Errores de formato `MD022`, `MD032`, `MD009` (líneas en blanco antes/después de encabezados, espacios finales).
   - **Python**: Errores de sintaxis (`SyntaxError`), imports no utilizados, variables sin uso.
   - **JavaScript**: `ReferenceError`, `TypeError`, imports rotos, variables no declaradas.
-
 
 - **Sincronización Automática de Propuesta y Documentación (VitroDiag)**: Cada vez que se implemente una nueva función, módulo, parche o cambio de versión en la aplicación, el agente DEBE actualizar automáticamente la propuesta técnica oficial (`vitrodiag_propuesta_oficial.md`), el documento de información en el Escritorio (`VitroDiag_Info.txt`), el `VERSION.txt` y `README.md`, garantizando que todas las funciones, hojas de ruta y versiones coincidan 100% con la aplicación.
 
@@ -39,7 +37,3 @@
 - **REGLA ABSOLUTA DE CERO FALSOS POSITIVOS Y VALIDACIÓN EMPÍRICA EN VIVO (Zero-False-Positive Standard)**: Queda strictly prohibido declarar que un bug está corregido, o que un componente está "operativo", "descongelado" o "listo" basándose únicamente en edits de archivos o chequeos estáticos. El agente DEBE ejecutar comprobación empírica en tiempo de ejecución, inspeccionando la vinculación de eventos en el DOM y logs reales en vivo antes de emitir cualquier confirmación de éxito.
 
 - **REGLA ABSOLUTA DE VISUALIZACIÓN GARANTIZADA DE IMÁGENES (Image Rendering Guarantee Standard)**: Queda estrictamente prohibido usar rutas locales crudas `file:///C:/Users/...` o `C:\Users\...` para imágenes adjuntas en el chat o en los artefactos si el protocolo local `file://` es bloqueado por las políticas de origen del navegador/IDE. Toda imagen, captura o diagrama que se presente al usuario DEBE servirse mediante una URL HTTP activa (`http://localhost:8085/...` o `https://mauriciano47-pixel.github.io/vitrodiag/...`) o convertirse e incrustarse directamente como Base64 Data URI (`data:image/png;base64,...`), garantizando que el usuario SIEMPRE pueda visualizarlas de forma instantánea y sin pantallas en blanco o imágenes rotas.
-
-
-
-
