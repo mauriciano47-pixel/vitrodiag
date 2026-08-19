@@ -3,35 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.1.1 — Inspección IA</title>
+    <title>VitroDiag NEXUS v2.2.0 — Inspección IA & Moldería Always-Live</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Directivas Estrictas Anti-Caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
-    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.1.1)
+    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES (v2.2.0 Always-Live)
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v2.1.1')) {
-                    caches.delete(name);
-                    console.log('[PWA] Purga de caché antigua ejecutada:', name);
-                }
+                caches.delete(name);
+                console.log('[Always-Live] Purga de caché ejecutada:', name);
             });
         });
     }
-    // Autopurga de versión anterior en localStorage
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.1.1') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.1.1');
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-                for (let r of regs) r.unregister();
-            });
-        }
+    // Desregistro inmediato de Service Workers
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (let r of regs) r.unregister();
+        });
+    }
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.2.0') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.2.0');
     }
     window.clearAppCache = async function() {
         if ('serviceWorker' in navigator) {
@@ -44,7 +43,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en v2.1.1.');
+        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.2.0.');
         window.location.reload(true);
     };
 
@@ -6330,6 +6329,6 @@
     }
     window.switchToolTab = switchToolTab;
     </script>
-    <script type="module" src="static/js/main.js?v=2.1.1"></script>
+    <script src="static/js/bootstrapper.js"></script>
 </body>
 </html>

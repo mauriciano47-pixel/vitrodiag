@@ -1,9 +1,9 @@
-# VitroDiag NEXUS v2.1.2 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.2.0 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.1.2 — Encendido Automático de Visor, Retícula Activa & PWA Cache Shield)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.0 — Arquitectura Always-Live & Zero-Cache Shield)  
 
 ---
 
@@ -96,7 +96,10 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 | Versión | Descripción |
 | --- | --- |
-| **v2.0.3** | Despliegue de PWA Cache Shield con autopurga de versiones previas, autorrecarga transparente en `controllerchange` y accesos directos de entrega. |
+| **v2.2.0** | Implementación de Arquitectura Always-Live con Zero-Cache Shield: eliminación total de Service Workers y CacheStorage, micro-bootstrapper dinámico y detector de actualizaciones en caliente. |
+| **v2.1.4** | Validación integral con suite de pruebas `mecanico1` y estabilización de visor de cámara. |
+| **v2.1.2** | Encendido automático de visor, retícula táctica activa y catálogo pre-renderizado de 104 defectos industriales. |
+| **v2.0.3** | Despliegue de PWA Cache Shield con autopurga de versiones previas. |
 | **v2.0.2** | Extracción total de estilos inline a CSS modular, limpieza completa de advertencias del linter y optimización PWA. |
 | v2.0.1 | Refactorización de UI/CSS e integración de modal de diagnóstico de cámara WebRTC. |
 | **v2.0.0** | Transformación completa a NEXUS. Flujo Foto→Gemini→Diagnóstico. 4 tabs limpias. Eliminación de código muerto CNN/calibración. |

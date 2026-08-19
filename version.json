@@ -1,0 +1,11 @@
+{
+  "version": "2.2.0",
+  "buildTime": 1724027400000,
+  "releaseName": "Always-Live Zero-Cache Shield",
+  "features": [
+    "Eliminación definitiva de Service Worker y CacheStorage",
+    "Carga directa de módulos JS con dynamic content-hashing",
+    "Detector de actualizaciones en segundo plano con hot-reload suave",
+    "Garantía 100% libre de retención de caché en cualquier navegador"
+  ]
+}

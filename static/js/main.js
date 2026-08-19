@@ -342,15 +342,12 @@ window.addEventListener('DOMContentLoaded', () => {
         console.warn("[NEXUS] AutoStart Camera:", e);
     }
 
-    // 5. Registrar Service Worker PWA
+    // 5. Modo Always-Live (Zero-SW / Zero-Cache)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(reg => {
-            console.log("[NEXUS PWA] Service Worker registrado.");
-            try { reg.update(); } catch(e) {}
-        }).catch(err => {
-            console.warn("[NEXUS PWA] Error al registrar SW:", err);
-        });
+        navigator.serviceWorker.getRegistrations().then(regs => {
+            for (let reg of regs) reg.unregister();
+        }).catch(() => {});
     }
 
-    console.log("[NEXUS] VitroDiag NEXUS v2.1.1 inicializado correctamente con cámara en vivo activa.");
+    console.log("[NEXUS] VitroDiag v2.2.0 Always-Live inicializado correctamente con cámara en vivo activa.");
 });

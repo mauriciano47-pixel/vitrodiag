@@ -1,6 +1,13 @@
-# VitroDiag NEXUS v2.1.2
+# VitroDiag NEXUS v2.2.0 — Always-Live Architecture
 
-Inspección Asistida por IA — Moldería I.S. para Operador de Cristal Chile.
+Inspección Asistida por IA & Moldería I.S. para Operador de Cristal Chile.
+
+## 🚀 Novedades v2.2.0: Arquitectura Always-Live (Zero-Cache Shield)
+
+- **Eliminación Definitiva de Retención de Caché:** Desactivación y auto-desinstalación total de Service Workers y CacheStorage.
+- **Micro-Bootstrapper Dinámico (`bootstrapper.js`):** Carga instantánea de módulos con hash de versión en caliente (`version.json?_t=...`).
+- **Auto-Hot-Reload en Vivo:** Vigilante en segundo plano que detecta nuevos despliegues en GitHub Pages y permite actualizar al instante sin recarga brusca ni pérdida de datos.
+- **Compatibilidad Universal 100%:** Funcionamiento sin fallos en cualquier navegador (Chrome, Safari iOS, Edge, Firefox, Android).
 
 ## Concepto
 
@@ -22,14 +29,13 @@ Inspección Asistida por IA — Moldería I.S. para Operador de Cristal Chile.
 
 ## Arquitectura y Tecnologías
 
-- PWA Offline-First (HTML5, CSS3 vanilla sin estilos inline, JS ES6+)
+- **Always-Live Direct Web App** (HTML5, CSS3 vanilla, JS ES6+ modular)
+- **Zero-Cache Bootstrapper** con control de versiones en vivo (`version.json`)
 - Gemini 2.0 Flash Vision API (Inspección Multimodal con Bounding Boxes 2D)
-- Visor de cámara en streaming interactivo con Canvas Canvas2D Retícula Overlays
+- Visor de cámara en streaming interactivo con Canvas2D Retícula Overlays
 - Pre-renderizado estático HTML5 de los 104 defectos (cero dependencia de JS asíncrono para render inicial)
 - IndexedDB + Few-Shot RAG
 - Tesseract.js (OCR de pantalla BDF)
-- Service Worker v2.1.2 autónomo con PWA Cache Shield y purga forzada de caché
-- Agente `memorioso1` integrado para prevención activa de regresiones PWA
 
 ## URL de Producción
 
