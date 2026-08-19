@@ -1,9 +1,9 @@
-# VitroDiag NEXUS v2.2.0 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.2.1 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.0 — Arquitectura Always-Live & Zero-Cache Shield)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.1 — Defectos Calcinados, 111 Defectos & Filtros Ópticos de Planta)  
 
 ---
 
@@ -96,6 +96,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 | Versión | Descripción |
 | --- | --- |
+| **v2.2.1** | Incorporación de la familia de 7 Defectos Calcinados (111 defectos en total), barra de Filtros Ópticos para Alta Iluminación en Planta (Silueta/Polarizado, Calcinados, Micro-Fisuras) y estrategia IA en dos niveles con Banco IA (Few-Shot RAG). |
 | **v2.2.0** | Implementación de Arquitectura Always-Live con Zero-Cache Shield: eliminación total de Service Workers y CacheStorage, micro-bootstrapper dinámico y detector de actualizaciones en caliente. |
 | **v2.1.4** | Validación integral con suite de pruebas `mecanico1` y estabilización de visor de cámara. |
 | **v2.1.2** | Encendido automático de visor, retícula táctica activa y catálogo pre-renderizado de 104 defectos industriales. |

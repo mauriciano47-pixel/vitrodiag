@@ -393,7 +393,24 @@
 
         // BASE DE DATOS DE 32 DEFECTOS DE MÁQUINA I.S. (Clasificación de Emhart y Cristalerías)
         export const DEFECTOS_DB = [
-            // --- BOCA (18 defectos) ---
+            // --- BOCA ---
+            {
+                id: "calcinado_boca",
+                nombre: "Calcinado en Boca / Grasa de Corona (Carbon Finish / Black Spot)",
+                zona: "boca",
+                gravedad: "Crítico",
+                descripcion: "Incrustación o mancha negra de compuesto de grafito/carbón calcinado en la cara de sellado o en los hilos de la rosca de la boca. Compromete el hermetismo, contamina el producto envasado y es motivo de rechazo automático en línea fría.",
+                causas: [
+                    "Exceso de compuesto de lubricación (swabbing) en el macho de prensado o en el molde de boca.",
+                    "Pasta de swabbing degradada o con exceso de grafito en suspensión que se quema al contacto con el vidrio caliente.",
+                    "Hisopo gastado o mal escurrido que gotea sobre el anillo de guía o platina de boca."
+                ],
+                acciones: [
+                    "Limpiar minuciosamente el molde de boca y la punta del macho con trapo seco para eliminar costras de carbón.",
+                    "Reducir la cantidad de pasta de swabbing y espaciar los ciclos de lubricación.",
+                    "Soplar aire de purga en la sección tras el hisopeado y verificar que el hisopo esté en buen estado."
+                ]
+            },
             {
                 id: "rebaba_boca",
                 nombre: "Rebaba en la Boca (Overpressed Finish)",
@@ -706,7 +723,24 @@
                 ]
             },
 
-            // --- CUELLO (12 defectos) ---
+            // --- CUELLO ---
+            {
+                id: "calcinado_cuello",
+                nombre: "Calcinado en Cuello (Carbon Neck Mark)",
+                zona: "cuello",
+                gravedad: "Mayor",
+                descripcion: "Manchas oscuras, vetas de carbón o partículas negras de lubricante quemado adheridas en la zona interna o externa del cuello de la botella.",
+                causas: [
+                    "Arrastre de pasta de swabbing acumulada en la parte superior del pre-molde durante el asentamiento.",
+                    "Lubricación excesiva en los brazos de inversión (Invert) o anillo de cuello.",
+                    "Falta de ventilación en la zona de cuello que atrapa vapores de aceite quemado."
+                ],
+                acciones: [
+                    "Limpiar la zona de asiento del pre-molde y retirar costras de grafito acumuladas.",
+                    "Ajustar la técnica de hisopeado aplicando una película delgada y uniforme sin escurrimientos.",
+                    "Verificar el enfriamiento y purga de aire en la estación de pre-molde."
+                ]
+            },
             {
                 id: "cuello_doblado",
                 nombre: "Cuello Doblado (Bent Neck)",
@@ -904,7 +938,58 @@
                 ]
             },
 
-            // --- CUERPO (30 defectos) ---
+            // --- CUERPO ---
+            {
+                id: "calcinado_hombro",
+                nombre: "Calcinado en Hombro (Carbon Shoulder Mark)",
+                zona: "cuerpo",
+                gravedad: "Mayor",
+                descripcion: "Residuos o manchas negras de lubricante calcinado incrustadas en la zona del hombro de la botella donde el parison expande inicialmente.",
+                causas: [
+                    "Exceso de pasta de swabbing acumulada en la parte superior del molde terminador.",
+                    "La gota o parison roza la zona de cierre superior antes del soplado final.",
+                    "Hombro del molde operando a temperatura excesiva sin enfriamiento suficiente."
+                ],
+                acciones: [
+                    "Soplar aire de limpieza en el hombro del molde y retirar excesos con hisopo seco.",
+                    "Ajustar la apertura y cierre suave del molde terminador.",
+                    "Verificar y balancear el enfriamiento de hombro en la sección."
+                ]
+            },
+            {
+                id: "calcinado_cuerpo",
+                nombre: "Calcinado en Cuerpo / Mancha Swab (Carbon Streak / Swab Burn)",
+                zona: "cuerpo",
+                gravedad: "Mayor",
+                descripcion: "Vetas o manchas negras de grafito calcinado extendidas a lo largo de la superficie del cuerpo del envase. Afecta la transparencia, estética y genera puntos débiles de adhesión.",
+                causas: [
+                    "Exceso de lubricación directa en las cavidades del molde terminador.",
+                    "La gota de vidrio cae sobre zonas con charcos de aceite no evaporado en el pre-molde.",
+                    "Desprendimiento de carbonilla o costras resecas de las caras del molde."
+                ],
+                acciones: [
+                    "Secar y pulir las caras del molde terminador con hisopo seco para retirar el exceso.",
+                    "Regular la frecuencia de swabbing respetando el intervalo del turno (ej. cada 20 min).",
+                    "Asegurar que la gota de vidrio cargue perfectamente centrada sin rozar paredes impregnadas."
+                ]
+            },
+            {
+                id: "grasa_quemada_molde",
+                nombre: "Grasa Quemada de Partición (Mold Seam Burn / Carbon Residue)",
+                zona: "cuerpo",
+                gravedad: "Mayor",
+                descripcion: "Líneas o costras oscuras de lubricante calcinado acumuladas a lo largo de la línea de costura/partición del molde o en grabados.",
+                causas: [
+                    "Acumulación de residuos de swabbing en los encajes de cierre del molde.",
+                    "Holgura o desgaste en las bisagras de cierre que permite que la grasa ingrese a la cavidad.",
+                    "Temperatura excesiva de moldería que calcina rápidamente el compuesto orgánico."
+                ],
+                acciones: [
+                    "Limpiar los encajes y líneas de partición del molde terminador.",
+                    "Comprobar el apriete y cierre de los mecanismos de molde.",
+                    "Optimizar el flujo de aire de enfriamiento del molde para evitar sobrecalentamiento."
+                ]
+            },
             {
                 id: "columpio",
                 nombre: "Columpio / Pelo en el Cuerpo (Birdswing / Birdcage)",
@@ -1353,7 +1438,24 @@
                 ]
             },
 
-            // --- FONDO (15 defectos) ---
+            // --- FONDO ---
+            {
+                id: "calcinado_fondo",
+                nombre: "Calcinado en Fondo / Placa de Fondo (Bottom Plate Carbon / Black Bottom)",
+                zona: "fondo",
+                gravedad: "Mayor",
+                descripcion: "Depósito de carbón o grafito negro incrustado en el asiento de fondo (placa de fondo / bottom plate), picado o estriado de apoyo de la botella.",
+                causas: [
+                    "Exceso de lubricante de swabbing que escurre por gravedad hacia la placa de fondo del molde terminador.",
+                    "Ranuras de vacío o venteo de la placa de fondo obstruidas con carbón acumulado.",
+                    "Placa de fondo trabajando a temperatura muy elevada que carboniza el aceite al instante."
+                ],
+                acciones: [
+                    "Limpiar la placa de fondo y destapar los orificios de venteo de fondo con aire a presión.",
+                    "Evitar hisopear en exceso la parte inferior del molde terminador.",
+                    "Verificar y aumentar la presión de enfriamiento en la placa de fondo de la sección."
+                ]
+            },
             {
                 id: "fondo_delgado",
                 nombre: "Fondo Delgado (Thin Bottom)",
@@ -1594,7 +1696,24 @@
                 ]
             },
 
-            // --- GENERALES (25 defectos) ---
+            // --- GENERALES ---
+            {
+                id: "pintas_negras_grafito",
+                nombre: "Pintas Negras / Inclusiones de Grafito Calcinado (Carbon / Graphite Inclusions)",
+                zona: "general",
+                gravedad: "Mayor",
+                descripcion: "Partículas o motas puntuales de color negro (carbón o grafito calcinado) incrustadas en el espesor del vidrio en cualquier zona de la botella.",
+                causas: [
+                    "Desprendimiento de escamas de grafito desde las canaletas de distribución (delivery) o cuchillas de tijera.",
+                    "Residuos de carbón arrastrados por el flujo de vidrio fundido en el alimentador.",
+                    "Contaminación por suciedad ambiental o herramientas de manipulación sucias."
+                ],
+                acciones: [
+                    "Limpiar e inspeccionar las canaletas y cucharas del mecanismo de distribución de gotas.",
+                    "Verificar la lubricación y rociado de agua/aceite en las cuchillas de tijera del alimentador.",
+                    "Soplar aire de limpieza en los deflectores de canaleta."
+                ]
+            },
             {
                 id: "botella_deformada",
                 nombre: "Botella Deformada / Leaner (Out of Shape)",

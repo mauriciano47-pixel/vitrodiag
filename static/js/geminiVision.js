@@ -77,19 +77,22 @@ function buildGlassDefectPrompt() {
     const catalogSummary = getDefectCatalogSummary();
     return `Eres un inspector experto de control de calidad en envases de vidrio para la industria vidriera (proceso NNPB / Blow-Blow).
 
-Analiza minuciosamente esta fotografía de alta resolución de una botella/envase de vidrio.
+Analiza minuciosamente esta fotografía de alta resolución de una botella/envase de vidrio recién fabricado en máquina I.S.
 
-Debes comparar lo observado contra nuestro CATÁLOGO OFICIAL DE 96 DEFECTOS INDUSTRIALES DE MÁQUINA I.S. que se detalla a continuación:
+Debes comparar lo observado contra nuestro CATÁLOGO OFICIAL DE 111 DEFECTOS INDUSTRIALES DE MÁQUINA I.S. que se detalla a continuación:
 
 --- CATÁLOGO OFICIAL DE DEFECTOS ---
 ${catalogSummary}
 --- FIN DEL CATÁLOGO ---
 
-Instrucciones Estrictas:
-1. Identifica si existen uno o más defectos de vidrio (fisuras, columpios/birdswings, rebabas, burbujas, piedras, hombro hundido, pared delgada, vidrio sucio, deformaciones, etc.).
-2. Para cada defecto encontrado, debes asociarlo OBLIGATORIAMENTE con uno de los "ID" del catálogo oficial.
-3. Debes proporcionar las coordenadas del recuadro delimitador (Bounding Box) normalizado de 0 a 1000 [ymin, xmin, ymax, xmax] donde se encuentra la falla visual.
-4. Si el envase está conforme y sin fallas, indica defectos_encontrados: false.
+Instrucciones Estrictas de Inspección:
+1. PRIORIDAD EN DEFECTOS CALCINADOS Y CONTAMINACIÓN: Presta atención crítica a manchas negras, marcas oscuras, residuos de lubricante de swabbing/grafito quemado en Boca (calcinado_boca), Cuello (calcinado_cuello), Hombro (calcinado_hombro), Cuerpo (calcinado_cuerpo, grasa_quemada_molde), Fondo (calcinado_fondo) y Pintas Negras (pintas_negras_grafito).
+2. ESTRATEGIA EN DOS NIVELES:
+   - Nivel 1 (Notorios/Geométricos): Deformaciones, botella inclinada, hombro hundido, columpios, fondo delgado, rebabas de boca, partición abierta.
+   - Nivel 2 (Detallados/Minuciosos): Micro-fisuras, pelos transparentes, inclusiones finas, pliegues sutiles y burbujas.
+3. Para cada defecto encontrado, debes asociarlo OBLIGATORIAMENTE con uno de los "ID" del catálogo oficial.
+4. Proporciona las coordenadas del recuadro delimitador (Bounding Box) normalizado de 0 a 1000 [ymin, xmin, ymax, xmax] donde se ubica exactamente la falla visual.
+5. Si el envase está conforme y sin fallas, indica defectos_encontrados: false.
 
 Responde EXCLUSIVAMENTE con un JSON válido (sin markdown, sin bloques \`\`\`json) con esta estructura exacta:
 {
@@ -97,7 +100,7 @@ Responde EXCLUSIVAMENTE con un JSON válido (sin markdown, sin bloques \`\`\`jso
   "cantidad_defectos": número,
   "analisis": [
     {
-      "defecto_id": "id_del_catalogo (ejemplo: rebaba_boca, columpio, pared_delgada, etc.)",
+      "defecto_id": "id_del_catalogo (ejemplo: calcinado_boca, calcinado_cuerpo, columpio, etc.)",
       "defecto_nombre": "nombre oficial del defecto",
       "zona": "boca|cuello|cuerpo|fondo|general",
       "gravedad": "critico|mayor|menor",

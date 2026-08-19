@@ -1,11 +1,11 @@
 {
-  "version": "2.2.0",
-  "buildTime": 1724027400000,
-  "releaseName": "Always-Live Zero-Cache Shield",
+  "version": "2.2.1",
+  "buildTime": 1724036000000,
+  "releaseName": "Defectos Calcinados & Filtros Ópticos de Planta",
   "features": [
-    "Eliminación definitiva de Service Worker y CacheStorage",
-    "Carga directa de módulos JS con dynamic content-hashing",
-    "Detector de actualizaciones en segundo plano con hot-reload suave",
-    "Garantía 100% libre de retención de caché en cualquier navegador"
+    "Incorporación de la familia completa de 7 Defectos Calcinados (111 defectos en total)",
+    "Filtros Ópticos en Visor para Alta Iluminación (Normal, Silueta/Polarizado, Calcinados/Pintas, Micro-Fisuras)",
+    "Estrategia IA en dos niveles (Notorios con Gemini 2.0 y Detallados con Banco IA Few-Shot RAG)",
+    "Pre-renderizado estático de 111 fichas técnicas de defectos industriales"
   ]
 }
