@@ -1,11 +1,12 @@
 {
-  "version": "2.2.1",
-  "buildTime": 1724036000000,
-  "releaseName": "Defectos Calcinados & Filtros Ópticos de Planta",
+  "version": "2.2.2",
+  "buildTime": 1724608000000,
+  "releaseName": "Galería Receptora, Acopio de Fotos & Descongelamiento de Módulos",
   "features": [
-    "Incorporación de la familia completa de 7 Defectos Calcinados (111 defectos en total)",
-    "Filtros Ópticos en Visor para Alta Iluminación (Normal, Silueta/Polarizado, Calcinados/Pintas, Micro-Fisuras)",
-    "Estrategia IA en dos niveles (Notorios con Gemini 2.0 y Detallados con Banco IA Few-Shot RAG)",
-    "Pre-renderizado estático de 111 fichas técnicas de defectos industriales"
+    "Galería Receptora & Acopio persistente en IndexedDB de fotos tomadas durante la inspección",
+    "Corrección del ciclo de vida de carga de módulos (defensivo ante DOMContentLoaded diferido)",
+    "Encendido y reconexión inmediata del visor de cámara en vivo (WebRTC / Streaming)",
+    "Botones táctiles de disparo instantáneo: Capturar Visor, Foto Nativa y Galería con auto-acopio",
+    "Integración directa de fotos de acopio hacia el Banco IA para Few-Shot RAG y diagnóstico"
   ]
 }

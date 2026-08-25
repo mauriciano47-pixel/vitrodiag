@@ -1,4 +1,4 @@
-// VitroDiag NEXUS v2.0.4 — Punto de Entrada y Coordinador Principal
+// VitroDiag NEXUS v2.2.2 — Punto de Entrada y Coordinador Principal Always-Live
 import { state } from './state.js';
 import { DEFECTOS_DB, renderDefectsList } from './db.js';
 import { 
@@ -19,6 +19,8 @@ import {
     switchToolTab
 } from './ui.js';
 import { 
+    startDiagnosticCamera,
+    stopDiagnosticCamera,
     startScannerCamera, 
     stopScannerCamera,
     openCameraPermissionModal,
@@ -71,8 +73,18 @@ import {
     closeSampleModal,
     updateSampleNotesFromModal,
     deleteSampleFromModal,
-    analyzeSampleWithGeminiFromModal
+    analyzeSampleWithGeminiFromModal,
+    renderDatasetGallery,
+    populateDatasetSelect
 } from './datasetManager.js';
+import {
+    initAcopioUI,
+    savePhotoToAcopio,
+    renderAcopioReel,
+    loadAcopioPhotoToInspection,
+    deleteAcopioPhoto,
+    clearAllAcopioPhotos
+} from './acopioManager.js';
 
 // === NEXUS: Sistema de Inspección por Foto + Gemini IA ===
 
@@ -80,12 +92,66 @@ import {
  * Estado interno de la pantalla de inspección NEXUS.
  */
 let nexusCurrentImageBase64 = null;
+let lastSavedAcopioRecord = null;
 
 /**
- * Maneja la selección de imagen (captura o subida).
+ * Dispara una captura instantánea desde el video de cámara en vivo o abre el selector de archivo.
+ */
+export function nexusSnapLiveWebcam() {
+    const video = document.getElementById('webcam');
+    if (video && video.readyState >= 2 && video.videoWidth > 0) {
+        const capCanvas = document.createElement('canvas');
+        capCanvas.width = video.videoWidth;
+        capCanvas.height = video.videoHeight;
+        const ctx = capCanvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(video, 0, 0, capCanvas.width, capCanvas.height);
+            nexusCurrentImageBase64 = capCanvas.toDataURL('image/jpeg', 0.85);
+            window.nexusCurrentImageBase64 = nexusCurrentImageBase64;
+            
+            // Auto-guardar inmediatamente en Acopio
+            savePhotoToAcopio({
+                fotoBase64: nexusCurrentImageBase64,
+                articuloId: state.activeArticle ? state.activeArticle.id : 'ssp_296',
+                notas: 'Captura instantánea de visor en vivo'
+            }).then(rec => {
+                lastSavedAcopioRecord = rec;
+            });
+
+            // Mostrar preview
+            const previewImg = document.getElementById('nexusPreviewImg');
+            const placeholder = document.getElementById('nexusPlaceholder');
+            const btnDiagnose = document.getElementById('btnRunDiagnosis') || document.getElementById('btnNexusDiagnose');
+            const resultCard = document.getElementById('resultadoCard') || document.getElementById('nexusResultCard');
+            const bboxCanvas = document.getElementById('nexusBboxCanvas');
+            
+            if (video) video.style.display = 'none';
+            if (previewImg) {
+                previewImg.src = nexusCurrentImageBase64;
+                previewImg.style.display = 'block';
+            }
+            if (placeholder) placeholder.style.display = 'none';
+            if (bboxCanvas) bboxCanvas.style.display = 'none';
+            if (resultCard) resultCard.style.display = 'none';
+            if (btnDiagnose) {
+                btnDiagnose.disabled = false;
+                btnDiagnose.style.opacity = '1';
+            }
+            showToast('📸 Foto capturada del visor en vivo y guardada en el acopio.', 'success');
+            return;
+        }
+    }
+    
+    // Fallback si no hay stream activo
+    const captureInput = document.getElementById('nexusCaptureInput');
+    if (captureInput) captureInput.click();
+}
+
+/**
+ * Maneja la selección de imagen (captura nativa o subida de archivo).
  * @param {Event} event 
  */
-function nexusHandleImageSelect(event) {
+export function nexusHandleImageSelect(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -94,8 +160,20 @@ function nexusHandleImageSelect(event) {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         nexusCurrentImageBase64 = e.target.result;
+        window.nexusCurrentImageBase64 = nexusCurrentImageBase64;
+        
+        // Auto-guardar inmediatamente en el Acopio de Galería
+        try {
+            lastSavedAcopioRecord = await savePhotoToAcopio({
+                fotoBase64: nexusCurrentImageBase64,
+                articuloId: state.activeArticle ? state.activeArticle.id : 'ssp_296',
+                notas: 'Foto capturada en inspección NEXUS'
+            });
+        } catch (acErr) {
+            console.warn('[NEXUS] Auto-acopio:', acErr);
+        }
         
         // Mostrar preview
         const previewImg = document.getElementById('nexusPreviewImg') || document.getElementById('scannerPreviewImg');
@@ -118,7 +196,7 @@ function nexusHandleImageSelect(event) {
         }
         if (resultCard) resultCard.style.display = 'none';
         
-        showToast('📷 Fotografía capturada. Revisa el encuadre y presiona DIAGNOSTICAR.', 'success');
+        showToast('📷 Fotografía capturada y acopiada. Presiona DIAGNOSTICAR.', 'success');
     };
     reader.readAsDataURL(file);
     
@@ -129,7 +207,7 @@ function nexusHandleImageSelect(event) {
 /**
  * Ejecuta el diagnóstico con Gemini 2.0 Flash sobre la imagen capturada.
  */
-async function nexusDiagnoseWithAI() {
+export async function nexusDiagnoseWithAI() {
     // Si no hay imagen cargada explícitamente, intentar capturar del canvas / webcam en vivo
     if (!nexusCurrentImageBase64) {
         const canvas = document.getElementById('canvasOutput');
@@ -189,6 +267,17 @@ async function nexusDiagnoseWithAI() {
             bboxCanvas.style.display = 'block';
             drawDefectBoundingBoxes(bboxCanvas, state.lastGeminiResult);
         }
+
+        // Actualizar registro en acopio con el defecto detectado
+        if (lastSavedAcopioRecord && state.lastGeminiResult && state.lastGeminiResult.analisis && state.lastGeminiResult.analisis.length > 0) {
+            const firstDef = state.lastGeminiResult.analisis[0];
+            lastSavedAcopioRecord.defectoId = firstDef.defecto_id;
+            lastSavedAcopioRecord.defectoNombre = firstDef.defecto_nombre;
+            lastSavedAcopioRecord.gravedad = firstDef.gravedad === 'critico' ? 'Crítico' : 'Mayor';
+            lastSavedAcopioRecord.zona = firstDef.zona;
+            lastSavedAcopioRecord.confianza = firstDef.confianza;
+            renderAcopioReel();
+        }
     } catch (err) {
         console.error('[NEXUS] Error en diagnóstico IA:', err);
         showToast('Error al conectar con Gemini. Verifica tu conexión a internet y API Key.', 'danger');
@@ -204,9 +293,8 @@ async function nexusDiagnoseWithAI() {
 /**
  * Guarda el último resultado de inspección en la bitácora.
  */
-function nexusSaveToBitacora() {
+export function nexusSaveToBitacora() {
     showToast('Resultado guardado en la bitácora del turno.', 'success');
-    // Cambiar a la vista de herramientas y abrir la bitácora
     switchView('tools');
     if (window.switchToolTab) window.switchToolTab('log');
 }
@@ -214,15 +302,16 @@ function nexusSaveToBitacora() {
 /**
  * Guarda la imagen inspeccionada en el Banco IA para Few-Shot RAG.
  */
-function nexusSaveToDataset() {
+export function nexusSaveToDataset() {
     switchView('dataset');
     showToast('Navega al Banco IA para etiquetar y guardar esta muestra.', 'info');
 }
 
-// Exponer funciones NEXUS y Permisos al ámbito global
+// Exponer funciones globales a window para compatibilidad estricta con eventos inline
 window.nexusHandleImageSelect = nexusHandleImageSelect;
 window.handleNexusCaptureSelect = nexusHandleImageSelect;
 window.handleNexusUploadSelect = nexusHandleImageSelect;
+window.nexusSnapLiveWebcam = nexusSnapLiveWebcam;
 window.nexusDiagnoseWithAI = nexusDiagnoseWithAI;
 window.triggerNexusDiagnosis = nexusDiagnoseWithAI;
 window.nexusSaveToBitacora = nexusSaveToBitacora;
@@ -233,52 +322,27 @@ window.retryCameraPermissions = retryCameraPermissions;
 window.checkCameraPermissions = checkCameraPermissions;
 window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
 
-// Exponer funciones de módulos existentes al ámbito global
-window.DEFECTOS_DB = DEFECTOS_DB;
-window.renderDefectsList = renderDefectsList;
-window.openSampleModal = openSampleModal;
-window.closeSampleModal = closeSampleModal;
-window.updateSampleNotesFromModal = updateSampleNotesFromModal;
-window.deleteSampleFromModal = deleteSampleFromModal;
-window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
-window.promptSaveGeminiApiKey = promptSaveGeminiApiKey;
-window.captureAndAnalyzeWithAI = captureAndAnalyzeWithAI;
-window.triggerDeepAnalysisFileUpload = triggerDeepAnalysisFileUpload;
-window.handleDeepAnalysisFileSelect = handleDeepAnalysisFileSelect;
-window.drawDefectBoundingBoxes = drawDefectBoundingBoxes;
+// Exponer funciones UI y Artículos
 window.switchView = switchView;
 window.switchToolTab = switchToolTab;
 window.changeActiveArticle = changeActiveArticle;
 window.openArticlesModal = openArticlesModal;
 window.closeArticlesModal = closeArticlesModal;
-window.openModal = function(modalId) {
-    if (typeof modalId === 'string' && modalId) {
-        const m = document.getElementById(modalId);
-        if (m) m.classList.add('active');
-    } else {
-        openArticlesModal();
-    }
-};
-window.closeModal = function(modalId) {
-    if (typeof modalId === 'string' && modalId) {
-        const m = document.getElementById(modalId);
-        if (m) m.classList.remove('active');
-    } else {
-        closeArticlesModal();
-    }
-};
 window.loadArticleInModal = loadArticleInModal;
 window.saveActiveArticleForm = saveActiveArticleForm;
 window.resetArticlesDefault = resetArticlesDefault;
 window.toggleDefectCard = toggleDefectCard;
 window.setFilter = setFilter;
 window.filterDefects = filterDefects;
+window.showToast = showToast;
+window.startDiagnosticCamera = startDiagnosticCamera;
+window.stopDiagnosticCamera = stopDiagnosticCamera;
 
-window.validateBdfTiming = validateBdfTiming;
+// Exponer funciones SOP y Scanner
 window.calculateSopMs = calculateSopMs;
+window.validateBdfTiming = validateBdfTiming;
 window.loadBdfPreset = loadBdfPreset;
 window.showDefectRemedy = showDefectRemedy;
-
 window.setScannerSource = setScannerSource;
 window.captureScannerSnapshot = captureScannerSnapshot;
 window.handleScannerFileSelect = handleScannerFileSelect;
@@ -290,17 +354,12 @@ window.applyScannerValuesToCalculator = applyScannerValuesToCalculator;
 window.resetScannerReport = resetScannerReport;
 window.cancelOcrConfirm = cancelOcrConfirm;
 
-window.saveGeminiApiKey = saveGeminiApiKey;
-window.clearGeminiApiKey = clearGeminiApiKey;
-window.promptSaveGeminiApiKey = promptSaveGeminiApiKey;
-window.runDeepDiagnosis = runDeepDiagnosis;
-window.showToast = showToast;
-window.startDiagnosticCamera = startDiagnosticCamera;
-window.stopDiagnosticCamera = stopDiagnosticCamera;
-window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
-window.openCameraPermissionModal = openCameraPermissionModal;
-window.closeCameraPermissionModal = closeCameraPermissionModal;
-window.retryCameraPermissions = retryCameraPermissions;
+// Exponer funciones Banco IA & Dataset
+window.openSampleModal = openSampleModal;
+window.closeSampleModal = closeSampleModal;
+window.updateSampleNotesFromModal = updateSampleNotesFromModal;
+window.deleteSampleFromModal = deleteSampleFromModal;
+window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
 
 // Configurar manejador global para promesas rechazadas
 window.addEventListener('unhandledrejection', function(event) {
@@ -311,14 +370,19 @@ window.addEventListener('unhandledrejection', function(event) {
     }
 });
 
-// Inicialización NEXUS cuando el DOM está listo
-window.addEventListener('DOMContentLoaded', () => {
+/**
+ * Función Maestra de Inicialización VitroDiag NEXUS
+ */
+export function initNexusApp() {
+    console.log("[NEXUS] Ejecutando función maestra de inicialización...");
+
     // 1. Inicializar módulos base
     try { setupLogEventListeners(); } catch (e) { console.warn("[NEXUS] Log:", e); }
     try { initSwabModule(); } catch (e) { console.warn("[NEXUS] Swab:", e); }
     try { loadGeminiApiKey(); } catch (e) { console.warn("[NEXUS] Gemini:", e); }
     try { initConnectivityMonitor(); } catch (e) { console.warn("[NEXUS] Net:", e); }
     try { initDatasetUI(); } catch (e) { console.warn("[NEXUS] Dataset:", e); }
+    try { initAcopioUI(); } catch (e) { console.warn("[NEXUS] Acopio:", e); }
 
     // 2. Inicializar directorio de defectos y artículos
     try { renderDefectsList(DEFECTOS_DB); } catch (e) { console.warn("[NEXUS] Defects:", e); }
@@ -332,12 +396,9 @@ window.addEventListener('DOMContentLoaded', () => {
     if (captureInput) captureInput.addEventListener('change', nexusHandleImageSelect);
     if (uploadInput) uploadInput.addEventListener('change', nexusHandleImageSelect);
 
-    // 4. Intentar iniciar cámara en vivo si estamos en la vista de inspección
+    // 4. Iniciar cámara de diagnóstico en vivo si estamos en liveView
     try {
-        const liveView = document.getElementById('liveView');
-        if (liveView && (liveView.classList.contains('active') || liveView.style.display !== 'none')) {
-            startDiagnosticCamera();
-        }
+        startDiagnosticCamera();
     } catch (e) {
         console.warn("[NEXUS] AutoStart Camera:", e);
     }
@@ -349,5 +410,13 @@ window.addEventListener('DOMContentLoaded', () => {
         }).catch(() => {});
     }
 
-    console.log("[NEXUS] VitroDiag v2.2.0 Always-Live inicializado correctamente con cámara en vivo activa.");
-});
+    console.log("[NEXUS] VitroDiag v2.2.2 inicializado correctamente en modo Always-Live.");
+}
+
+// Inicialización defensiva independiente del estado de carga del documento
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNexusApp);
+} else {
+    // Si el DOM ya está listo (debido a la inyección asíncrona del bootstrapper), inicializar de inmediato
+    initNexusApp();
+}

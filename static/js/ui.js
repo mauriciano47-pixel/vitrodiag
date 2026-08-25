@@ -288,12 +288,20 @@ async function switchView(viewName) {
         }
 
         // 2. INICIALIZAR CONTENIDO DEL MÓDULO OBJETIVO
-        if (viewName === 'directory') {
+        if (viewName === 'live') {
+            try {
+                startDiagnosticCamera();
+                if (window.renderAcopioReel) window.renderAcopioReel();
+            } catch (camErr) {
+                console.warn("[NEXUS] Error reactivando cámara:", camErr);
+            }
+        } else if (viewName === 'directory') {
             renderDefectsList(DEFECTOS_DB);
         } else if (viewName === 'dataset') {
             try {
                 populateDatasetSelect();
                 renderDatasetGallery();
+                if (window.renderAcopioReel) window.renderAcopioReel();
             } catch (dsErr) {
                 console.error("[NEXUS] Error cargando Banco IA:", dsErr);
             }
