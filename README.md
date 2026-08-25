@@ -1,13 +1,13 @@
-# VitroDiag NEXUS v2.2.6 — Always-Live Architecture
+# VitroDiag NEXUS v2.2.7 — Always-Live Architecture
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristal Chile.
 
-## 🚀 Novedades v2.2.6: Compresión Óptica en Cliente, Desacoplamiento de Eventos & Diagnóstico Inmediato
+## 🚀 Novedades v2.2.7: Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag
 
-- **Compresión Óptica Ultra Rápida en Cliente:** Normaliza fotos masivas de smartphones modernos (hasta 50MP / 25MB) a JPEG 1280px (~250KB) en menos de 30 milisegundos.
-- **Desacoplamiento Total de Eventos de Captura:** Eliminación de colisiones de eventos `change` y prevención de invalidación del objeto `File` al volver de la aplicación de cámara de fábrica.
-- **Diagnóstico Inmediato con Resiliencia Total:** La fotografía se proyecta de inmediato en el visor superior con retícula HUD y se respalda en el acopio local, presentando el análisis automático de Gemini 2.0 Flash o la tarjeta de inspección preliminar si no hay clave configurada.
-- **Protección de Memoria & Cuota:** Optimización de cuota en LocalStorage (gestión elástica de respaldo) y transacciones IndexedDB instantáneas.
+- **Sincronización Inmediata de Hardware & Loop de Visión:** Vinculación directa de `startProcessing()` y `stopProcessing()` al ciclo de vida de `getUserMedia`, eliminando la latencia del watchdog y asegurando 0ms de retardo al iniciar o alternar cámaras.
+- **Renderizado Adaptativo de Bounding Boxes (`nexusBboxCanvas`):** Proyección visual garantizada de los recuadros de defectos con soporte dual de escalas normalizadas (0-1000 y 0.0-1.0) sobre la foto capturada.
+- **Filtros Ópticos Industriales Vinculados:** Variable global sincronizada para aplicar polarizado, calcinados y micro-fisuras directamente en el procesamiento de fotogramas y envíos a Gemini IA.
+- **Inferencia Robusta con Validación de Dimensiones Canvas:** Prevención de excepciones WebGL en TensorFlow.js y cascada tolerante de endpoints de Gemini con timeout anti-congelamiento de 8s.
 
 ## URL de Producción
 

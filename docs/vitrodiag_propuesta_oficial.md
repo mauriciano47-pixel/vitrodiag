@@ -1,9 +1,13 @@
-# VitroDiag NEXUS v2.2.6 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.2.7 — Propuesta Técnica Oficial y Documentación del Proyecto
 
-**Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
-**Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
-**URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.6 — Compresión Ultra Rápida en Cliente, Desacoplamiento de Eventos & Diagnóstico Inmediato)  
+**Aplicación Web Progresiva (PWA) de Diagnóstico Óptico Asistido por IA y Control de Moldería para la Fabricación de Envases de Vidrio**  
+*Desarrollado para operadores e inspectores de línea en plantas vidrieras (Procesos Blow-Blow y NNPB en Máquinas I.S.)*
+
+---
+
+**Versión:** 2.2.7 Always-Live (Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag)  
+**Fecha de Actualización:** 25 de Agosto de 2026  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.7 — Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag)  
 
 ---
 
@@ -96,6 +100,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 | Versión | Descripción |
 | --- | --- |
+| **v2.2.7** | Estabilización integral del motor de visión por cámara: sincronización instantánea del loop de procesamiento con `getUserMedia` (0ms de latencia), renderizado de Bounding Boxes (`nexusBboxCanvas`) con escalado adaptativo (0-1000 y 0.0-1.0), filtros ópticos industriales activos en tiempo real y vinculados a captura fotográfica, e inferencia tolerante con timeout de 8s. |
 | **v2.2.6** | Compresión y normalización óptica en cliente (reducción de fotos de 50MP/25MB a JPEG 1280px en 30ms), desacoplamiento de eventos de captura para evitar colisiones al retornar de la cámara y tarjeta de inspección preliminar con resiliencia garantizada. |
 | **v2.2.5** | Independencia total de permisos WebRTC: Modo Foto Directa Nativa (Zero-Permisos) como estándar predeterminado en planta, auto-diagnóstico instantáneo tras captura, selector de Modo Dual (Nativo vs WebRTC), soporte de arrastrar imágenes (Drag & Drop) y pegar desde portapapeles (Ctrl+V). |
 | **v2.2.4** | Arquitectura Motor Visión *User-Gesture First* con botón táctico central de encendido de streaming, captura de fotograma directa, Lightbox Modal de Acopio con diagnóstico 1-Tap y modo nativo 100% inmune a restricciones de permisos. |

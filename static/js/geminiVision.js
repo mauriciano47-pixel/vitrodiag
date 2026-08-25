@@ -729,19 +729,26 @@ export function drawDefectBoundingBoxes(canvas, result) {
     if (!canvas || !result || !result.analisis || result.analisis.length === 0) return;
 
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     const w = canvas.width;
     const h = canvas.height;
 
-    result.analisis.forEach((defect) => {
-        if (!defect.box_2d || defect.box_2d.length !== 4) return;
+    ctx.clearRect(0, 0, w, h);
 
-        const [ymin, xmin, ymax, xmax] = defect.box_2d;
-        const y1 = (ymin / 1000) * h;
-        const x1 = (xmin / 1000) * w;
-        const y2 = (ymax / 1000) * h;
-        const x2 = (xmax / 1000) * w;
-        const boxW = Math.max(15, x2 - x1);
-        const boxH = Math.max(15, y2 - y1);
+    result.analisis.forEach((defect) => {
+        const box = defect.box_2d || defect.coordenadas_bbox || defect.bbox;
+        if (!box || !Array.isArray(box) || box.length !== 4) return;
+
+        let [ymin, xmin, ymax, xmax] = box;
+        const maxVal = Math.max(ymin, xmin, ymax, xmax);
+        const scaleFactor = (maxVal <= 1.0) ? 1.0 : 1000.0;
+
+        const y1 = (ymin / scaleFactor) * h;
+        const x1 = (xmin / scaleFactor) * w;
+        const y2 = (ymax / scaleFactor) * h;
+        const x2 = (xmax / scaleFactor) * w;
+        const boxW = Math.max(20, x2 - x1);
+        const boxH = Math.max(20, y2 - y1);
 
         let color = '#ef4444'; // Crítico - Rojo Neón
         if (defect.gravedad === 'mayor') color = '#f59e0b'; // Mayor - Ámbar Neón
@@ -755,15 +762,15 @@ export function drawDefectBoundingBoxes(canvas, result) {
         ctx.strokeRect(x1, y1, boxW, boxH);
 
         // Insignia de defecto sobre la zona
-        const label = `🚨 [${(defect.zona || 'DEFECTO').toUpperCase()}] ${defect.defecto_nombre || ''} (${defect.confianza || 90}%)`;
+        const label = `🚨 [${(defect.zona || 'DEFECTO').toUpperCase()}] ${defect.defecto_nombre || defect.nombre_comun || defect.defecto_id || ''} (${defect.confianza || 90}%)`;
         ctx.font = 'bold 12px sans-serif';
         const textWidth = ctx.measureText(label).width;
 
         ctx.fillStyle = color;
-        ctx.fillRect(x1, Math.max(0, y1 - 20), textWidth + 12, 20);
+        ctx.fillRect(x1, Math.max(0, y1 - 22), textWidth + 12, 22);
 
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(label, x1 + 6, Math.max(14, y1 - 6));
+        ctx.fillText(label, x1 + 6, Math.max(16, y1 - 6));
         ctx.restore();
     });
 }
@@ -812,13 +819,12 @@ export async function captureAndAnalyzeWithAI() {
     }
 
     const source = (video && video.readyState >= 2 && video.videoWidth > 0) ? video : canvas;
-    if (!source || source.width === 0) {
+    if (!source || (source.width === 0 && source.videoWidth === 0)) {
         showToast("Encienda la cámara o cargue una foto desde archivo antes de analizar.", "warning");
         return;
     }
 
     showToast("📸 Capturando foto HD y aplicando pre-procesamiento óptico para vidrio...", "info");
-    updateAnalyzingUI(true);
 
     try {
         const processedB64 = preprocessGlassImage(source);
@@ -834,60 +840,22 @@ export async function captureAndAnalyzeWithAI() {
                 canvas.width = img.width;
                 canvas.height = img.height;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
+                if (ctx) ctx.drawImage(img, 0, 0);
                 canvas.classList.remove('d-none');
             }
 
-            // Enviar Base64 procesado a Gemini Vision
-            const cleanB64 = processedB64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
-            const glassPrompt = buildGlassDefectPrompt();
-            const articleName = state.activeArticle ? state.activeArticle.nombre : "Artículo genérico";
-            const contextPrompt = `\nContexto: El artículo en inspección es "${articleName}". Considera tolerancias NNPB de Cristal Chile.\n`;
-
-            const requestBody = {
-                contents: [{
-                    parts: [
-                        { text: glassPrompt + contextPrompt },
-                        { inline_data: { mime_type: "image/jpeg", data: cleanB64 } }
-                    ]
-                }],
-                generationConfig: {
-                    temperature: 0.2,
-                    maxOutputTokens: 1024,
-                    responseMimeType: "application/json"
-                }
-            };
-
-            const response = await fetch(`${GEMINI_API_URL}?key=${state.geminiApiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const responseData = await response.json();
-            const rawText = responseData.candidates[0].content.parts[0].text;
-            const result = parseGeminiResponse(rawText);
-
+            const result = await runDeepDiagnosis(processedB64);
             if (result) {
-                state.lastGeminiResult = result;
-                renderGeminiResult(result);
                 if (canvas) drawDefectBoundingBoxes(canvas, result);
                 showToast("Análisis IA completado con éxito.", "success");
-            } else {
-                showToast("No se detectó estructura válida en la respuesta de IA.", "warning");
             }
         };
         img.src = processedB64;
     } catch (err) {
         console.error("[GeminiVision] Error en captureAndAnalyzeWithAI:", err);
         showToast(`Error al analizar imagen con IA: ${err.message}`, "danger");
-    } finally {
-        updateAnalyzingUI(false);
     }
+}
 }
 
 /**

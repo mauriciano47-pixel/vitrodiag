@@ -429,7 +429,7 @@ export async function nexusDiagnoseWithAI() {
     try {
         const result = await runDeepDiagnosis(nexusCurrentImageBase64);
         
-        // Actualizar registro en Acopio con el defecto detectado
+        // Actualizar registro en Acopio con el defecto detectado y renderizar Bounding Boxes
         if (result && result.analisis && result.analisis.length > 0) {
             const topDef = result.analisis[0];
             savePhotoToAcopio({
@@ -442,6 +442,23 @@ export async function nexusDiagnoseWithAI() {
                 confianza: topDef.confianza_porcentaje || topDef.confianza || 90,
                 bbox: topDef.coordenadas_bbox || topDef.bbox || null
             });
+
+            // Sincronizar y pintar recuadros delimitadores (Bounding Boxes) sobre la foto
+            const bboxCanvas = document.getElementById('nexusBboxCanvas');
+            const previewImg = document.getElementById('nexusPreviewImg');
+            if (bboxCanvas && previewImg) {
+                bboxCanvas.width = previewImg.naturalWidth || previewImg.clientWidth || 640;
+                bboxCanvas.height = previewImg.naturalHeight || previewImg.clientHeight || 480;
+                bboxCanvas.style.display = 'block';
+                drawDefectBoundingBoxes(bboxCanvas, result);
+            }
+        } else {
+            const bboxCanvas = document.getElementById('nexusBboxCanvas');
+            if (bboxCanvas) {
+                const ctx = bboxCanvas.getContext('2d');
+                if (ctx) ctx.clearRect(0, 0, bboxCanvas.width, bboxCanvas.height);
+                bboxCanvas.style.display = 'none';
+            }
         }
     } catch (err) {
         console.error('[NEXUS] Error en diagnóstico IA:', err);

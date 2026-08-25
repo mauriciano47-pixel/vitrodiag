@@ -1,11 +1,11 @@
 {
-  "version": "2.2.6",
-  "buildTime": 1724618000000,
-  "releaseName": "Compresión Ultra Rápida en Cliente, Desacoplamiento de Eventos y Diagnóstico Inmediato",
+  "version": "2.2.7",
+  "buildTime": 1787698940000,
+  "releaseName": "Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag",
   "features": [
-    "Compresor y normalizador óptico en cliente: Reduce fotos de 50MP (25MB) a JPEG 1280px (250KB) en 30ms",
-    "Desacoplamiento total de eventos: Eliminación de colisión de handlers al retornar de la cámara del smartphone",
-    "Tarjeta de Inspección Inmediata y Resiliencia Total: Visualización garantizada con o sin API Key de Gemini",
-    "Protección de cuota de LocalStorage y optimización de memoria en IndexedDB"
+    "Sincronización instantánea de ciclo de vida de cámara WebRTC y loop de visión (startProcessing / stopProcessing)",
+    "Renderizado garantizado de Bounding Boxes (nexusBboxCanvas) con escalado adaptativo (0-1000 y 0.0-1.0)",
+    "Filtros ópticos industriales activos en tiempo real y vinculados a captura fotográfica",
+    "Cascada tolerante de IA con timeout anti-congelamiento de 8s y fallback algorítmico seguro"
   ]
 }

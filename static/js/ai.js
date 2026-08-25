@@ -796,7 +796,7 @@ export function runLiveDiagnosis() {
     }
 
     // Ejecutar diagnóstico en caliente
-    if (typeof tf !== 'undefined' && state.tfModel && canvas) {
+    if (typeof tf !== 'undefined' && state.tfModel && canvas && canvas.width > 0 && canvas.height > 0) {
         try {
             const prob = tf.tidy(() => {
                 const img = tf.browser.fromPixels(canvas);

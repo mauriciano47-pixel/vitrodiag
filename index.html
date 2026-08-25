@@ -230,6 +230,7 @@
                 }
                 el.classList.add('filter-' + mode);
             }
+            window.currentOpticalFilter = mode;
             console.log('[VitroDiag] Filtro óptico activo:', mode);
         } catch (err) {
             console.error('[NEXUS UI] Error en setOpticalFilter:', err);
