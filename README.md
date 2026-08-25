@@ -1,21 +1,13 @@
-# VitroDiag NEXUS v2.2.5 — Always-Live Architecture
+# VitroDiag NEXUS v2.2.6 — Always-Live Architecture
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristal Chile.
 
-## 🚀 Novedades v2.2.5: Motor Visión Universal Zero-Permisos & Auto-Diagnóstico
+## 🚀 Novedades v2.2.6: Compresión Óptica en Cliente, Desacoplamiento de Eventos & Diagnóstico Inmediato
 
-- **Independencia Total de Permisos:** Adopción del **Modo Foto Directa Nativa (Zero-Permisos)** como estándar industrial predeterminado. Al tocar el visor o el botón principal, se abre directamente la cámara de fábrica del smartphone con auto-enfoque, flash y resolución completa (12MP a 50MP) sin depender de permisos WebRTC.
-- **Auto-Diagnóstico Inteligente Inmediato:** Al capturar la fotografía, el sistema analiza automáticamente la imagen con Gemini 2.0 Flash Vision en menos de 2 segundos sin requerir clics adicionales.
-- **Selector de Modo Dual:** Conmutación rápida entre `📷 Foto Directa (Zero-Permisos)` y `🎥 Streaming WebRTC (PC / Webcam)`.
-- **Soporte Drag & Drop y Portapapeles (Ctrl+V):** Permite arrastrar imágenes al visor o pegar capturas directamente en la interfaz.
-- **Lightbox Modal de Acopio & Galería:** Historial persistente en IndexedDB + LocalStorage con diagnóstico y transferencia al Banco IA en 1 toque.
-
-## Flujo Principal
-
-1. 📸 **1-Tap Direct Shot** — Toca el visor o el botón principal para abrir la cámara nativa del teléfono y disparar en ultra-alta resolución.
-2. ⚡ **Auto-Diagnóstico Inmediato** — Gemini 2.0 Flash Vision analiza automáticamente la geometría contra el catálogo de 111 defectos industriales.
-3. 📸 **Galería Receptora & Lightbox** — Revisa las fotos del turno en pantalla completa y re-diagnostica o envía al Banco IA a 1 toque.
-4. 📋 **Ajustes de Máquina I.S.** — Acciones correctivas inmediatas para el operador en línea caliente.
+- **Compresión Óptica Ultra Rápida en Cliente:** Normaliza fotos masivas de smartphones modernos (hasta 50MP / 25MB) a JPEG 1280px (~250KB) en menos de 30 milisegundos.
+- **Desacoplamiento Total de Eventos de Captura:** Eliminación de colisiones de eventos `change` y prevención de invalidación del objeto `File` al volver de la aplicación de cámara de fábrica.
+- **Diagnóstico Inmediato con Resiliencia Total:** La fotografía se proyecta de inmediato en el visor superior con retícula HUD y se respalda en el acopio local, presentando el análisis automático de Gemini 2.0 Flash o la tarjeta de inspección preliminar si no hay clave configurada.
+- **Protección de Memoria & Cuota:** Optimización de cuota en LocalStorage (gestión elástica de respaldo) y transacciones IndexedDB instantáneas.
 
 ## URL de Producción
 

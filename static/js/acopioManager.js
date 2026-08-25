@@ -72,8 +72,15 @@ function saveToLocalStorageBackup(record) {
         const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
         let list = raw ? JSON.parse(raw) : [];
         list.unshift(record);
-        if (list.length > 30) list = list.slice(0, 30);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+        if (list.length > 10) list = list.slice(0, 10);
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+        } catch (quotaErr) {
+            list = list.slice(0, 3);
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+            } catch (_) {}
+        }
     } catch (e) {
         console.warn('[AcopioManager] LocalStorage lleno o restringido:', e);
     }

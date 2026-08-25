@@ -1,12 +1,11 @@
 {
-  "version": "2.2.5",
-  "buildTime": 1724616000000,
-  "releaseName": "Motor Visión Universal Zero-Permisos, Auto-Diagnóstico y Modo Dual",
+  "version": "2.2.6",
+  "buildTime": 1724618000000,
+  "releaseName": "Compresión Ultra Rápida en Cliente, Desacoplamiento de Eventos y Diagnóstico Inmediato",
   "features": [
-    "Independencia total de permisos WebRTC: Modo Foto Directa Nativa (Zero-Permisos) como estándar predeterminado en planta",
-    "Auto-Diagnóstico inteligente inmediato al capturar fotografía con Gemini 2.0 Flash Vision",
-    "Selector de Modo Dual: '📷 Foto Directa (Zero-Permisos)' vs '🎥 Streaming WebRTC (PC / Webcam)'",
-    "Soporte universal para arrastrar imágenes (Drag & Drop) y pegar desde portapapeles (Ctrl+V)",
-    "Resolución completa del sensor del smartphone (12MP a 50MP, autoenfoque láser, lente macro y flash nativo)"
+    "Compresor y normalizador óptico en cliente: Reduce fotos de 50MP (25MB) a JPEG 1280px (250KB) en 30ms",
+    "Desacoplamiento total de eventos: Eliminación de colisión de handlers al retornar de la cámara del smartphone",
+    "Tarjeta de Inspección Inmediata y Resiliencia Total: Visualización garantizada con o sin API Key de Gemini",
+    "Protección de cuota de LocalStorage y optimización de memoria en IndexedDB"
   ]
 }

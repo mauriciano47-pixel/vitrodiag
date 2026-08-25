@@ -2636,8 +2636,8 @@
 
             <!-- BOTÓN DE DISPARO SUPERPUESTO (ESTILO CÁMARA NATIVA SMARTPHONE) -->
             <div class="nexus-controls-overlay">
-                <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none" onchange="if(window.handleNexusCaptureSelect) window.handleNexusCaptureSelect(event)">
-                <input type="file" id="nexusUploadInput" accept="image/*" class="d-none" onchange="if(window.handleNexusUploadSelect) window.handleNexusUploadSelect(event)">
+                <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none">
+                <input type="file" id="nexusUploadInput" accept="image/*" class="d-none">
                 
                 <button id="btnNexusPrimaryAction" class="btn-action btn-action-shot" onclick="event.stopPropagation(); if(window.nexusTriggerNativeCamera) window.nexusTriggerNativeCamera(); else document.getElementById('nexusCaptureInput').click();" title="Tomar foto del envase en alta resolución">
                     📸 TOMAR FOTO DEL ENVASE
