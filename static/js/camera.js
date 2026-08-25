@@ -1,82 +1,125 @@
 import { state } from './state.js';
 import { showToast } from './ui.js';
 
-const cameraConstraints = {
-    video: { 
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-    }, 
-    audio: false 
-};
+let currentFacingMode = "environment"; // "environment" (trasera) o "user" (frontal)
+
+/**
+ * Alterna entre la cámara trasera y frontal.
+ */
+export async function toggleCameraFacingMode() {
+    currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
+    showToast(`Cambiando a cámara ${currentFacingMode === "environment" ? "trasera" : "frontal"}...`, "info");
+    stopDiagnosticCamera();
+    await new Promise(res => setTimeout(res, 250));
+    await startDiagnosticCamera();
+}
 
 /**
  * Solicita permisos de cámara directamente al navegador Chrome mostrando el popup nativo (Allow/Block).
  */
 export async function requestCameraPermissionDirectly() {
-    showToast("Solicitando permiso de cámara al navegador...", "info");
+    showToast("Solicitando acceso a la cámara...", "info");
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showToast("Tu navegador no soporta WebRTC en este protocolo. Usa '📷 Foto Nativa'.", "warning");
+            return;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+        });
+
         if (stream) {
             state.diagnosticStream = stream;
             const video = document.getElementById('webcam');
             const status = document.getElementById('opencvStatus');
+            const previewImg = document.getElementById('nexusPreviewImg');
+            const placeholder = document.getElementById('nexusPlaceholder');
+            const bboxCanvas = document.getElementById('nexusBboxCanvas');
+
+            if (previewImg) previewImg.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
+            if (bboxCanvas) bboxCanvas.style.display = 'none';
+
             if (video) {
                 video.srcObject = stream;
+                video.setAttribute('autoplay', '');
+                video.setAttribute('muted', '');
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
                 video.muted = true;
                 video.volume = 0;
                 video.playsInline = true;
+                video.style.display = 'block';
+                video.style.opacity = '1';
                 await video.play().catch(e => console.warn("[Camera] Play diferido:", e));
             }
             if (status) {
-                status.innerText = "Motor Visión: Cámara Autorizada y Activa";
+                status.innerText = "Motor Visión: Cámara en Vivo Activa (Encuadra el Envase)";
                 status.style.color = "#10b981";
             }
-            const btnTap = document.getElementById('btnTapCameraStart');
-            if (btnTap) btnTap.style.display = 'none';
-            showToast("✅ Permiso concedido. Cámara activada correctamente.", "success");
+            showToast("✅ Cámara en vivo conectada con éxito.", "success");
             if (window.startProcessing) window.startProcessing();
         }
     } catch (err) {
         console.error("Error al solicitar permiso directo:", err);
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            showToast("Permiso bloqueado por Chrome. Usa '📸 Foto Instantánea'.", "warning");
-            openCameraPermissionModal("🚨 Permiso Denegado por Chrome. Usa 'Foto Instantánea'", "danger");
+            showToast("Permiso bloqueado en el navegador. Puedes usar '📷 FOTO NATIVA'.", "warning");
+            openCameraPermissionModal("🚨 Permiso de cámara bloqueado", "danger");
         } else {
-            showToast("No se pudo iniciar la cámara en vivo. Usa '📸 Foto Instantánea'.", "info");
-            openCameraPermissionModal("⚠️ No se pudo acceder a la cámara en vivo", "warning");
+            showToast("No se pudo iniciar la cámara en vivo. Usa '📷 FOTO NATIVA'.", "info");
         }
     }
 }
 
+/**
+ * Inicia la cámara de diagnóstico en streaming continuo en el visor superior.
+ */
+export async function startDiagnosticCamera() {
+    // Si ya hay un stream activo y el video está reproduciéndose, asegurar visibilidad
+    const video = document.getElementById('webcam');
+    const previewImg = document.getElementById('nexusPreviewImg');
+    const placeholder = document.getElementById('nexusPlaceholder');
+    const status = document.getElementById('opencvStatus');
 
-async function startDiagnosticCamera() {
-    const btnTap = document.getElementById('btnTapCameraStart');
-    if (state.diagnosticStream) {
-        if (btnTap) btnTap.style.display = 'none';
+    if (state.diagnosticStream && video && video.srcObject) {
+        if (previewImg) previewImg.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'none';
+        video.style.display = 'block';
+        video.style.opacity = '1';
+        try {
+            await video.play();
+        } catch (_) {}
+        if (status) {
+            status.innerText = "Motor Visión: Cámara en Vivo Activa";
+            status.style.color = "#10b981";
+        }
         return;
     }
 
-    if (btnTap) {
-        btnTap.innerText = "⏳ Conectando cámara en Chrome...";
-        btnTap.style.background = "linear-gradient(135deg, #f59e0b, #d97706)";
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.warn("[Camera] mediaDevices no disponible.");
+        if (status) {
+            status.innerText = "Motor Visión: Listo (Usa '📸 CAPTURAR' o '📷 FOTO NATIVA')";
+            status.style.color = "#f59e0b";
+        }
+        return;
     }
-    
-    // Detener cualquier stream anterior colgado
+
+    if (status) {
+        status.innerText = "Iniciando visor de cámara...";
+        status.style.color = "rgba(255, 111, 0, 0.85)";
+    }
+
+    // Detener cualquier stream previo colgado
     stopDiagnosticCamera();
-    await new Promise(res => setTimeout(res, 200));
+    await new Promise(res => setTimeout(res, 150));
 
-    const video = document.getElementById('webcam');
-    const status = document.getElementById('opencvStatus');
-    if (!video || !status) return;
-
-    status.innerText = "Iniciando cámara en Chrome...";
-    status.style.color = "rgba(255, 111, 0, 0.7)";
-
-    // Cascada de 3 niveles de constraints para compatibilidad 100% en Chrome Android/iOS
+    // Cascada de constraints tolerante
     const constraintLevels = [
-        { video: { facingMode: { exact: "environment" } }, audio: false },
-        { video: { facingMode: "environment" }, audio: false },
+        { video: { facingMode: { ideal: currentFacingMode }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+        { video: { facingMode: currentFacingMode }, audio: false },
         { video: true, audio: false }
     ];
 
@@ -86,82 +129,130 @@ async function startDiagnosticCamera() {
     for (const constraints of constraintLevels) {
         try {
             stream = await navigator.mediaDevices.getUserMedia(constraints);
-            if (stream) break; // Conexión exitosa
+            if (stream) break;
         } catch (err) {
             lastError = err;
-            console.warn("[Camera] Constraint fallido en Chrome, intentando siguiente nivel...", constraints, err);
+            console.warn("[Camera] Constraint no soportado, probando fallback...", constraints, err);
         }
     }
 
     if (stream) {
         state.diagnosticStream = stream;
-        video.muted = true;
-        video.volume = 0;
-        video.playsInline = true;
-        video.srcObject = stream;
-        video.style.display = 'block';
+        if (typeof window !== 'undefined') window.state = state;
 
-        const previewImg = document.getElementById('nexusPreviewImg');
-        const placeholder = document.getElementById('nexusPlaceholder');
-        if (previewImg) previewImg.style.display = 'none';
-        if (placeholder) placeholder.style.display = 'none';
-
-        // Esperar metadata en Android 14 / Chrome para evitar fallos de play()
-        await new Promise((resolve) => {
-            if (video.readyState >= 1) {
-                resolve();
-            } else {
-                video.onloadedmetadata = () => resolve();
-                setTimeout(resolve, 800);
-            }
-        });
-
-        try {
-            await video.play();
-        } catch (e) {
-            console.warn("[Camera] Play webcam diferido en Chrome, reintentando...", e);
+        if (video) {
+            video.srcObject = stream;
+            video.setAttribute('autoplay', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
             video.muted = true;
-            await video.play().catch(err => console.error("[Camera] Error final en play():", err));
+            video.volume = 0;
+            video.playsInline = true;
+            video.style.display = 'block';
+            video.style.opacity = '1';
+
+            if (previewImg) previewImg.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
+
+            // Esperar metadata
+            await new Promise((resolve) => {
+                if (video.readyState >= 1) {
+                    resolve();
+                } else {
+                    video.onloadedmetadata = () => resolve();
+                    setTimeout(resolve, 600);
+                }
+            });
+
+            try {
+                await video.play();
+            } catch (e) {
+                console.warn("[Camera] Play diferido:", e);
+                video.muted = true;
+                await video.play().catch(() => {});
+            }
         }
 
-        status.innerText = "Motor Visión: Cámara en Vivo Activa (Apuntando al Envase)";
-        status.style.color = "#10b981";
-        if (btnTap) btnTap.style.display = 'none';
-        showToast("🎥 Visor de cámara en vivo activo. Apunta al envase.", "success");
-    } else {
-        console.error("Chrome denegó o no pudo acceder a la cámara WebRTC:", lastError);
-        state.diagnosticStream = null;
-        
-        if (btnTap) {
-            btnTap.style.display = 'block';
-            btnTap.innerText = "📸 TOCAR AQUÍ PARA TOMAR FOTO CON CELULAR (MODO DIRECTO)";
-            btnTap.style.background = "linear-gradient(135deg, #10b981, #059669)";
-            btnTap.onclick = () => {
-                triggerLiveNativeFileSelect();
-            };
-        }
-
-        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-        if (!isSecure) {
-            status.innerText = "Cámara: Requiere HTTPS (GitHub Pages)";
-            status.style.color = "#f59e0b";
-            showToast("Abre la app desde la URL HTTPS oficial para activar la cámara en vivo.", "warning");
-        } else if (lastError && (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError')) {
-            status.innerText = "Cámara Chrome: Permiso Bloqueado (Usa 'Tomar Foto')";
-            status.style.color = "#ef4444";
-            showToast("Chrome tiene la cámara bloqueada. Usa el botón '📸 Tomar Foto' que funciona sin permisos.", "info");
-        } else {
-            status.innerText = "Cámara: Modo Fotográfico Directo Activo";
+        if (status) {
+            status.innerText = "Motor Visión: Cámara en Vivo Activa (Apuntando al Envase)";
             status.style.color = "#10b981";
-            showToast("Usa '📸 Tomar Foto' para capturar fotos en alta resolución sin depender de WebRTC.", "info");
+        }
+    } else {
+        console.warn("[Camera] No se pudo obtener stream automático:", lastError);
+        state.diagnosticStream = null;
+        if (typeof window !== 'undefined') window.state = state;
+
+        if (status) {
+            if (lastError && (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError')) {
+                status.innerText = "Cámara: Permiso Bloqueado (Toca '📷 FOTO NATIVA')";
+                status.style.color = "#ef4444";
+            } else {
+                status.innerText = "Motor Visión: Listo para Disparo (Toca '📸 CAPTURAR VISOR')";
+                status.style.color = "#10b981";
+            }
         }
     }
 }
 
-// Escuchar cambios de visibilidad para liberar el hardware al cambiar de app en el celular (Motorola Android 14)
+/**
+ * Detiene la cámara de diagnóstico y libera el hardware.
+ */
+export function stopDiagnosticCamera() {
+    if (state.diagnosticStream) {
+        try {
+            state.diagnosticStream.getTracks().forEach(track => {
+                track.stop();
+            });
+        } catch (_) {}
+        state.diagnosticStream = null;
+    }
+    const video = document.getElementById('webcam');
+    if (video) {
+        video.srcObject = null;
+    }
+}
+
+/**
+ * Inicia la cámara para el escáner de consola BDF.
+ */
+export async function startScannerCamera() {
+    if (state.scannerStream) return;
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false
+        });
+        state.scannerStream = stream;
+        const video = document.getElementById('scannerVideo');
+        if (video) {
+            video.srcObject = stream;
+            video.muted = true;
+            video.playsInline = true;
+            await video.play();
+        }
+    } catch (e) {
+        console.warn("[ScannerCamera] Falló cámara de escáner:", e);
+    }
+}
+
+/**
+ * Detiene la cámara del escáner.
+ */
+export function stopScannerCamera() {
+    if (state.scannerStream) {
+        try {
+            state.scannerStream.getTracks().forEach(track => track.stop());
+        } catch (_) {}
+        state.scannerStream = null;
+    }
+    const video = document.getElementById('scannerVideo');
+    if (video) video.srcObject = null;
+}
+
+// Liberar cámara al cambiar de app en el celular
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-        console.log("[Camera] App en segundo plano. Liberando hardware de cámara...");
         stopDiagnosticCamera();
         stopScannerCamera();
     }
@@ -171,8 +262,6 @@ document.addEventListener('pagehide', () => {
     stopDiagnosticCamera();
     stopScannerCamera();
 });
-
-
 
 export function openCameraPermissionModal(customMessage = null, statusType = 'warning') {
     const modal = document.getElementById('cameraPermissionModal');
@@ -191,140 +280,26 @@ export function closeCameraPermissionModal() {
 
 export function retryCameraPermissions() {
     closeCameraPermissionModal();
-    forceRetryCamera();
+    startDiagnosticCamera();
 }
 
 export async function checkCameraPermissions() {
-    if (!navigator.permissions || !navigator.permissions.query) {
-        return 'unknown';
-    }
+    if (!navigator.permissions || !navigator.permissions.query) return 'unknown';
     try {
         const result = await navigator.permissions.query({ name: 'camera' });
-        return result.state; // 'granted', 'prompt', 'denied'
+        return result.state;
     } catch (e) {
         return 'unknown';
     }
 }
 
-
-export function forceRetryCamera() {
-    state.diagnosticStream = null;
-    startDiagnosticCamera();
-    if (window.startProcessing) window.startProcessing();
+if (typeof window !== 'undefined') {
+    window.startDiagnosticCamera = startDiagnosticCamera;
+    window.stopDiagnosticCamera = stopDiagnosticCamera;
+    window.toggleCameraFacingMode = toggleCameraFacingMode;
+    window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
+    window.openCameraPermissionModal = openCameraPermissionModal;
+    window.closeCameraPermissionModal = closeCameraPermissionModal;
+    window.retryCameraPermissions = retryCameraPermissions;
+    window.checkCameraPermissions = checkCameraPermissions;
 }
-
-function stopDiagnosticCamera() {
-    if (window.stopProcessing) {
-        try { window.stopProcessing(); } catch(e) {}
-    } else {
-        state.streamActive = false;
-        if (state.animationFrameId) {
-            cancelAnimationFrame(state.animationFrameId);
-            state.animationFrameId = null;
-        }
-    }
-    if (state.diagnosticStream) {
-        state.diagnosticStream.getTracks().forEach(track => track.stop());
-        state.diagnosticStream = null;
-    }
-    const video = document.getElementById('webcam');
-    if (video) {
-        video.srcObject = null;
-        try { video.load(); } catch (e) {}
-    }
-}
-
-function stopScannerCamera() {
-    if (state.scannerStream) {
-        state.scannerStream.getTracks().forEach(track => track.stop());
-        state.scannerStream = null;
-    }
-    const video = document.getElementById('scannerVideo');
-    if (video) {
-        video.srcObject = null;
-        try { video.load(); } catch (e) {}
-    }
-}
-
-
-async function startScannerCamera() {
-    const video = document.getElementById('scannerVideo');
-    if (!video) return;
-
-    if (state.scannerStream) stopScannerCamera();
-    
-    // Grace period para liberar el hardware de cámaras anteriores
-    await new Promise(res => setTimeout(res, 350));
-
-    try {
-        const scannerConstraints = {
-            video: { 
-                facingMode: { ideal: "environment" },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        };
-        state.scannerStream = await navigator.mediaDevices.getUserMedia(scannerConstraints);
-        video.srcObject = state.scannerStream;
-        video.setAttribute('playsinline', '');
-        await video.play().catch(e => console.log("Play scanner interrumpido:", e));
-        showToast("Cámara de escáner iniciada.", "success");
-    } catch (err) {
-        console.warn("Fallo al iniciar cámara de escáner con constraints. Usando fallback...", err);
-        try {
-            state.scannerStream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = state.scannerStream;
-            video.setAttribute('playsinline', '');
-            await video.play().catch(e => console.log("Play scanner fallback interrumpido:", e));
-            showToast("Cámara de escáner iniciada (fallback).", "success");
-        } catch (fallbackErr) {
-            console.error("No se pudo iniciar la cámara de escáner: ", fallbackErr);
-            showToast("No se pudo iniciar la cámara del escáner.", "error");
-        }
-    }
-}
-
-/**
- * Dispara el input de archivo de cámara nativa del celular.
- */
-export function triggerLiveNativeFileSelect() {
-    const input = document.getElementById('liveNativeFileInput');
-    if (input) input.click();
-}
-
-/**
- * Procesa la fotografía tomada por la cámara nativa del smartphone sobre el motor de visión.
- * @param {Event} event 
- */
-export function handleLiveNativeFileSelect(event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-        showToast('Seleccione un archivo de imagen válido.', 'danger');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.getElementById('canvasOutput');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                canvas.width = 320;
-                canvas.height = Math.round(320 * (img.height / img.width));
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                showToast('Fotografía cargada en el motor de visión.', 'success');
-                if (window.runDeepDiagnosis) {
-                    window.runDeepDiagnosis(e.target.result);
-                }
-            }
-        };
-        img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-}
-
-export { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera };

@@ -2533,10 +2533,13 @@
             <button type="button" class="filter-chip" onclick="setOpticalFilter('cracks', this)">
                 <span>⚡</span> Micro-Fisuras
             </button>
+            <button type="button" class="filter-chip" onclick="if(window.toggleCameraFacingMode) window.toggleCameraFacingMode();" title="Cambiar cámara frontal / trasera">
+                <span>🔄</span> Girar Cámara
+            </button>
         </div>
 
         <!-- VISOR UNIFICADO EN LA PARTE SUPERIOR (FOCO DIRECTO EN ENVASE) -->
-        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="if(!window.state?.diagnosticStream) { document.getElementById('nexusCaptureInput').click(); }" title="Toca para tomar foto del envase">
+        <div id="nexusPreviewArea" class="nexus-preview-area" title="Visor Óptico de Envase">
             
             <!-- Video en vivo si hay stream WebRTC -->
             <video id="webcam" autoplay muted playsinline webkit-playsinline class="webcam-video"></video>
@@ -2547,7 +2550,7 @@
             <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas"></canvas>
 
             <!-- Placeholder cuando está en espera -->
-            <div id="nexusPlaceholder" class="nexus-placeholder">
+            <div id="nexusPlaceholder" class="nexus-placeholder" onclick="if(window.nexusSnapLiveWebcam) window.nexusSnapLiveWebcam();">
                 <div class="nexus-placeholder-icon-wrap">📸</div>
                 <p class="nexus-placeholder-text">TOCA AQUÍ PARA DISPARAR FOTO</p>
                 <span class="nexus-placeholder-sub">(Mirando directo el envase — 1-Clic Sin Desplazarte)</span>
@@ -6598,6 +6601,7 @@
                 </div>
             </div>
         </div>
+    </div>
 
     <footer class="industrial-footer">
         <div class="footer-line"></div>

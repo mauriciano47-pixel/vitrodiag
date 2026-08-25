@@ -1,12 +1,12 @@
 {
-  "version": "2.2.2",
-  "buildTime": 1724608000000,
-  "releaseName": "Galería Receptora, Acopio de Fotos & Descongelamiento de Módulos",
+  "version": "2.2.3",
+  "buildTime": 1724610000000,
+  "releaseName": "Motor Visión Cámara en Vivo & Galería Receptora Ultra-Resiliente",
   "features": [
-    "Galería Receptora & Acopio persistente en IndexedDB de fotos tomadas durante la inspección",
-    "Corrección del ciclo de vida de carga de módulos (defensivo ante DOMContentLoaded diferido)",
-    "Encendido y reconexión inmediata del visor de cámara en vivo (WebRTC / Streaming)",
-    "Botones táctiles de disparo instantáneo: Capturar Visor, Foto Nativa y Galería con auto-acopio",
-    "Integración directa de fotos de acopio hacia el Banco IA para Few-Shot RAG y diagnóstico"
+    "Reconexión de visor de cámara en vivo (WebRTC / Streaming continuo) con botón de rotación frontal/trasera",
+    "Galería Receptora & Acopio persistente con fallback dual IndexedDB + LocalStorage",
+    "Fix de bloqueo táctil en visor óptico (eliminación de disparador invasivo en canvas)",
+    "Integración directa 1-Tap desde Galería y Acopio hacia Gemini 2.0 Vision IA",
+    "Corrección de balance de etiquetas HTML y carga asíncrona tolerante"
   ]
 }

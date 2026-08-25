@@ -1,7 +1,7 @@
 /**
  * acopioManager.js — Galería Receptora y Acopio de Imágenes de Inspección (VitroDiag)
- * Almacena de forma persistente y automática en IndexedDB cada fotografía tomada o subida
- * durante las inspecciones en planta, permitiendo su revisión, re-diagnóstico y exportación.
+ * Almacena de forma persistente y automática en IndexedDB (con fallback a LocalStorage) cada fotografía
+ * tomada o subida durante las inspecciones en planta, permitiendo su revisión, re-diagnóstico y exportación.
  */
 
 import { showToast } from './ui.js';
@@ -11,6 +11,7 @@ import { DEFECTOS_DB } from './db.js';
 const ACOPIO_DB_NAME = 'VitroDiag_AcopioDB';
 const ACOPIO_DB_VERSION = 1;
 const STORE_ACOPIO = 'acopio_photos';
+const LOCAL_STORAGE_KEY = 'vitrodiag_acopio_backup_v2';
 
 let acopioDbInstance = null;
 
@@ -19,35 +20,75 @@ let acopioDbInstance = null;
  * @returns {Promise<IDBDatabase>}
  */
 export function initAcopioDB() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         if (acopioDbInstance) {
             resolve(acopioDbInstance);
             return;
         }
 
-        const request = indexedDB.open(ACOPIO_DB_NAME, ACOPIO_DB_VERSION);
+        if (!('indexedDB' in window)) {
+            console.warn('[AcopioManager] IndexedDB no soportada, usando LocalStorage fallback.');
+            resolve(null);
+            return;
+        }
 
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_ACOPIO)) {
-                const store = db.createObjectStore(STORE_ACOPIO, { keyPath: 'id' });
-                store.createIndex('timestamp', 'timestamp', { unique: false });
-                store.createIndex('defectoId', 'defectoId', { unique: false });
-                store.createIndex('articuloId', 'articuloId', { unique: false });
-            }
-        };
+        try {
+            const request = indexedDB.open(ACOPIO_DB_NAME, ACOPIO_DB_VERSION);
 
-        request.onsuccess = (event) => {
-            acopioDbInstance = event.target.result;
-            console.log('[AcopioManager] IndexedDB Acopio inicializada correctamente.');
-            resolve(acopioDbInstance);
-        };
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STORE_ACOPIO)) {
+                    const store = db.createObjectStore(STORE_ACOPIO, { keyPath: 'id' });
+                    store.createIndex('timestamp', 'timestamp', { unique: false });
+                    store.createIndex('defectoId', 'defectoId', { unique: false });
+                    store.createIndex('articuloId', 'articuloId', { unique: false });
+                }
+            };
 
-        request.onerror = (event) => {
-            console.error('[AcopioManager] Error al abrir IndexedDB Acopio:', event.target.error);
-            reject(event.target.error);
-        };
+            request.onsuccess = (event) => {
+                acopioDbInstance = event.target.result;
+                console.log('[AcopioManager] IndexedDB Acopio inicializada correctamente.');
+                resolve(acopioDbInstance);
+            };
+
+            request.onerror = (event) => {
+                console.warn('[AcopioManager] Error al abrir IndexedDB Acopio, usando fallback:', event.target.error);
+                resolve(null);
+            };
+        } catch (err) {
+            console.warn('[AcopioManager] Excepción al inicializar IndexedDB:', err);
+            resolve(null);
+        }
     });
+}
+
+/**
+ * Guarda una foto en LocalStorage como fallback.
+ * @param {Object} record 
+ */
+function saveToLocalStorageBackup(record) {
+    try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        let list = raw ? JSON.parse(raw) : [];
+        list.unshift(record);
+        if (list.length > 25) list = list.slice(0, 25); // Mantener últimas 25 fotos
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+    } catch (e) {
+        console.warn('[AcopioManager] LocalStorage lleno o restringido:', e);
+    }
+}
+
+/**
+ * Obtiene las fotos de LocalStorage fallback.
+ * @returns {Array}
+ */
+function getFromLocalStorageBackup() {
+    try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
 }
 
 /**
@@ -78,21 +119,33 @@ export async function savePhotoToAcopio(data) {
             bbox: data.bbox || null
         };
 
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(STORE_ACOPIO, 'readwrite');
-            const store = tx.objectStore(STORE_ACOPIO);
-            const req = store.add(record);
+        saveToLocalStorageBackup(record);
 
-            req.onsuccess = () => {
-                renderAcopioReel();
-                resolve(record);
-            };
+        if (db) {
+            return new Promise((resolve) => {
+                try {
+                    const tx = db.transaction(STORE_ACOPIO, 'readwrite');
+                    const store = tx.objectStore(STORE_ACOPIO);
+                    const req = store.add(record);
 
-            req.onerror = (e) => {
-                console.error('[AcopioManager] Error guardando foto en acopio:', e.target.error);
-                reject(e.target.error);
-            };
-        });
+                    req.onsuccess = () => {
+                        renderAcopioReel();
+                        resolve(record);
+                    };
+
+                    req.onerror = () => {
+                        renderAcopioReel();
+                        resolve(record);
+                    };
+                } catch (txErr) {
+                    renderAcopioReel();
+                    resolve(record);
+                }
+            });
+        } else {
+            renderAcopioReel();
+            return record;
+        }
     } catch (err) {
         console.error('[AcopioManager] Error en savePhotoToAcopio:', err);
         return null;
@@ -106,25 +159,37 @@ export async function savePhotoToAcopio(data) {
 export async function getAllAcopioPhotos() {
     try {
         const db = await initAcopioDB();
-        return new Promise((resolve, reject) => {
-            const tx = db.transaction(STORE_ACOPIO, 'readonly');
-            const store = tx.objectStore(STORE_ACOPIO);
-            const req = store.getAll();
+        if (db) {
+            return new Promise((resolve) => {
+                try {
+                    const tx = db.transaction(STORE_ACOPIO, 'readonly');
+                    const store = tx.objectStore(STORE_ACOPIO);
+                    const req = store.getAll();
 
-            req.onsuccess = () => {
-                const list = req.result || [];
-                list.sort((a, b) => b.timestamp - a.timestamp);
-                resolve(list);
-            };
+                    req.onsuccess = () => {
+                        let list = req.result || [];
+                        if (list.length === 0) {
+                            list = getFromLocalStorageBackup();
+                        }
+                        list.sort((a, b) => b.timestamp - a.timestamp);
+                        resolve(list);
+                    };
 
-            req.onerror = (e) => {
-                console.error('[AcopioManager] Error obteniendo acopio:', e.target.error);
-                reject(e.target.error);
-            };
-        });
+                    req.onerror = () => {
+                        resolve(getFromLocalStorageBackup());
+                    };
+                } catch (e) {
+                    resolve(getFromLocalStorageBackup());
+                }
+            });
+        } else {
+            const list = getFromLocalStorageBackup();
+            list.sort((a, b) => b.timestamp - a.timestamp);
+            return list;
+        }
     } catch (err) {
         console.error('[AcopioManager] Error en getAllAcopioPhotos:', err);
-        return [];
+        return getFromLocalStorageBackup();
     }
 }
 
@@ -135,21 +200,22 @@ export async function getAllAcopioPhotos() {
 export async function deleteAcopioPhoto(id) {
     try {
         const db = await initAcopioDB();
-        return new Promise((resolve, reject) => {
+        
+        // Eliminar de localStorage
+        try {
+            const list = getFromLocalStorageBackup().filter(p => p.id !== id);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+        } catch (_) {}
+
+        if (db) {
             const tx = db.transaction(STORE_ACOPIO, 'readwrite');
             const store = tx.objectStore(STORE_ACOPIO);
-            const req = store.delete(id);
+            store.delete(id);
+        }
 
-            req.onsuccess = () => {
-                showToast('Foto eliminada del acopio.', 'info');
-                renderAcopioReel();
-                resolve(true);
-            };
-
-            req.onerror = (e) => {
-                reject(e.target.error);
-            };
-        });
+        showToast('Foto eliminada del acopio.', 'info');
+        renderAcopioReel();
+        return true;
     } catch (err) {
         console.error('[AcopioManager] Error eliminando foto:', err);
         return false;
@@ -162,14 +228,15 @@ export async function deleteAcopioPhoto(id) {
 export async function clearAllAcopioPhotos() {
     if (!confirm('¿Deseas vaciar todas las fotos del acopio de inspección?')) return;
     try {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
         const db = await initAcopioDB();
-        const tx = db.transaction(STORE_ACOPIO, 'readwrite');
-        const store = tx.objectStore(STORE_ACOPIO);
-        store.clear();
-        tx.oncomplete = () => {
-            showToast('Acopio de fotos vaciado.', 'info');
-            renderAcopioReel();
-        };
+        if (db) {
+            const tx = db.transaction(STORE_ACOPIO, 'readwrite');
+            const store = tx.objectStore(STORE_ACOPIO);
+            store.clear();
+        }
+        showToast('Acopio de fotos vaciado.', 'info');
+        renderAcopioReel();
     } catch (err) {
         console.error('[AcopioManager] Error vaciando acopio:', err);
     }
@@ -187,7 +254,7 @@ export async function loadAcopioPhotoToInspection(id) {
 
         window.nexusCurrentImageBase64 = photo.fotoBase64;
         
-        const previewImg = document.getElementById('nexusPreviewImg') || document.getElementById('scannerPreviewImg');
+        const previewImg = document.getElementById('nexusPreviewImg');
         const placeholder = document.getElementById('nexusPlaceholder');
         const webcamVideo = document.getElementById('webcam');
         const bboxCanvas = document.getElementById('nexusBboxCanvas');
@@ -251,7 +318,7 @@ export async function renderAcopioReel() {
             if (photos.length === 0) {
                 containerLive.innerHTML = `
                     <div style="grid-column: 1/-1; text-align:center; padding:18px; color:var(--text-muted); font-size:0.8rem; border:1px dashed var(--border-color); border-radius:8px;">
-                        📸 Aún no hay fotos en el acopio. Toma una foto con '📸 FOTO INSTANTÁNEA' o sube desde '📁 GALERÍA' para comenzar a acopiar.
+                        📸 Aún no hay fotos en el acopio. Toma una foto con '📸 CAPTURAR VISOR' o sube desde '📁 GALERÍA' para comenzar a acopiar.
                     </div>
                 `;
             } else {
@@ -287,7 +354,9 @@ export async function renderAcopioReel() {
 export function initAcopioUI() {
     initAcopioDB().then(() => {
         renderAcopioReel();
-    }).catch(() => {});
+    }).catch(() => {
+        renderAcopioReel();
+    });
 
     if (typeof window !== 'undefined') {
         window.loadAcopioPhotoToInspection = loadAcopioPhotoToInspection;
@@ -295,6 +364,7 @@ export function initAcopioUI() {
         window.clearAllAcopioPhotos = clearAllAcopioPhotos;
         window.savePhotoToAcopio = savePhotoToAcopio;
         window.renderAcopioReel = renderAcopioReel;
+        window.getAllAcopioPhotos = getAllAcopioPhotos;
     }
 }
 
@@ -304,4 +374,5 @@ if (typeof window !== 'undefined') {
     window.clearAllAcopioPhotos = clearAllAcopioPhotos;
     window.savePhotoToAcopio = savePhotoToAcopio;
     window.renderAcopioReel = renderAcopioReel;
+    window.getAllAcopioPhotos = getAllAcopioPhotos;
 }

@@ -1,12 +1,12 @@
-# VitroDiag NEXUS v2.2.2 — Always-Live Architecture
+# VitroDiag NEXUS v2.2.3 — Always-Live Architecture
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristal Chile.
 
-## 🚀 Novedades v2.2.2: Galería Receptora, Acopio de Fotos & Descongelamiento Total
+## 🚀 Novedades v2.2.3: Motor Visión en Vivo & Galería Receptora Ultra-Resiliente
 
-- **Galería Receptora & Acopio de Fotos (IndexedDB):** Toda foto tomada con el visor en vivo, cámara nativa o cargada desde galería se almacena automáticamente en el almacén local persistente con miniaturas, hora exacta de toma, artículo y diagnóstico.
-- **Descongelamiento y Corrección de Ciclo de Vida:** Inicialización defensiva de módulos ante carga asíncrona (`document.readyState`), garantizando que todos los controladores de eventos, base de datos y botones funcionen instantáneamente sin bloqueos.
-- **Visor de Cámara en Vivo & Captura Instantánea:** Activación fluida de streaming WebRTC con botón táctil directo `📸 CAPTURAR VISOR` y botón secundario `📷 FOTO NATIVA`.
+- **Motor Visión en Vivo 100% Activo:** Streaming WebRTC continuo con inicialización tolerante de constraints, botón táctil `🔄 Girar Cámara` (trasera/frontal) y soporte completo para disparo directo.
+- **Galería Receptora & Acopio de Fotos (IndexedDB + LocalStorage):** Almacenamiento dual garantizado de cada toma de inspección, visualizable al instante en el carrete interactivo con timestamps, artículos y estados.
+- **Interacción 1-Tap con Gemini IA:** Diagnóstico instantáneo directo desde cualquier foto del acopio o del visor óptico sin recargas.
 - **Catálogo Oficial de 111 Defectos Industriales:** Incluye la familia completa de calcinados de moldería y swabbing, con filtros ópticos para alta iluminación en planta.
 
 ## Flujo Principal
