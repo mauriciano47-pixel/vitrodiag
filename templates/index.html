@@ -333,6 +333,57 @@
         .acopio-art-name { color: var(--text-muted); font-size: 0.65rem; font-weight: 500; }
         .acopio-btn-del { background: transparent; border: none; cursor: pointer; font-size: 0.7rem; padding: 0 2px; }
 
+        /* Barra de Modos de Visión & Auto-Diagnóstico */
+        .vision-engine-mode-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 8px;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 5px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+        .vision-mode-tabs-group {
+            display: flex;
+            gap: 4px;
+        }
+        .vision-mode-tab {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-muted);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .vision-mode-tab.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .auto-diag-switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .auto-diag-switch input {
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+        .nexus-preview-area.drag-active {
+            border: 2px dashed #10b981 !important;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
@@ -2460,6 +2511,22 @@
     <!-- PESTAÑA 1: DIAGNÓSTICO EN VIVO (ERGONOMÍA INDUSTRIAL) -->
     <div id="liveView" class="view-content active">
         
+        <!-- SELECTOR DE MODO DE VISIÓN & AUTO-DIAGNÓSTICO -->
+        <div class="vision-engine-mode-bar">
+            <div class="vision-mode-tabs-group">
+                <button type="button" class="vision-mode-tab active" data-mode="native" onclick="if(window.setVisionEngineMode) window.setVisionEngineMode('native')">
+                    📷 Foto Directa (Zero-Permisos)
+                </button>
+                <button type="button" class="vision-mode-tab" data-mode="webrtc" onclick="if(window.setVisionEngineMode) window.setVisionEngineMode('webrtc')">
+                    🎥 Streaming WebRTC
+                </button>
+            </div>
+            <label class="auto-diag-switch" title="Auto-ejecutar diagnóstico con Gemini al tomar foto">
+                <input type="checkbox" id="autoDiagnoseToggle" checked>
+                <span>⚡ Auto-Diagnóstico</span>
+            </label>
+        </div>
+
         <!-- BARRA DE FILTROS ÓPTICOS INDUSTRIALES (PARA ALTA ILUMINACIÓN EN PLANTA) -->
         <div class="optical-filters-bar">
             <button type="button" class="filter-chip active" onclick="setOpticalFilter('normal', this)">
@@ -2474,13 +2541,13 @@
             <button type="button" class="filter-chip" onclick="setOpticalFilter('cracks', this)">
                 <span>⚡</span> Micro-Fisuras
             </button>
-            <button type="button" class="filter-chip" onclick="if(window.toggleCameraFacingMode) window.toggleCameraFacingMode();" title="Cambiar cámara frontal / trasera">
+            <button type="button" id="btnRotateCameraChip" class="filter-chip" onclick="if(window.toggleCameraFacingMode) window.toggleCameraFacingMode();" title="Cambiar cámara frontal / trasera" style="display:none;">
                 <span>🔄</span> Girar Cámara
             </button>
         </div>
 
         <!-- VISOR UNIFICADO EN LA PARTE SUPERIOR (FOCO DIRECTO EN ENVASE) -->
-        <div id="nexusPreviewArea" class="nexus-preview-area" title="Visor Óptico de Envase">
+        <div id="nexusPreviewArea" class="nexus-preview-area" onclick="if(window.toggleNexusCameraStream) window.toggleNexusCameraStream();" title="Toca para tomar foto del envase">
             
             <!-- Video en vivo si hay stream WebRTC -->
             <video id="webcam" autoplay muted playsinline webkit-playsinline class="webcam-video"></video>
@@ -2491,10 +2558,10 @@
             <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas"></canvas>
 
             <!-- Placeholder cuando está en espera -->
-            <div id="nexusPlaceholder" class="nexus-placeholder" onclick="if(window.toggleNexusCameraStream) window.toggleNexusCameraStream();">
-                <div class="nexus-placeholder-icon-wrap">🎥</div>
-                <p class="nexus-placeholder-text">TOCA AQUÍ PARA ENCENDER CÁMARA</p>
-                <span class="nexus-placeholder-sub">(Streaming en Vivo + Retícula Óptica)</span>
+            <div id="nexusPlaceholder" class="nexus-placeholder">
+                <div class="nexus-placeholder-icon-wrap">📸</div>
+                <p class="nexus-placeholder-text" id="nexusPlaceholderText">TOCA AQUÍ PARA TOMAR FOTO NATIVA</p>
+                <span class="nexus-placeholder-sub" id="nexusPlaceholderSub">(100% Inmune a Permisos — Enfoque Automático y Flash)</span>
             </div>
 
             <!-- Retícula Cyber HUD de Enfoque Óptico de Envase -->
@@ -2506,21 +2573,18 @@
                 <div class="hud-crosshair-center"></div>
             </div>
 
-            <div id="opencvStatus" class="opencv-status">🟡 Motor Visión: Listo (Toca '🎥 ENCENDER CÁMARA' o '📷 FOTO NATIVA')</div>
+            <div id="opencvStatus" class="opencv-status">🟢 Modo Foto Directa Nativa Activo (Zero-Permisos / Ultra HD)</div>
 
             <!-- BOTÓN DE DISPARO SUPERPUESTO (ESTILO CÁMARA NATIVA SMARTPHONE) -->
             <div class="nexus-controls-overlay">
                 <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none" onchange="if(window.handleNexusCaptureSelect) window.handleNexusCaptureSelect(event)">
                 <input type="file" id="nexusUploadInput" accept="image/*" class="d-none" onchange="if(window.handleNexusUploadSelect) window.handleNexusUploadSelect(event)">
                 
-                <button id="btnNexusPrimaryAction" class="btn-action btn-action-shot" onclick="event.stopPropagation(); if(window.toggleNexusCameraStream) window.toggleNexusCameraStream();" title="Encender cámara o capturar fotograma">
-                    🎥 ENCENDER CÁMARA EN VIVO
+                <button id="btnNexusPrimaryAction" class="btn-action btn-action-shot" onclick="event.stopPropagation(); if(window.nexusTriggerNativeCamera) window.nexusTriggerNativeCamera(); else document.getElementById('nexusCaptureInput').click();" title="Tomar foto del envase en alta resolución">
+                    📸 TOMAR FOTO DEL ENVASE
                 </button>
-                <button class="btn-action btn-action-shot" onclick="event.stopPropagation(); document.getElementById('nexusCaptureInput').click();" title="Tomar foto directa con cámara del smartphone" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
-                    📷 FOTO NATIVA
-                </button>
-                <button class="btn-action btn-action-gallery" onclick="event.stopPropagation(); document.getElementById('nexusUploadInput').click();" title="Subir desde galería de fotos">
-                    📁 GALERÍA
+                <button class="btn-action btn-action-gallery" onclick="event.stopPropagation(); if(window.nexusTriggerGalleryUpload) window.nexusTriggerGalleryUpload(); else document.getElementById('nexusUploadInput').click();" title="Subir desde galería de fotos">
+                    📁 SUBIR DE GALERÍA
                 </button>
             </div>
         </div>

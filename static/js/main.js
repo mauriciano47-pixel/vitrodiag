@@ -1,4 +1,4 @@
-// VitroDiag NEXUS v2.2.4 — Punto de Entrada y Coordinador Principal Always-Live
+// VitroDiag NEXUS v2.2.5 — Punto de Entrada y Coordinador Principal Always-Live
 import { state } from './state.js';
 import { DEFECTOS_DB, renderDefectsList } from './db.js';
 import { 
@@ -23,6 +23,9 @@ import {
     stopDiagnosticCamera,
     toggleCameraFacingMode,
     toggleNexusCameraStream,
+    setVisionEngineMode,
+    nexusTriggerNativeCamera,
+    nexusTriggerGalleryUpload,
     captureCurrentVideoFrameBase64,
     updateCameraControlsUI,
     startScannerCamera, 
@@ -146,7 +149,14 @@ export function nexusSnapLiveWebcam() {
                 btnDiagnose.style.opacity = '1';
             }
             updateCameraControlsUI();
-            showToast('📸 Foto capturada del visor en vivo y guardada en el acopio.', 'success');
+            
+            const autoDiagToggle = document.getElementById('autoDiagnoseToggle');
+            if (autoDiagToggle && autoDiagToggle.checked) {
+                showToast('📸 Fotograma capturado. Auto-diagnosticando...', 'info');
+                nexusDiagnoseWithAI();
+            } else {
+                showToast('📸 Foto capturada del visor en vivo y guardada en el acopio.', 'success');
+            }
             return;
         }
     }
@@ -156,14 +166,12 @@ export function nexusSnapLiveWebcam() {
 }
 
 /**
- * Maneja la selección de imagen (captura nativa o subida de archivo).
- * @param {Event} event 
+ * Procesa cualquier archivo de imagen entrante (cámara nativa, galería, drag&drop, clipboard).
+ * @param {File|Blob} file 
  */
-export function nexusHandleImageSelect(event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-        showToast('Seleccione un archivo de imagen válido.', 'danger');
+export function nexusProcessIncomingImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+        showToast('Por favor seleccione un archivo de imagen válido.', 'danger');
         return;
     }
 
@@ -183,7 +191,7 @@ export function nexusHandleImageSelect(event) {
             console.warn('[NEXUS] Auto-acopio:', acErr);
         }
         
-        // Mostrar preview
+        // Mostrar preview en visor
         const previewImg = document.getElementById('nexusPreviewImg') || document.getElementById('scannerPreviewImg');
         const placeholder = document.getElementById('nexusPlaceholder');
         const webcamVideo = document.getElementById('webcam');
@@ -203,13 +211,80 @@ export function nexusHandleImageSelect(event) {
             btnDiagnose.style.opacity = '1';
         }
         if (resultCard) resultCard.style.display = 'none';
-        
-        showToast('📷 Fotografía capturada y acopiada. Presiona DIAGNOSTICAR.', 'success');
+
+        // Auto-diagnóstico si está activo
+        const autoDiagToggle = document.getElementById('autoDiagnoseToggle');
+        const shouldAutoDiagnose = autoDiagToggle ? autoDiagToggle.checked : true;
+
+        if (shouldAutoDiagnose) {
+            showToast('📷 Foto cargada. Ejecutando diagnóstico inteligente...', 'info');
+            nexusDiagnoseWithAI();
+        } else {
+            showToast('📷 Fotografía cargada y acopiada. Presiona DIAGNOSTICAR.', 'success');
+        }
     };
     reader.readAsDataURL(file);
-    
-    // Resetear el input para permitir re-selección del mismo archivo
+}
+
+/**
+ * Maneja la selección de imagen desde inputs de archivo.
+ * @param {Event} event 
+ */
+export function nexusHandleImageSelect(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    nexusProcessIncomingImageFile(file);
     event.target.value = '';
+}
+
+/**
+ * Configura listeners de Portapapeles (Ctrl+V) y Drag & Drop.
+ */
+export function setupDragAndDropAndClipboard() {
+    // 1. Soporte Clipboard Paste (Ctrl+V)
+    window.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || (e.originalEvent && e.originalEvent.clipboardData))?.items;
+        if (!items) return;
+        for (let item of items) {
+            if (item.kind === 'file' && item.type.startsWith('image/')) {
+                const blob = item.getAsFile();
+                if (blob) {
+                    showToast('📋 Imagen pegada desde el portapapeles.', 'info');
+                    nexusProcessIncomingImageFile(blob);
+                    break;
+                }
+            }
+        }
+    });
+
+    // 2. Soporte Drag & Drop en visor
+    const visor = document.getElementById('nexusPreviewArea');
+    if (visor) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            visor.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                visor.classList.add('drag-active');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            visor.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                visor.classList.remove('drag-active');
+            }, false);
+        });
+
+        visor.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt ? dt.files : null;
+            if (files && files[0] && files[0].type.startsWith('image/')) {
+                showToast('📁 Imagen soltada en el visor.', 'info');
+                nexusProcessIncomingImageFile(files[0]);
+            }
+        }, false);
+    }
 }
 
 /**
@@ -318,12 +393,16 @@ export function nexusSaveToDataset() {
 window.nexusHandleImageSelect = nexusHandleImageSelect;
 window.handleNexusCaptureSelect = nexusHandleImageSelect;
 window.handleNexusUploadSelect = nexusHandleImageSelect;
+window.nexusProcessIncomingImageFile = nexusProcessIncomingImageFile;
 window.nexusSnapLiveWebcam = nexusSnapLiveWebcam;
 window.nexusDiagnoseWithAI = nexusDiagnoseWithAI;
 window.triggerNexusDiagnosis = nexusDiagnoseWithAI;
 window.nexusSaveToBitacora = nexusSaveToBitacora;
 window.nexusSaveToDataset = nexusSaveToDataset;
 window.toggleNexusCameraStream = toggleNexusCameraStream;
+window.setVisionEngineMode = setVisionEngineMode;
+window.nexusTriggerNativeCamera = nexusTriggerNativeCamera;
+window.nexusTriggerGalleryUpload = nexusTriggerGalleryUpload;
 window.openCameraPermissionModal = openCameraPermissionModal;
 window.closeCameraPermissionModal = closeCameraPermissionModal;
 window.retryCameraPermissions = retryCameraPermissions;
@@ -406,21 +485,28 @@ export function initNexusApp() {
     if (captureInput) captureInput.addEventListener('change', nexusHandleImageSelect);
     if (uploadInput) uploadInput.addEventListener('change', nexusHandleImageSelect);
 
-    // 4. Actualizar estado visual de controles de cámara
+    // 4. Configurar Drag & Drop y Portapapeles (Ctrl+V)
+    try {
+        setupDragAndDropAndClipboard();
+    } catch (e) {
+        console.warn("[NEXUS] Drag & Drop:", e);
+    }
+
+    // 5. Configurar modo inicial (Nativo Zero-Permisos por defecto)
     try {
         updateCameraControlsUI();
     } catch (e) {
         console.warn("[NEXUS] Update Camera UI:", e);
     }
 
-    // 5. Modo Always-Live (Zero-SW / Zero-Cache)
+    // 6. Modo Always-Live (Zero-SW / Zero-Cache)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
             for (let reg of regs) reg.unregister();
         }).catch(() => {});
     }
 
-    console.log("[NEXUS] VitroDiag v2.2.4 inicializado correctamente en modo Always-Live.");
+    console.log("[NEXUS] VitroDiag v2.2.5 inicializado correctamente en modo Always-Live Zero-Permisos.");
 }
 
 // Inicialización defensiva independiente del estado de carga del documento

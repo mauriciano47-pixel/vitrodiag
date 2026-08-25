@@ -1,19 +1,20 @@
-# VitroDiag NEXUS v2.2.4 — Always-Live Architecture
+# VitroDiag NEXUS v2.2.5 — Always-Live Architecture
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristal Chile.
 
-## 🚀 Novedades v2.2.4: Motor Visión User-Gesture First & Lightbox de Acopio
+## 🚀 Novedades v2.2.5: Motor Visión Universal Zero-Permisos & Auto-Diagnóstico
 
-- **Motor Visión User-Gesture First:** Botón táctico central `🎥 ENCENDER CÁMARA EN VIVO` que garantiza la activación de streaming WebRTC con interacción del usuario, evitando los bloqueos automáticos de navegadores móviles (Chrome Android, Safari iOS).
-- **Captura Táctica de Fotogramas:** Al pulsar `📸 CAPTURAR FOTOGRAMA`, el visor congela el fotograma en alta definición y lo archiva automáticamente en el Acopio local.
-- **Lightbox Modal de Acopio:** Visualización en pantalla completa de cualquier captura, con botones de acción rápida: `⚡ Diagnosticar con Gemini IA (1-Tap)`, `🏷️ Guardar en Banco IA` y `🗑️ Eliminar`.
-- **Modo Nativo Inmune a Restricciones:** Botón `📷 FOTO NATIVA` mediante HTML Media Capture de 50MP/12MP con compatibilidad del 100% sin depender de permisos WebRTC.
+- **Independencia Total de Permisos:** Adopción del **Modo Foto Directa Nativa (Zero-Permisos)** como estándar industrial predeterminado. Al tocar el visor o el botón principal, se abre directamente la cámara de fábrica del smartphone con auto-enfoque, flash y resolución completa (12MP a 50MP) sin depender de permisos WebRTC.
+- **Auto-Diagnóstico Inteligente Inmediato:** Al capturar la fotografía, el sistema analiza automáticamente la imagen con Gemini 2.0 Flash Vision en menos de 2 segundos sin requerir clics adicionales.
+- **Selector de Modo Dual:** Conmutación rápida entre `📷 Foto Directa (Zero-Permisos)` y `🎥 Streaming WebRTC (PC / Webcam)`.
+- **Soporte Drag & Drop y Portapapeles (Ctrl+V):** Permite arrastrar imágenes al visor o pegar capturas directamente en la interfaz.
+- **Lightbox Modal de Acopio & Galería:** Historial persistente en IndexedDB + LocalStorage con diagnóstico y transferencia al Banco IA en 1 toque.
 
 ## Flujo Principal
 
-1. 🎥 **Visor Óptico & Streaming Táctico** — Enciende la cámara en vivo con 1 clic, ajusta la retícula HUD y captura el fotograma o usa la cámara nativa del teléfono.
-2. ⚡ **Diagnosticar con IA** — Gemini 2.0 Flash Vision API analiza la refracción y geometría contra el catálogo de 111 defectos industriales.
-3. 📸 **Galería Receptora & Lightbox** — Revisa las tomas del turno en pantalla completa y re-diagnostica o envía al Banco IA a 1 toque.
+1. 📸 **1-Tap Direct Shot** — Toca el visor o el botón principal para abrir la cámara nativa del teléfono y disparar en ultra-alta resolución.
+2. ⚡ **Auto-Diagnóstico Inmediato** — Gemini 2.0 Flash Vision analiza automáticamente la geometría contra el catálogo de 111 defectos industriales.
+3. 📸 **Galería Receptora & Lightbox** — Revisa las fotos del turno en pantalla completa y re-diagnostica o envía al Banco IA a 1 toque.
 4. 📋 **Ajustes de Máquina I.S.** — Acciones correctivas inmediatas para el operador en línea caliente.
 
 ## URL de Producción

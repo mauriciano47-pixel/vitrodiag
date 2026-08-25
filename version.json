@@ -1,12 +1,12 @@
 {
-  "version": "2.2.4",
-  "buildTime": 1724612000000,
-  "releaseName": "Motor Visión User-Gesture First, Streaming Táctico & Lightbox de Acopio",
+  "version": "2.2.5",
+  "buildTime": 1724616000000,
+  "releaseName": "Motor Visión Universal Zero-Permisos, Auto-Diagnóstico y Modo Dual",
   "features": [
-    "Motor Visión User-Gesture First: Botón táctico central '🎥 ENCENDER CÁMARA EN VIVO' que garantiza activación WebRTC sin bloqueos de navegador",
-    "Captura directa de fotograma con auto-guardado en Acopio persistente",
-    "Lightbox Modal de Acopio: Inspección en alta resolución, diagnóstico 1-Tap con Gemini IA y traspaso directo a Banco IA",
-    "Tolerancia total de permisos: Botón '📷 FOTO NATIVA' que utiliza HTML Media Capture de 50MP/12MP inmune a restricciones de navegador",
-    "Sincronización perfecta de DOM y balance de etiquetas 100% libre de advertencias"
+    "Independencia total de permisos WebRTC: Modo Foto Directa Nativa (Zero-Permisos) como estándar predeterminado en planta",
+    "Auto-Diagnóstico inteligente inmediato al capturar fotografía con Gemini 2.0 Flash Vision",
+    "Selector de Modo Dual: '📷 Foto Directa (Zero-Permisos)' vs '🎥 Streaming WebRTC (PC / Webcam)'",
+    "Soporte universal para arrastrar imágenes (Drag & Drop) y pegar desde portapapeles (Ctrl+V)",
+    "Resolución completa del sensor del smartphone (12MP a 50MP, autoenfoque láser, lente macro y flash nativo)"
   ]
 }
