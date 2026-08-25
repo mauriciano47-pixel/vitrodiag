@@ -2491,10 +2491,10 @@
             <canvas id="nexusBboxCanvas" class="nexus-bbox-canvas"></canvas>
 
             <!-- Placeholder cuando está en espera -->
-            <div id="nexusPlaceholder" class="nexus-placeholder" onclick="if(window.nexusSnapLiveWebcam) window.nexusSnapLiveWebcam();">
-                <div class="nexus-placeholder-icon-wrap">📸</div>
-                <p class="nexus-placeholder-text">TOCA AQUÍ PARA DISPARAR FOTO</p>
-                <span class="nexus-placeholder-sub">(Mirando directo el envase — 1-Clic Sin Desplazarte)</span>
+            <div id="nexusPlaceholder" class="nexus-placeholder" onclick="if(window.toggleNexusCameraStream) window.toggleNexusCameraStream();">
+                <div class="nexus-placeholder-icon-wrap">🎥</div>
+                <p class="nexus-placeholder-text">TOCA AQUÍ PARA ENCENDER CÁMARA</p>
+                <span class="nexus-placeholder-sub">(Streaming en Vivo + Retícula Óptica)</span>
             </div>
 
             <!-- Retícula Cyber HUD de Enfoque Óptico de Envase -->
@@ -2506,17 +2506,17 @@
                 <div class="hud-crosshair-center"></div>
             </div>
 
-            <div id="opencvStatus" class="opencv-status">Motor Visión: Listo para Disparo</div>
+            <div id="opencvStatus" class="opencv-status">🟡 Motor Visión: Listo (Toca '🎥 ENCENDER CÁMARA' o '📷 FOTO NATIVA')</div>
 
             <!-- BOTÓN DE DISPARO SUPERPUESTO (ESTILO CÁMARA NATIVA SMARTPHONE) -->
             <div class="nexus-controls-overlay">
                 <input type="file" id="nexusCaptureInput" accept="image/*" capture="environment" class="d-none" onchange="if(window.handleNexusCaptureSelect) window.handleNexusCaptureSelect(event)">
                 <input type="file" id="nexusUploadInput" accept="image/*" class="d-none" onchange="if(window.handleNexusUploadSelect) window.handleNexusUploadSelect(event)">
                 
-                <button class="btn-action btn-action-shot" onclick="event.stopPropagation(); if(window.nexusSnapLiveWebcam) window.nexusSnapLiveWebcam();" title="Capturar foto instantánea del visor de cámara en vivo">
-                    📸 CAPTURAR VISOR
+                <button id="btnNexusPrimaryAction" class="btn-action btn-action-shot" onclick="event.stopPropagation(); if(window.toggleNexusCameraStream) window.toggleNexusCameraStream();" title="Encender cámara o capturar fotograma">
+                    🎥 ENCENDER CÁMARA EN VIVO
                 </button>
-                <button class="btn-action btn-action-shot" onclick="event.stopPropagation(); document.getElementById('nexusCaptureInput').click();" title="Tomar foto con cámara del smartphone" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                <button class="btn-action btn-action-shot" onclick="event.stopPropagation(); document.getElementById('nexusCaptureInput').click();" title="Tomar foto directa con cámara del smartphone" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
                     📷 FOTO NATIVA
                 </button>
                 <button class="btn-action btn-action-gallery" onclick="event.stopPropagation(); document.getElementById('nexusUploadInput').click();" title="Subir desde galería de fotos">
@@ -2573,7 +2573,6 @@
                 🎥 Reconectar / Reiniciar Cámara en Vivo (WebRTC)
             </button>
         </div>
-    </div>
     </div>
 
     <div id="toolsView" class="view-content">
@@ -6542,6 +6541,30 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- MODAL LIGHTBOX DE INSPECCIÓN DE ACOPIO -->
+    <div id="acopioLightboxModal" class="modal-overlay">
+        <div class="modal-content sample-modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="acopioLightboxTitle">📸 Inspección de Fotografía de Acopio</span>
+                <button class="modal-close" onclick="window.closeAcopioLightboxModal()">&times;</button>
+            </div>
+            <div class="modal-body sample-modal-body">
+                <div class="sample-modal-img-container">
+                    <img id="acopioLightboxImg" src="" alt="Foto de Acopio" class="sample-modal-img" />
+                </div>
+                <div class="sample-modal-defect-title" id="acopioLightboxDefect">Estado</div>
+                <div class="sample-modal-meta" id="acopioLightboxMeta">Fecha</div>
+                
+                <div class="sample-modal-actions" style="margin-top:14px;">
+                    <button class="btn-action btn-modal-diagnose" onclick="window.analyzeActiveLightboxWithGemini()">⚡ Diagnosticar con Gemini IA (1-Tap)</button>
+                    <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.transferActiveLightboxToDataset()">🏷️ Guardar en Banco IA</button>
+                    <button class="btn-action btn-action-danger btn-dataset-flex" onclick="if(window.deleteAcopioPhoto) window.deleteAcopioPhoto(activeLightboxPhotoId)">🗑️ Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <footer class="industrial-footer">
         <div class="footer-line"></div>

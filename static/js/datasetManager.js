@@ -283,26 +283,20 @@ export async function renderDatasetGallery() {
  * Captura la foto activa desde la cámara de diagnóstico o activa el selector directo de imagen.
  */
 export function captureDatasetFromCamera() {
-    const canvas = document.getElementById('canvasOutput');
-    const video = document.getElementById('webcam');
     const previewContainer = document.getElementById('datasetPreviewContainer');
     const previewImg = document.getElementById('datasetPreviewImg');
 
     let base64 = null;
+    if (window.captureCurrentVideoFrameBase64) {
+        base64 = window.captureCurrentVideoFrameBase64();
+    }
 
-    if (video && video.readyState >= 2 && video.videoWidth > 0) {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = video.videoWidth;
-        tempCanvas.height = video.videoHeight;
-        const ctx = tempCanvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
-        base64 = tempCanvas.toDataURL('image/jpeg', 0.85);
-    } else if (canvas && canvas.width > 0) {
-        base64 = canvas.toDataURL('image/jpeg', 0.85);
+    if (!base64 && window.nexusCurrentImageBase64) {
+        base64 = window.nexusCurrentImageBase64;
     }
 
     if (!base64 || base64 === 'data:,') {
-        showToast('Abriendo selector de cámara/galería del sistema...', 'info');
+        showToast('Abriendo selector de cámara/galería del smartphone...', 'info');
         triggerDatasetFileSelect();
         return;
     }
@@ -312,7 +306,7 @@ export function captureDatasetFromCamera() {
         previewImg.src = tempCapturedBase64;
         previewContainer.style.display = 'block';
     }
-    showToast('Foto capturada de la cámara. Seleccione el defecto y guarde la muestra.', 'success');
+    showToast('Foto capturada para Banco IA. Asigna el defecto y presiona Guardar Muestra.', 'success');
 }
 
 /**

@@ -1,9 +1,9 @@
-# VitroDiag NEXUS v2.2.3 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.2.4 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Desarrollador:** Mauricio Uribe Maldonado (mauriciano47-pixel)  
 **Planta / Empresa Target:** Cristal Chile (Proceso NNPB, Soplo-Soplo y Prensado)  
 **URL de Producción PWA:** <https://mauriciano47-pixel.github.io/vitrodiag/>  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.3 — Motor Visión en Vivo & Galería Receptora Ultra-Resiliente)  
+**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.4 — Motor Visión User-Gesture First, Streaming Táctico & Lightbox de Acopio)  
 
 ---
 
@@ -96,7 +96,8 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 | Versión | Descripción |
 | --- | --- |
-| **v2.2.3** | Restauración completa de Motor Visión en vivo (WebRTC con tolerancia de constraints y rotación frontal/trasera), Galería Receptora y Acopio de Fotos con fallback dual (IndexedDB + LocalStorage) e integración 1-Tap con Gemini IA. |
+| **v2.2.4** | Arquitectura Motor Visión *User-Gesture First* con botón táctico central de encendido de streaming, captura de fotograma directa, Lightbox Modal de Acopio con diagnóstico 1-Tap y modo nativo 100% inmune a restricciones de permisos. |
+| **v2.2.3** | Restauración de Motor Visión en vivo (WebRTC con tolerancia de constraints y rotación frontal/trasera), Galería Receptora y Acopio de Fotos con fallback dual (IndexedDB + LocalStorage) e integración 1-Tap con Gemini IA. |
 | **v2.2.2** | Implementación de Galería Receptora & Acopio automático de fotografías de inspección (IndexedDB), descongelamiento de módulos (corrección de ciclo de vida defensivo ante DOMContentLoaded diferido) y estabilización del visor de cámara en vivo. |
 | **v2.2.1** | Incorporación de la familia de 7 Defectos Calcinados (111 defectos en total), barra de Filtros Ópticos para Alta Iluminación en Planta (Silueta/Polarizado, Calcinados, Micro-Fisuras) y estrategia IA en dos niveles con Banco IA (Few-Shot RAG). |
 | **v2.2.0** | Implementación de Arquitectura Always-Live con Zero-Cache Shield: eliminación total de Service Workers y CacheStorage, micro-bootstrapper dinámico y detector de actualizaciones en caliente. |

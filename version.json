@@ -1,12 +1,12 @@
 {
-  "version": "2.2.3",
-  "buildTime": 1724610000000,
-  "releaseName": "Motor Visión Cámara en Vivo & Galería Receptora Ultra-Resiliente",
+  "version": "2.2.4",
+  "buildTime": 1724612000000,
+  "releaseName": "Motor Visión User-Gesture First, Streaming Táctico & Lightbox de Acopio",
   "features": [
-    "Reconexión de visor de cámara en vivo (WebRTC / Streaming continuo) con botón de rotación frontal/trasera",
-    "Galería Receptora & Acopio persistente con fallback dual IndexedDB + LocalStorage",
-    "Fix de bloqueo táctil en visor óptico (eliminación de disparador invasivo en canvas)",
-    "Integración directa 1-Tap desde Galería y Acopio hacia Gemini 2.0 Vision IA",
-    "Corrección de balance de etiquetas HTML y carga asíncrona tolerante"
+    "Motor Visión User-Gesture First: Botón táctico central '🎥 ENCENDER CÁMARA EN VIVO' que garantiza activación WebRTC sin bloqueos de navegador",
+    "Captura directa de fotograma con auto-guardado en Acopio persistente",
+    "Lightbox Modal de Acopio: Inspección en alta resolución, diagnóstico 1-Tap con Gemini IA y traspaso directo a Banco IA",
+    "Tolerancia total de permisos: Botón '📷 FOTO NATIVA' que utiliza HTML Media Capture de 50MP/12MP inmune a restricciones de navegador",
+    "Sincronización perfecta de DOM y balance de etiquetas 100% libre de advertencias"
   ]
 }

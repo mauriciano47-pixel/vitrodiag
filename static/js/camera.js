@@ -1,3 +1,9 @@
+/**
+ * camera.js — Motor Visión & Gestión de Hardware de Cámara (VitroDiag)
+ * Implementa control táctico de streaming WebRTC con activación explícita (User-Gesture First),
+ * captura de fotogramas en alta resolución, rotación de lentes (trasera/frontal) y tolerancia de permisos.
+ */
+
 import { state } from './state.js';
 import { showToast } from './ui.js';
 
@@ -11,110 +17,138 @@ export async function toggleCameraFacingMode() {
     showToast(`Cambiando a cámara ${currentFacingMode === "environment" ? "trasera" : "frontal"}...`, "info");
     stopDiagnosticCamera();
     await new Promise(res => setTimeout(res, 250));
-    await startDiagnosticCamera();
+    await startDiagnosticCamera(true);
 }
 
 /**
- * Solicita permisos de cámara directamente al navegador Chrome mostrando el popup nativo (Allow/Block).
+ * Actualiza los botones de control y el estado visual de la cámara en la UI.
  */
-export async function requestCameraPermissionDirectly() {
-    showToast("Solicitando acceso a la cámara...", "info");
+export function updateCameraControlsUI() {
+    const video = document.getElementById('webcam');
+    const previewImg = document.getElementById('nexusPreviewImg');
+    const placeholder = document.getElementById('nexusPlaceholder');
+    const status = document.getElementById('opencvStatus');
+    const btnShot = document.getElementById('btnNexusPrimaryAction');
+
+    const isStreaming = Boolean(state.diagnosticStream && video && video.srcObject);
+
+    if (isStreaming) {
+        if (video) {
+            video.style.display = 'block';
+            video.style.opacity = '1';
+        }
+        if (previewImg) previewImg.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'none';
+
+        if (status) {
+            status.innerText = "🟢 Motor Visión: Cámara en Vivo Activa (Encuadra el Envase)";
+            status.style.color = "#10b981";
+            status.style.borderColor = "rgba(16, 185, 129, 0.4)";
+        }
+
+        if (btnShot) {
+            btnShot.innerHTML = "📸 CAPTURAR FOTOGRAMA";
+            btnShot.style.background = "linear-gradient(135deg, #10b981, #059669)";
+            btnShot.title = "Capturar fotograma del video en vivo";
+        }
+    } else {
+        if (video) video.style.display = 'none';
+        if (placeholder && (!previewImg || previewImg.style.display === 'none' || !previewImg.src)) {
+            placeholder.style.display = 'flex';
+        }
+
+        if (status) {
+            status.innerText = "🟡 Motor Visión: Listo (Toca '🎥 ENCENDER CÁMARA' o '📷 FOTO NATIVA')";
+            status.style.color = "#f59e0b";
+            status.style.borderColor = "rgba(245, 158, 11, 0.4)";
+        }
+
+        if (btnShot) {
+            btnShot.innerHTML = "🎥 ENCENDER CÁMARA EN VIVO";
+            btnShot.style.background = "linear-gradient(135deg, #ff6f00, #ea580c)";
+            btnShot.title = "Toca para encender el visor de cámara en streaming";
+        }
+    }
+}
+
+/**
+ * Captura el fotograma actual del video de cámara en vivo y devuelve Base64 JPEG.
+ * @returns {string|null}
+ */
+export function captureCurrentVideoFrameBase64() {
+    const video = document.getElementById('webcam');
+    if (!video || video.readyState < 2 || video.videoWidth === 0) return null;
+
     try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            showToast("Tu navegador no soporta WebRTC en este protocolo. Usa '📷 Foto Nativa'.", "warning");
-            return;
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return null;
+
+        // Aplicar filtros ópticos si están activos
+        const activeFilter = window.currentOpticalFilter || 'normal';
+        if (activeFilter === 'polarized') {
+            ctx.filter = 'contrast(1.75) saturate(1.35) brightness(0.9)';
+        } else if (activeFilter === 'carbon') {
+            ctx.filter = 'contrast(2.4) grayscale(0.6) brightness(0.82)';
+        } else if (activeFilter === 'cracks') {
+            ctx.filter = 'invert(0.9) hue-rotate(180deg) contrast(1.8)';
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-            audio: false
-        });
-
-        if (stream) {
-            state.diagnosticStream = stream;
-            const video = document.getElementById('webcam');
-            const status = document.getElementById('opencvStatus');
-            const previewImg = document.getElementById('nexusPreviewImg');
-            const placeholder = document.getElementById('nexusPlaceholder');
-            const bboxCanvas = document.getElementById('nexusBboxCanvas');
-
-            if (previewImg) previewImg.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'none';
-            if (bboxCanvas) bboxCanvas.style.display = 'none';
-
-            if (video) {
-                video.srcObject = stream;
-                video.setAttribute('autoplay', '');
-                video.setAttribute('muted', '');
-                video.setAttribute('playsinline', '');
-                video.setAttribute('webkit-playsinline', '');
-                video.muted = true;
-                video.volume = 0;
-                video.playsInline = true;
-                video.style.display = 'block';
-                video.style.opacity = '1';
-                await video.play().catch(e => console.warn("[Camera] Play diferido:", e));
-            }
-            if (status) {
-                status.innerText = "Motor Visión: Cámara en Vivo Activa (Encuadra el Envase)";
-                status.style.color = "#10b981";
-            }
-            showToast("✅ Cámara en vivo conectada con éxito.", "success");
-            if (window.startProcessing) window.startProcessing();
-        }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', 0.90);
     } catch (err) {
-        console.error("Error al solicitar permiso directo:", err);
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            showToast("Permiso bloqueado en el navegador. Puedes usar '📷 FOTO NATIVA'.", "warning");
-            openCameraPermissionModal("🚨 Permiso de cámara bloqueado", "danger");
-        } else {
-            showToast("No se pudo iniciar la cámara en vivo. Usa '📷 FOTO NATIVA'.", "info");
+        console.error("[Camera] Error capturando frame:", err);
+        return null;
+    }
+}
+
+/**
+ * Acción táctica primaria del visor:
+ * - Si la cámara está apagada: la enciende (gesto de usuario).
+ * - Si la cámara está encendida: captura el fotograma y congela la imagen.
+ */
+export async function toggleNexusCameraStream() {
+    const isStreaming = Boolean(state.diagnosticStream);
+    if (!isStreaming) {
+        showToast("Iniciando cámara en vivo...", "info");
+        await startDiagnosticCamera(true);
+    } else {
+        if (window.nexusSnapLiveWebcam) {
+            window.nexusSnapLiveWebcam();
         }
     }
 }
 
 /**
  * Inicia la cámara de diagnóstico en streaming continuo en el visor superior.
+ * @param {boolean} isUserGesture - Indica si fue disparado por clic del usuario.
  */
-export async function startDiagnosticCamera() {
-    // Si ya hay un stream activo y el video está reproduciéndose, asegurar visibilidad
+export async function startDiagnosticCamera(isUserGesture = false) {
     const video = document.getElementById('webcam');
-    const previewImg = document.getElementById('nexusPreviewImg');
-    const placeholder = document.getElementById('nexusPlaceholder');
     const status = document.getElementById('opencvStatus');
 
+    // Si ya está transmitiendo
     if (state.diagnosticStream && video && video.srcObject) {
-        if (previewImg) previewImg.style.display = 'none';
-        if (placeholder) placeholder.style.display = 'none';
-        video.style.display = 'block';
-        video.style.opacity = '1';
-        try {
-            await video.play();
-        } catch (_) {}
-        if (status) {
-            status.innerText = "Motor Visión: Cámara en Vivo Activa";
-            status.style.color = "#10b981";
-        }
+        updateCameraControlsUI();
         return;
     }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.warn("[Camera] mediaDevices no disponible.");
-        if (status) {
-            status.innerText = "Motor Visión: Listo (Usa '📸 CAPTURAR' o '📷 FOTO NATIVA')";
-            status.style.color = "#f59e0b";
-        }
+        console.warn("[Camera] mediaDevices no disponible en este protocolo/navegador.");
+        updateCameraControlsUI();
         return;
     }
 
     if (status) {
-        status.innerText = "Iniciando visor de cámara...";
-        status.style.color = "rgba(255, 111, 0, 0.85)";
+        status.innerText = "⏳ Conectando sensor de cámara...";
+        status.style.color = "rgba(255, 111, 0, 0.9)";
     }
 
-    // Detener cualquier stream previo colgado
+    // Detener cualquier stream anterior
     stopDiagnosticCamera();
-    await new Promise(res => setTimeout(res, 150));
+    await new Promise(res => setTimeout(res, 120));
 
     // Cascada de constraints tolerante
     const constraintLevels = [
@@ -132,7 +166,7 @@ export async function startDiagnosticCamera() {
             if (stream) break;
         } catch (err) {
             lastError = err;
-            console.warn("[Camera] Constraint no soportado, probando fallback...", constraints, err);
+            console.warn("[Camera] Constraint rechazado, intentando fallback:", constraints, err.name);
         }
     }
 
@@ -149,11 +183,6 @@ export async function startDiagnosticCamera() {
             video.muted = true;
             video.volume = 0;
             video.playsInline = true;
-            video.style.display = 'block';
-            video.style.opacity = '1';
-
-            if (previewImg) previewImg.style.display = 'none';
-            if (placeholder) placeholder.style.display = 'none';
 
             // Esperar metadata
             await new Promise((resolve) => {
@@ -174,22 +203,20 @@ export async function startDiagnosticCamera() {
             }
         }
 
-        if (status) {
-            status.innerText = "Motor Visión: Cámara en Vivo Activa (Apuntando al Envase)";
-            status.style.color = "#10b981";
-        }
+        updateCameraControlsUI();
+        showToast("🎥 Cámara en vivo activa. Encuadra la botella con la retícula.", "success");
     } else {
         console.warn("[Camera] No se pudo obtener stream automático:", lastError);
         state.diagnosticStream = null;
         if (typeof window !== 'undefined') window.state = state;
+        updateCameraControlsUI();
 
-        if (status) {
-            if (lastError && (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError')) {
-                status.innerText = "Cámara: Permiso Bloqueado (Toca '📷 FOTO NATIVA')";
-                status.style.color = "#ef4444";
+        if (isUserGesture && lastError) {
+            if (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError') {
+                showToast("Permiso de cámara bloqueado en el navegador. Usa '📷 FOTO NATIVA'.", "warning");
+                openCameraPermissionModal("🚨 Permiso de Cámara Denegado", "danger");
             } else {
-                status.innerText = "Motor Visión: Listo para Disparo (Toca '📸 CAPTURAR VISOR')";
-                status.style.color = "#10b981";
+                showToast("No se pudo iniciar el video en vivo. Puedes usar '📷 FOTO NATIVA'.", "info");
             }
         }
     }
@@ -211,6 +238,7 @@ export function stopDiagnosticCamera() {
     if (video) {
         video.srcObject = null;
     }
+    updateCameraControlsUI();
 }
 
 /**
@@ -280,7 +308,7 @@ export function closeCameraPermissionModal() {
 
 export function retryCameraPermissions() {
     closeCameraPermissionModal();
-    startDiagnosticCamera();
+    startDiagnosticCamera(true);
 }
 
 export async function checkCameraPermissions() {
@@ -297,7 +325,9 @@ if (typeof window !== 'undefined') {
     window.startDiagnosticCamera = startDiagnosticCamera;
     window.stopDiagnosticCamera = stopDiagnosticCamera;
     window.toggleCameraFacingMode = toggleCameraFacingMode;
-    window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
+    window.toggleNexusCameraStream = toggleNexusCameraStream;
+    window.captureCurrentVideoFrameBase64 = captureCurrentVideoFrameBase64;
+    window.updateCameraControlsUI = updateCameraControlsUI;
     window.openCameraPermissionModal = openCameraPermissionModal;
     window.closeCameraPermissionModal = closeCameraPermissionModal;
     window.retryCameraPermissions = retryCameraPermissions;

@@ -14,6 +14,7 @@ const STORE_ACOPIO = 'acopio_photos';
 const LOCAL_STORAGE_KEY = 'vitrodiag_acopio_backup_v2';
 
 let acopioDbInstance = null;
+let activeLightboxPhotoId = null;
 
 /**
  * Inicializa la base de datos IndexedDB para el Acopio de Fotos.
@@ -63,7 +64,7 @@ export function initAcopioDB() {
 }
 
 /**
- * Guarda una foto en LocalStorage como fallback.
+ * Guarda una foto en LocalStorage como respaldo local.
  * @param {Object} record 
  */
 function saveToLocalStorageBackup(record) {
@@ -71,7 +72,7 @@ function saveToLocalStorageBackup(record) {
         const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
         let list = raw ? JSON.parse(raw) : [];
         list.unshift(record);
-        if (list.length > 25) list = list.slice(0, 25); // Mantener últimas 25 fotos
+        if (list.length > 30) list = list.slice(0, 30);
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
     } catch (e) {
         console.warn('[AcopioManager] LocalStorage lleno o restringido:', e);
@@ -215,6 +216,7 @@ export async function deleteAcopioPhoto(id) {
 
         showToast('Foto eliminada del acopio.', 'info');
         renderAcopioReel();
+        closeAcopioLightboxModal();
         return true;
     } catch (err) {
         console.error('[AcopioManager] Error eliminando foto:', err);
@@ -303,6 +305,89 @@ export async function loadAcopioPhotoToInspection(id) {
 }
 
 /**
+ * Abre el Lightbox Modal para inspeccionar una foto del acopio en tamaño completo.
+ * @param {string} id 
+ */
+export async function openAcopioLightboxModal(id) {
+    try {
+        const photos = await getAllAcopioPhotos();
+        const photo = photos.find(p => p.id === id);
+        if (!photo) return;
+
+        activeLightboxPhotoId = id;
+        const modal = document.getElementById('acopioLightboxModal');
+        const img = document.getElementById('acopioLightboxImg');
+        const title = document.getElementById('acopioLightboxTitle');
+        const meta = document.getElementById('acopioLightboxMeta');
+        const badge = document.getElementById('acopioLightboxDefect');
+
+        if (img) img.src = photo.fotoBase64;
+        if (title) title.innerText = `📸 Foto de Acopio — ${photo.horaRegistro}`;
+        if (meta) meta.innerText = `Registrado: ${photo.fechaRegistro} | Artículo: ${photo.articuloId}`;
+        if (badge) {
+            badge.innerText = photo.defectoId ? `Defecto: ${photo.defectoNombre} (${photo.gravedad})` : 'Estado: Sin Diagnosticar';
+            badge.className = `status-alert ${photo.gravedad === 'Crítico' ? 'critico' : (photo.gravedad === 'Mayor' ? 'mayor' : 'menor')}`;
+        }
+
+        if (modal) modal.classList.add('active');
+    } catch (err) {
+        console.error('[AcopioManager] Error abriendo lightbox:', err);
+    }
+}
+
+/**
+ * Cierra el Lightbox Modal.
+ */
+export function closeAcopioLightboxModal() {
+    const modal = document.getElementById('acopioLightboxModal');
+    if (modal) modal.classList.remove('active');
+    activeLightboxPhotoId = null;
+}
+
+/**
+ * Diagnostica la foto activa del lightbox directamente con Gemini 2.0 Flash Vision.
+ */
+export async function analyzeActiveLightboxWithGemini() {
+    if (!activeLightboxPhotoId) return;
+    const photoId = activeLightboxPhotoId;
+    closeAcopioLightboxModal();
+    
+    // Cargar en el visor y ejecutar diagnóstico
+    await loadAcopioPhotoToInspection(photoId);
+    if (window.nexusDiagnoseWithAI) {
+        window.nexusDiagnoseWithAI();
+    }
+}
+
+/**
+ * Transfiere la foto activa del lightbox hacia el Banco IA para Few-Shot RAG.
+ */
+export async function transferActiveLightboxToDataset() {
+    if (!activeLightboxPhotoId) return;
+    const photos = await getAllAcopioPhotos();
+    const photo = photos.find(p => p.id === activeLightboxPhotoId);
+    if (!photo) return;
+
+    closeAcopioLightboxModal();
+    window.tempCapturedBase64 = photo.fotoBase64;
+
+    const previewContainer = document.getElementById('datasetPreviewContainer');
+    const previewImg = document.getElementById('datasetPreviewImg');
+    if (previewImg && previewContainer) {
+        previewImg.src = photo.fotoBase64;
+        previewContainer.style.display = 'block';
+    }
+
+    if (photo.defectoId) {
+        const select = document.getElementById('datasetDefectSelect');
+        if (select) select.value = photo.defectoId;
+    }
+
+    if (window.switchView) window.switchView('dataset');
+    showToast('Foto cargada en el Banco IA. Asigna el defecto y guarda la muestra.', 'success');
+}
+
+/**
  * Renderiza el carrusel/rejilla de fotos de acopio en la vista de Inspección y Banco IA.
  */
 export async function renderAcopioReel() {
@@ -318,7 +403,7 @@ export async function renderAcopioReel() {
             if (photos.length === 0) {
                 containerLive.innerHTML = `
                     <div style="grid-column: 1/-1; text-align:center; padding:18px; color:var(--text-muted); font-size:0.8rem; border:1px dashed var(--border-color); border-radius:8px;">
-                        📸 Aún no hay fotos en el acopio. Toma una foto con '📸 CAPTURAR VISOR' o sube desde '📁 GALERÍA' para comenzar a acopiar.
+                        📸 Aún no hay fotos en el acopio. Enciende la cámara o pulsa '📷 FOTO NATIVA' para comenzar a acopiar.
                     </div>
                 `;
             } else {
@@ -328,7 +413,7 @@ export async function renderAcopioReel() {
                     const badgeColor = isCritico ? '#ef4444' : (isMayor ? '#f59e0b' : '#10b981');
                     
                     return `
-                        <div class="acopio-card" onclick="window.loadAcopioPhotoToInspection('${photo.id}')" title="Toca para cargar en el visor de diagnóstico">
+                        <div class="acopio-card" onclick="window.openAcopioLightboxModal('${photo.id}')" title="Toca para ver en grande o diagnosticar">
                             <div class="acopio-img-wrap">
                                 <img src="${photo.fotoBase64}" alt="${photo.defectoNombre}" class="acopio-thumb" loading="lazy" />
                                 <span class="acopio-time-badge">${photo.horaRegistro}</span>
@@ -336,7 +421,10 @@ export async function renderAcopioReel() {
                             </div>
                             <div class="acopio-card-meta">
                                 <span class="acopio-art-name">${photo.articuloId}</span>
-                                <button class="acopio-btn-del" onclick="event.stopPropagation(); window.deleteAcopioPhoto('${photo.id}')" title="Eliminar foto">🗑️</button>
+                                <div style="display:flex; gap:4px;">
+                                    <button class="acopio-btn-del" onclick="event.stopPropagation(); window.loadAcopioPhotoToInspection('${photo.id}')" title="Cargar en Visor">🔍</button>
+                                    <button class="acopio-btn-del" onclick="event.stopPropagation(); window.deleteAcopioPhoto('${photo.id}')" title="Eliminar">🗑️</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -360,6 +448,10 @@ export function initAcopioUI() {
 
     if (typeof window !== 'undefined') {
         window.loadAcopioPhotoToInspection = loadAcopioPhotoToInspection;
+        window.openAcopioLightboxModal = openAcopioLightboxModal;
+        window.closeAcopioLightboxModal = closeAcopioLightboxModal;
+        window.analyzeActiveLightboxWithGemini = analyzeActiveLightboxWithGemini;
+        window.transferActiveLightboxToDataset = transferActiveLightboxToDataset;
         window.deleteAcopioPhoto = deleteAcopioPhoto;
         window.clearAllAcopioPhotos = clearAllAcopioPhotos;
         window.savePhotoToAcopio = savePhotoToAcopio;
@@ -370,6 +462,10 @@ export function initAcopioUI() {
 
 if (typeof window !== 'undefined') {
     window.loadAcopioPhotoToInspection = loadAcopioPhotoToInspection;
+    window.openAcopioLightboxModal = openAcopioLightboxModal;
+    window.closeAcopioLightboxModal = closeAcopioLightboxModal;
+    window.analyzeActiveLightboxWithGemini = analyzeActiveLightboxWithGemini;
+    window.transferActiveLightboxToDataset = transferActiveLightboxToDataset;
     window.deleteAcopioPhoto = deleteAcopioPhoto;
     window.clearAllAcopioPhotos = clearAllAcopioPhotos;
     window.savePhotoToAcopio = savePhotoToAcopio;
