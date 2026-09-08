@@ -204,8 +204,18 @@ export function imageSourceToCanvas(source) {
             return;
         }
 
-        if (source instanceof HTMLCanvasElement) {
+        // Soporte universal para canvas tanto en browser como en mocks/tests
+        if (typeof HTMLCanvasElement !== 'undefined' && source instanceof HTMLCanvasElement) {
             resolve(source);
+            return;
+        }
+        if (source && typeof source.getContext === 'function' && typeof source.width === 'number') {
+            resolve(source);
+            return;
+        }
+
+        if (typeof Image === 'undefined') {
+            reject(new Error('El constructor Image no está disponible en este entorno'));
             return;
         }
 
@@ -238,7 +248,9 @@ export function imageSourceToCanvas(source) {
 
         if (typeof source === 'string') {
             img.src = source;
-        } else if (source instanceof HTMLImageElement) {
+        } else if (typeof HTMLImageElement !== 'undefined' && source instanceof HTMLImageElement) {
+            img.src = source.src;
+        } else if (source && typeof source.src === 'string') {
             img.src = source.src;
         } else {
             reject(new Error('Tipo de fuente de imagen no compatible'));
@@ -303,7 +315,9 @@ export async function analyzeImageGeometricDefects(imageSource) {
     }
 
     // Si el fondo es claro o la botella es transparente/oscura, detectar polaridad de bordes
-    const isDarkObject = (histogram.slice(0, otsuThreshold).reduce((a, b) => a + b, 0) < totalPixels * 0.6);
+    let countDark = 0;
+    for (let t = 0; t <= otsuThreshold; t++) countDark += histogram[t];
+    const isDarkObject = (countDark < totalPixels * 0.6);
 
     // 2. Escaneo perimetral fila por fila
     const rowStep = Math.max(2, Math.floor(h / 70));
@@ -318,7 +332,7 @@ export async function analyzeImageGeometricDefects(imageSource) {
         // Escanear borde izquierdo (primer cambio fuerte de gradiente o umbral)
         for (let x = 8; x < w - 8; x++) {
             const idx = y * w + x;
-            const isSilhouette = isDarkObject ? (gray[idx] < otsuThreshold) : (gray[idx] > otsuThreshold);
+            const isSilhouette = isDarkObject ? (gray[idx] <= otsuThreshold) : (gray[idx] >= otsuThreshold);
             if (isSilhouette) {
                 leftX = x;
                 break;
@@ -328,16 +342,16 @@ export async function analyzeImageGeometricDefects(imageSource) {
         // Escanear borde derecho
         for (let x = w - 9; x >= 8; x--) {
             const idx = y * w + x;
-            const isSilhouette = isDarkObject ? (gray[idx] < otsuThreshold) : (gray[idx] > otsuThreshold);
+            const isSilhouette = isDarkObject ? (gray[idx] <= otsuThreshold) : (gray[idx] >= otsuThreshold);
             if (isSilhouette) {
                 rightX = x;
                 break;
             }
         }
 
-        // Validar que sea un ancho plausible de botella (> 8% del ancho del visor)
+        // Validar que sea un ancho plausible de botella (>= 14px y < 95% del visor)
         const rowWidth = rightX - leftX;
-        if (leftX !== -1 && rightX !== -1 && rowWidth > (w * 0.08) && rowWidth < (w * 0.95)) {
+        if (leftX !== -1 && rightX !== -1 && rowWidth >= 14 && rowWidth < (w * 0.95)) {
             const midX = (leftX + rightX) / 2;
             rows.push({
                 y,
@@ -441,21 +455,37 @@ export async function analyzeImageGeometricDefects(imageSource) {
     let finishBreakBbox = null;
     let finishIntegrity = 100;
 
-    if (finishRows.length >= 2) {
-        const topRow = finishRows[0];
-        const secondRow = finishRows[Math.min(2, finishRows.length - 1)];
-        const expectedCenter = bodyLine.slope * topRow.y + bodyLine.intercept;
-        const leftDelta = Math.abs((expectedCenter - topRow.leftX) - (expectedCenter - secondRow.leftX));
-        const rightDelta = Math.abs((topRow.rightX - expectedCenter) - (secondRow.rightX - expectedCenter));
+    if (finishRows.length >= 1) {
+        // Evaluar asimetría bilateral intrínseca de cada fila de la corona respecto al eje central
+        let maxFinishAsymmetry = 0;
+        let brokenSide = 'derecho';
+        let worstRow = finishRows[0];
 
-        // Un desportillado genera una mella abrupta en uno de los lados de la corona
-        const maxDelta = Math.max(leftDelta, rightDelta);
-        if (maxDelta > (w * 0.045)) {
+        for (let r of finishRows) {
+            const expectedCenter = bodyLine.slope * r.y + bodyLine.intercept;
+            const leftDist = expectedCenter - r.leftX;
+            const rightDist = r.rightX - expectedCenter;
+            const maxDist = Math.max(leftDist, rightDist, 1);
+            const asym = Math.abs(leftDist - rightDist) / maxDist;
+
+            if (asym > maxFinishAsymmetry) {
+                maxFinishAsymmetry = asym;
+                worstRow = r;
+                brokenSide = leftDist > rightDist ? 'derecho' : 'izquierdo'; // El lado con menor distancia es el roto
+            }
+        }
+
+        // Si la asimetría en la corona supera el 30%, hay falta de vidrio o desportillado
+        if (maxFinishAsymmetry > 0.30) {
             finishBreakDetected = true;
-            finishIntegrity = Math.max(40, 100 - Math.round(maxDelta * 4));
-            const brokenSide = leftDelta > rightDelta ? 'izquierdo' : 'derecho';
-            const xBox = brokenSide === 'izquierdo' ? topRow.leftX - 5 : topRow.rightX - 25;
-            finishBreakBbox = [topRow.y - 10, Math.max(0, xBox), topRow.y + 35, Math.min(w, xBox + 40)];
+            finishIntegrity = Math.max(30, Math.round((1 - maxFinishAsymmetry) * 100));
+            const xBox = brokenSide === 'izquierdo' ? worstRow.leftX - 10 : worstRow.rightX - 30;
+            finishBreakBbox = [
+                Math.max(0, minBottleY - 5),
+                Math.max(0, xBox),
+                Math.min(h, minBottleY + Math.round(bottleHeight * 0.15)),
+                Math.min(w, xBox + 45)
+            ];
         }
     }
 
@@ -584,9 +614,9 @@ export function drawLaserPlumbOverlay(canvasTarget, macroResult) {
 
     ctx.clearRect(0, 0, w, h);
 
-    // Factor de escala entre canvas analizado y canvas de dibujo
-    const scaleX = w / dp.canvasWidth;
-    const scaleY = h / dp.canvasHeight;
+    // Factor de escala seguro entre canvas analizado y canvas de dibujo
+    const scaleX = (dp.canvasWidth && dp.canvasWidth > 0) ? (w / dp.canvasWidth) : 1;
+    const scaleY = (dp.canvasHeight && dp.canvasHeight > 0) ? (h / dp.canvasHeight) : 1;
 
     const topY = dp.minBottleY * scaleY;
     const bottomY = dp.maxBottleY * scaleY;
@@ -637,7 +667,7 @@ export function drawLaserPlumbOverlay(canvasTarget, macroResult) {
     drawLevelLine(topY + dp.bottleHeight * 0.32 * scaleY, 'HOMBRO', 'rgba(245, 158, 11, 0.6)');
     drawLevelLine(bottomY, 'FONDO / TALÓN', 'rgba(0, 240, 255, 0.6)');
 
-    // 4. ETIQUETA FLOTANTE CYBER HUD CON ÁNGULO Y SIMETRÍA
+    // 4. ETIQUETA FLOTANTE CYBER HUD CON ÁNGULO Y SIMETRÍA (Con Fallback Universal para roundRect)
     const hudWidth = 190;
     const hudHeight = 52;
     const hudX = Math.max(10, Math.min(w - hudWidth - 10, realTopX - hudWidth / 2));
@@ -647,7 +677,20 @@ export function drawLaserPlumbOverlay(canvasTarget, macroResult) {
     ctx.strokeStyle = ejeColor;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(hudX, hudY, hudWidth, hudHeight, 8);
+    if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(hudX, hudY, hudWidth, hudHeight, 8);
+    } else {
+        const r = 8;
+        ctx.moveTo(hudX + r, hudY);
+        ctx.lineTo(hudX + hudWidth - r, hudY);
+        ctx.arcTo(hudX + hudWidth, hudY, hudX + hudWidth, hudY + r, r);
+        ctx.lineTo(hudX + hudWidth, hudY + hudHeight - r);
+        ctx.arcTo(hudX + hudWidth, hudY + hudHeight, hudX + hudWidth - r, hudY + hudHeight, r);
+        ctx.lineTo(hudX + r, hudY + hudHeight);
+        ctx.arcTo(hudX, hudY + hudHeight, hudX, hudY + hudHeight - r, r);
+        ctx.lineTo(hudX, hudY + r);
+        ctx.arcTo(hudX, hudY, hudX + r, hudY, r);
+    }
     ctx.fill();
     ctx.stroke();
 
