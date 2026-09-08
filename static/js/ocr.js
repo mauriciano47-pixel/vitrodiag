@@ -360,14 +360,21 @@ function parseScannerOcrText(fullText, digitText) {
     }
 
     // ─── Rellenar valores faltantes con los de la calculadora del artículo activo ───
+    const getElVal = (id, fallback) => {
+        if (typeof document === 'undefined') return fallback;
+        const el = document.getElementById(id);
+        const parsed = parseInt(el?.value);
+        return isNaN(parsed) ? fallback : parsed;
+    };
+
     const defaultValues = {
-        plungerUp: parseInt(document.getElementById('valPlungerUp')?.value) || 80,
-        plungerDown: parseInt(document.getElementById('valPlungerDown')?.value) || 150,
-        invertStart: parseInt(document.getElementById('valInvertStart')?.value) || 190,
-        blowClose: parseInt(document.getElementById('valBlowClose')?.value) || 240,
-        neckRingOpen: parseInt(document.getElementById('valNeckOpen')?.value) || 245,
-        blowOn: parseInt(document.getElementById('valBlowOn')?.value) || 270,
-        blowOff: parseInt(document.getElementById('valBlowOff')?.value) || 325
+        plungerUp: getElVal('valPlungerUp', 80),
+        plungerDown: getElVal('valPlungerDown', 150),
+        invertStart: getElVal('valInvertStart', 190),
+        blowClose: getElVal('valBlowClose', 240),
+        neckRingOpen: getElVal('valNeckOpen', 245),
+        blowOn: getElVal('valBlowOn', 270),
+        blowOff: getElVal('valBlowOff', 325)
     };
 
     const missingKeys = [];
@@ -381,48 +388,49 @@ function parseScannerOcrText(fullText, digitText) {
         console.log("  ⚠ Valores no detectados (usando consigna):", missingKeys.join(', '));
     }
 
-    // ─── Mostrar panel de confirmación para que el operador valide/corrija ───
-    const setOcrVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v !== undefined ? v : ''; };
-    setOcrVal('ocrValPlungerUp', state.scannerParsedValues.plungerUp);
-    setOcrVal('ocrValPlungerDown', state.scannerParsedValues.plungerDown);
-    setOcrVal('ocrValInvertStart', state.scannerParsedValues.invertStart);
-    setOcrVal('ocrValBlowClose', state.scannerParsedValues.blowClose);
-    setOcrVal('ocrValNeckRingOpen', state.scannerParsedValues.neckRingOpen);
-    setOcrVal('ocrValBlowOn', state.scannerParsedValues.blowOn);
-    setOcrVal('ocrValBlowOff', state.scannerParsedValues.blowOff);
+    if (typeof document !== 'undefined') {
+        // ─── Mostrar panel de confirmación para que el operador valide/corrija ───
+        const setOcrVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v !== undefined ? v : ''; };
+        setOcrVal('ocrValPlungerUp', state.scannerParsedValues.plungerUp);
+        setOcrVal('ocrValPlungerDown', state.scannerParsedValues.plungerDown);
+        setOcrVal('ocrValInvertStart', state.scannerParsedValues.invertStart);
+        setOcrVal('ocrValBlowClose', state.scannerParsedValues.blowClose);
+        setOcrVal('ocrValNeckRingOpen', state.scannerParsedValues.neckRingOpen);
+        setOcrVal('ocrValBlowOn', state.scannerParsedValues.blowOn);
+        setOcrVal('ocrValBlowOff', state.scannerParsedValues.blowOff);
 
-    // Indicar visualmente cuáles valores fueron detectados vs rellenados
-    const ocrFields = {
-        plungerUp: 'ocrValPlungerUp',
-        plungerDown: 'ocrValPlungerDown',
-        invertStart: 'ocrValInvertStart',
-        blowClose: 'ocrValBlowClose',
-        neckRingOpen: 'ocrValNeckRingOpen',
-        blowOn: 'ocrValBlowOn',
-        blowOff: 'ocrValBlowOff'
-    };
-    Object.keys(ocrFields).forEach(key => {
-        const input = document.getElementById(ocrFields[key]);
-        if (input) {
-            if (missingKeys.includes(key)) {
-                // Valor NO detectado → fondo naranja para que el operador lo revise
-                input.style.borderColor = '#f59e0b';
-                input.style.background = 'rgba(245, 158, 11, 0.1)';
-                input.title = '⚠ No detectado por OCR — usando valor de consigna';
-            } else {
-                // Valor SÍ detectado → fondo verde
-                input.style.borderColor = '#10b981';
-                input.style.background = 'rgba(16, 185, 129, 0.1)';
-                input.title = '✓ Detectado por OCR';
+        // Indicar visualmente cuáles valores fueron detectados vs rellenados
+        const ocrFields = {
+            plungerUp: 'ocrValPlungerUp',
+            plungerDown: 'ocrValPlungerDown',
+            invertStart: 'ocrValInvertStart',
+            blowClose: 'ocrValBlowClose',
+            neckRingOpen: 'ocrValNeckRingOpen',
+            blowOn: 'ocrValBlowOn',
+            blowOff: 'ocrValBlowOff'
+        };
+        Object.keys(ocrFields).forEach(key => {
+            const input = document.getElementById(ocrFields[key]);
+            if (input) {
+                if (missingKeys.includes(key)) {
+                    // Valor NO detectado → fondo naranja para que el operador lo revise
+                    input.style.borderColor = '#f59e0b';
+                    input.style.background = 'rgba(245, 158, 11, 0.1)';
+                    input.title = '⚠ No detectado por OCR — usando valor de consigna';
+                } else {
+                    // Valor SÍ detectado → fondo verde
+                    input.style.borderColor = '#10b981';
+                    input.style.background = 'rgba(16, 185, 129, 0.1)';
+                    input.title = '✓ Detectado por OCR';
+                }
             }
-        }
-    });
+        });
 
-    // Mostrar resumen de detección
-    const detectedCount = 7 - missingKeys.length;
-    const statusMsg = document.getElementById('ocrStatusMsg');
-    if (statusMsg) {
-        if (detectedCount >= 5) {
+        // Mostrar resumen de detección
+        const detectedCount = 7 - missingKeys.length;
+        const statusMsg = document.getElementById('ocrStatusMsg');
+        if (statusMsg) {
+            if (detectedCount >= 5) {
             statusMsg.innerText = `✓ ${detectedCount}/7 valores detectados exitosamente. Verifica y confirma.`;
             statusMsg.style.color = '#10b981';
         } else if (detectedCount >= 3) {
@@ -440,6 +448,9 @@ function parseScannerOcrText(fullText, digitText) {
     setDisplay('scannerResultsCard', 'none');
     setDisplay('scannerOcrConfirmArea', 'block');
     document.getElementById('scannerOcrConfirmArea')?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    return state.scannerParsedValues;
 }
 
 function confirmOcrAndCompare() {
@@ -793,6 +804,7 @@ export {
     runScannerManualComparison,
     runScannerOcr,
     parseScannerOcrText,
+    parseScannerOcrText as parseBdfPanelOcr,
     confirmOcrAndCompare,
     renderScannerComparisonTable,
     applyScannerValuesToCalculator,

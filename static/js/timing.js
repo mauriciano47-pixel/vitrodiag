@@ -6,25 +6,45 @@ function calculateSopMs() {
             validateBdfTiming();
         }
 
+function calculateBdfTiming(bpm = 396, sections = 11, cavity = 3) {
+    const safeBpm = parseFloat(bpm) || 396;
+    const safeSec = parseInt(sections) || 11;
+    const safeCav = parseInt(cavity) || 3;
+
+    const cpmSec = (safeBpm > 0 && safeSec > 0 && safeCav > 0) ? (safeBpm / (safeSec * safeCav)) : 0;
+    const cpmShear = (safeBpm > 0 && safeCav > 0) ? (safeBpm / safeCav) : 0;
+    const cycleMs = (cpmSec > 0) ? ((60 / cpmSec) * 1000) : 0;
+    const cycleTimeSec = cycleMs / 1000;
+    const msPerDeg = cycleMs > 0 ? (cycleMs / 360) : 0;
+    const degreeTimeMs = msPerDeg;
+    const recommendedSwabMinutes = cpmSec > 14 ? 10 : (cpmSec > 10 ? 15 : 20);
+
+    return {
+        bpm: safeBpm,
+        sections: safeSec,
+        cavity: safeCav,
+        cpmSec,
+        cpmShear,
+        cycleMs,
+        cycleTimeSec,
+        msPerDeg,
+        degreeTimeMs,
+        recommendedSwabMinutes
+    };
+}
+
 function validateBdfTiming() {
-            const bpm = parseFloat(document.getElementById('calcBpm')?.value) || 396;
-            const sections = parseInt(document.getElementById('calcSections')?.value) || 11;
-            const cavity = parseInt(document.getElementById('calcCavities')?.value) || 3;
+    const bpm = parseFloat(document.getElementById('calcBpm')?.value) || 396;
+    const sections = parseInt(document.getElementById('calcSections')?.value) || 11;
+    const cavity = parseInt(document.getElementById('calcCavities')?.value) || 3;
 
-            // FÓRMULA DE RELACIÓN: CPM de sección = BPM / (Secciones * Cavidades)
-            const cpmSec = (bpm > 0) ? (bpm / (sections * cavity)) : 0;
-            // CPM de cizalla = BPM / Cavidades
-            const cpmShear = (bpm > 0) ? (bpm / cavity) : 0;
+    const { cpmShear, cycleMs } = calculateBdfTiming(bpm, sections, cavity);
 
-            // Duración del ciclo completo de 360° en milisegundos
-            const cycleMs = (cpmSec > 0) ? ((60 / cpmSec) * 1000) : 0;
-            const msPerDeg = cycleMs / 360;
-
-            // Actualizar información superior del ciclo
-            const cycleDisplay = document.getElementById('cycleTimeDisplay');
-            if (cycleDisplay) {
-                cycleDisplay.innerText = `Ciclo: ${cycleMs.toFixed(0)} ms | Cizalla: ${cpmShear.toFixed(0)} CPM`;
-            }
+    // Actualizar información superior del ciclo
+    const cycleDisplay = document.getElementById('cycleTimeDisplay');
+    if (cycleDisplay) {
+        cycleDisplay.innerText = `Ciclo: ${cycleMs.toFixed(0)} ms | Cizalla: ${cpmShear.toFixed(0)} CPM`;
+    }
 
             // Capturar entradas de grados
             const plungerUp = parseFloat(document.getElementById('valPlungerUp')?.value) || 0;
@@ -376,10 +396,11 @@ function showDefectRemedy() {
 
 if (typeof window !== 'undefined') {
     window.calculateSopMs = calculateSopMs;
+    window.calculateBdfTiming = calculateBdfTiming;
     window.validateBdfTiming = validateBdfTiming;
     window.populateDefectSelector = populateDefectSelector;
     window.loadBdfPreset = loadBdfPreset;
     window.showDefectRemedy = showDefectRemedy;
 }
 
-export { calculateSopMs, validateBdfTiming, populateDefectSelector, loadBdfPreset, showDefectRemedy };
+export { calculateSopMs, calculateBdfTiming, validateBdfTiming, populateDefectSelector, loadBdfPreset, showDefectRemedy };

@@ -51,6 +51,25 @@ function stopSwabAlarm() {
     }
 }
 
+export { triggerSwabAlarm, stopSwabAlarm };
+
+export function startSwabTimer(minutes = 15) {
+    const mins = parseInt(minutes) || 15;
+    swabEndTime = Date.now() + (mins * 60 * 1000);
+    
+    // Detener cualquier ciclo previo antes de iniciar uno nuevo
+    if (swabTimer) { clearInterval(swabTimer); swabTimer = null; }
+    if (alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
+    if (swabWidget) {
+        swabWidget.classList.remove('alarm-active');
+        swabWidget.classList.remove('d-none');
+    }
+    
+    swabTimer = setInterval(updateSwabCountdown, 1000);
+    updateSwabCountdown();
+    return { endTime: swabEndTime, minutes: mins };
+}
+
 export function initSwabModule() {
     // Resolver refs DOM aquí, cuando el DOM ya está disponible
     swabWidget = document.getElementById('swabWidget');
@@ -70,18 +89,7 @@ export function initSwabModule() {
     if (btnStartSwab && swabInterval) {
         btnStartSwab.addEventListener('click', () => {
             const minutes = parseInt(swabInterval.value) || 15;
-            swabEndTime = Date.now() + (minutes * 60 * 1000);
-            
-            // Detener cualquier ciclo previo antes de iniciar uno nuevo
-            if (swabTimer) { clearInterval(swabTimer); swabTimer = null; }
-            if (alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
-            if (swabWidget) {
-                swabWidget.classList.remove('alarm-active');
-                swabWidget.classList.remove('d-none');
-            }
-            
-            swabTimer = setInterval(updateSwabCountdown, 1000);
-            updateSwabCountdown();
+            startSwabTimer(minutes);
             
             const now = new Date();
             if (swabLastTime) swabLastTime.innerText = `Último Swabbing registrado: ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -90,3 +98,10 @@ export function initSwabModule() {
         });
     }
 }
+
+if (typeof window !== 'undefined') {
+    window.startSwabTimer = startSwabTimer;
+    window.stopSwabAlarm = stopSwabAlarm;
+    window.initSwabModule = initSwabModule;
+}
+

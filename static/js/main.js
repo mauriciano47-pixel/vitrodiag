@@ -179,7 +179,7 @@ export function compressImageFile(file, maxWidth = 1280, quality = 0.85) {
 /**
  * Dispara una captura instantánea desde el video de cámara en vivo o inicia el stream.
  */
-export function nexusSnapLiveWebcam() {
+export async function nexusSnapLiveWebcam() {
     const video = document.getElementById('webcam');
     if (state.diagnosticStream && video && video.readyState >= 2 && video.videoWidth > 0) {
         nexusCurrentImageBase64 = captureCurrentVideoFrameBase64();

@@ -171,12 +171,16 @@ function unlockAudio() {
             osc.start(0);
             osc.stop(0.05);
         } catch(e){}
+        if (typeof document !== 'undefined') {
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        }
     }
-    document.removeEventListener('click', unlockAudio);
-    document.removeEventListener('touchstart', unlockAudio);
 }
-document.addEventListener('click', unlockAudio);
-document.addEventListener('touchstart', unlockAudio);
+if (typeof document !== 'undefined') {
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+}
 
 function playBeep(type) {
     const ctx = initAudioContext();

@@ -870,7 +870,6 @@ export async function captureAndAnalyzeWithAI() {
         showToast(`Error al analizar imagen con IA: ${err.message}`, "danger");
     }
 }
-}
 
 /**
  * Activa el selector de archivos para cargar una foto desde el celular/PC.

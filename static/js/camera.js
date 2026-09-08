@@ -364,17 +364,19 @@ export function stopScannerCamera() {
 }
 
 // Liberar cámara al cambiar de app en el celular
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
+if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopDiagnosticCamera();
+            stopScannerCamera();
+        }
+    });
+
+    document.addEventListener('pagehide', () => {
         stopDiagnosticCamera();
         stopScannerCamera();
-    }
-});
-
-document.addEventListener('pagehide', () => {
-    stopDiagnosticCamera();
-    stopScannerCamera();
-});
+    });
+}
 
 export function openCameraPermissionModal(customMessage = null, statusType = 'warning') {
     const modal = document.getElementById('cameraPermissionModal');

@@ -27,7 +27,7 @@ export function initAcopioDB() {
             return;
         }
 
-        if (!('indexedDB' in window)) {
+        if (typeof window === 'undefined' || !('indexedDB' in window)) {
             console.warn('[AcopioManager] IndexedDB no soportada, usando LocalStorage fallback.');
             resolve(null);
             return;
@@ -479,3 +479,8 @@ if (typeof window !== 'undefined') {
     window.renderAcopioReel = renderAcopioReel;
     window.getAllAcopioPhotos = getAllAcopioPhotos;
 }
+
+export {
+    savePhotoToAcopio as saveAcopioPhoto
+};
+

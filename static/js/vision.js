@@ -11,8 +11,6 @@ let frameCounter = 0;
 let video = null;
 let canvas = null;
 let ctx = null;
-const offscreenCanvas = document.createElement('canvas');
-const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
 let sliderContrast = null;
 let sliderBrightness = null;
 let sliderCanny = null;
@@ -559,15 +557,17 @@ function processFrame() {
         }
 
 // Watchdog autónomo de hardware de cámara: garantiza que si el stream de WebRTC está activo pero el loop se detuvo, se auto-recupere de inmediato.
-setInterval(() => {
-    const video = document.getElementById('webcam');
-    if (state.diagnosticStream && video && video.readyState >= 2 && !video.paused) {
-        if (!state.streamActive || !state.animationFrameId) {
-            console.log('[Vision Watchdog] Reactivando loop de renderizado de cámara congelada...');
-            startProcessing();
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    setInterval(() => {
+        const video = document.getElementById('webcam');
+        if (state.diagnosticStream && video && video.readyState >= 2 && !video.paused) {
+            if (!state.streamActive || !state.animationFrameId) {
+                console.log('[Vision Watchdog] Reactivando loop de renderizado de cámara congelada...');
+                startProcessing();
+            }
         }
-    }
-}, 2500);
+    }, 2500);
+}
 
 export function setVisionMode(mode) {
     state.currentVisionMode = mode;

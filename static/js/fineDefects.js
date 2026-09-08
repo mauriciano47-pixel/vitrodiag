@@ -174,7 +174,7 @@ export function detectFineDefects(source, datosPlomada) {
             'Inspeccionar temperatura del molde (posible sobrecalentamiento local).'
         ];
 
-        if (relY < 0.14) {
+        if (relY < 0.12) {
             zona = 'boca';
             defectId = 'calcinado_boca';
             defectName = 'Calcinado en Boca / Corona';
@@ -183,7 +183,7 @@ export function detectFineDefects(source, datosPlomada) {
                 'Limpiar restos de grafito en el cabezal de soplado y émbolo.',
                 'Ajustar altura de atomizado de lubricante si es sistema automático.'
             ];
-        } else if (relY < 0.32) {
+        } else if (relY < 0.25) {
             zona = 'cuello';
             defectId = 'calcinado_cuello';
             defectName = 'Calcinado en Cuello';
@@ -192,7 +192,7 @@ export function detectFineDefects(source, datosPlomada) {
                 'Inspeccionar si el émbolo o punzón NNPB arrastra suciedad al descender.',
                 'Verificar presión de aire de enfriamiento en el cuello.'
             ];
-        } else if (relY < 0.50) {
+        } else if (relY < 0.45) {
             zona = 'hombro';
             defectId = 'calcinado_hombro';
             defectName = 'Calcinado en Hombro';

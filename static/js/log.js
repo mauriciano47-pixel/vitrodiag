@@ -14,7 +14,7 @@ let db = null;
 
 function initLogDB() {
     return new Promise((resolve, reject) => {
-        if (!window.indexedDB) {
+        if (typeof window === 'undefined' || !window.indexedDB) {
             console.warn("IndexedDB no soportado o bloqueado. La bitácora no funcionará.");
             reject(new Error("IndexedDB no soportado"));
             return;
@@ -191,6 +191,9 @@ function setupLogEventListeners() {
 }
 
 // Exponer deleteLogItem al ámbito global
-window.deleteLogItem = deleteLogItem;
+if (typeof window !== 'undefined') {
+    window.deleteLogItem = deleteLogItem;
+}
 
-export { populateLogDefectSelect, loadBitacoraFromStorage, renderBitacoraList, setupLogEventListeners };
+export { populateLogDefectSelect, loadBitacoraFromStorage, renderBitacoraList, setupLogEventListeners, deleteLogItem };
+

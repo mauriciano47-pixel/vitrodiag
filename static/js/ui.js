@@ -9,7 +9,10 @@ import { renderDatasetGallery, populateDatasetSelect } from './datasetManager.js
 
 
 function showToast(message, type = 'info', duration = 3000) {
-            const container = document.getElementById('toastContainer');
+    if (typeof document === 'undefined') {
+        return;
+    }
+    const container = document.getElementById('toastContainer');
             if (!container) return;
 
             const toast = document.createElement('div');
@@ -400,5 +403,5 @@ if (typeof window !== 'undefined') {
     window.showToast = showToast;
 }
 
-export { showToast, initArticles, populateArticleSelects, applyActiveArticleParams, changeActiveArticle, openArticlesModal, closeArticlesModal, loadArticleInModal, saveActiveArticleForm, resetArticlesDefault, toggleDefectCard, setFilter, filterDefects, switchView, switchToolTab };
+export { showToast, initArticles, populateArticleSelects, applyActiveArticleParams, changeActiveArticle, openArticlesModal, closeArticlesModal, loadArticleInModal, saveActiveArticleForm, resetArticlesDefault, toggleDefectCard, setFilter, filterDefects, switchView };
 
