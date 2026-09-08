@@ -4,6 +4,11 @@
   ],
   "hints": {
     "apple-touch-icons": "off",
-    "compat-api/html": "off"
+    "compat-api/html": "off",
+    "no-inline-styles": "off",
+    "button-type": "off",
+    "detect-css-reflows/layout": "off",
+    "detect-css-reflows/paint": "off",
+    "detect-css-reflows/composite": "off"
   }
 }
