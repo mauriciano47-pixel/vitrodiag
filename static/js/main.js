@@ -101,6 +101,10 @@ import {
     drawLaserPlumbOverlay,
     renderMacroInspectionCard
 } from './geometry.js';
+import {
+    detectFineDefects,
+    drawFineDefectsOverlay
+} from './fineDefects.js';
 
 // === NEXUS: Sistema de Inspección por Foto + Gemini IA ===
 
@@ -260,6 +264,22 @@ export async function nexusRunMacroInspection() {
 
     try {
         const macroResult = await analyzeImageGeometricDefects(nexusCurrentImageBase64);
+
+        // FASE 2: Detección Local de Calcinados / Pintas de Grafito / Inclusiones
+        if (macroResult && macroResult.datosPlomada) {
+            const fineResult = detectFineDefects(
+                macroResult.datosPlomada.sourceCanvas || nexusCurrentImageBase64,
+                macroResult.datosPlomada
+            );
+            if (fineResult && fineResult.detected && fineResult.defects.length > 0) {
+                macroResult.defectos.push(...fineResult.defects);
+                macroResult.conforme = false;
+                macroResult.detected = true;
+                macroResult.cantidadDefectos = macroResult.defectos.length;
+                macroResult.calcinados = fineResult;
+            }
+        }
+
         window.lastMacroResult = macroResult;
 
         // Renderizar Plomada Láser y guías sobre el canvas superior
@@ -270,20 +290,26 @@ export async function nexusRunMacroInspection() {
             bboxCanvas.height = previewImg.naturalHeight || previewImg.clientHeight || 480;
             bboxCanvas.style.display = 'block';
             drawLaserPlumbOverlay(bboxCanvas, macroResult);
+
+            // Si se detectaron calcinados o piedras, superponer retículas tácticas
+            if (macroResult.calcinados && macroResult.calcinados.defects.length > 0) {
+                drawFineDefectsOverlay(bboxCanvas, macroResult.calcinados.defects, macroResult.datosPlomada);
+            }
         }
 
         // Renderizar resultado en la tarjeta de diagnóstico
         renderMacroInspectionCard(macroResult);
 
         if (macroResult.conforme) {
-            showToast(`✅ Envase Conforme. Desviación: ${macroResult.metricas.anguloTorcidoEje}° (Dentro de tolerancia).`, 'success');
+            showToast(`✅ Envase Conforme. Desviación: ${macroResult.metricas.anguloTorcidoEje}° (Sin defectos evidentes ni calcinados).`, 'success');
         } else {
-            showToast(`🚨 Defecto detectado: ${macroResult.defectos[0].nombre}`, 'danger');
+            const count = macroResult.defectos.length;
+            showToast(`🚨 ${count} Defecto(s) detectado(s): ${macroResult.defectos[0].nombre}`, 'danger');
         }
         return macroResult;
     } catch (err) {
-        console.error('[NEXUS] Error en inspección macro:', err);
-        showToast('Error al analizar la geometría del envase.', 'danger');
+        console.error('[NEXUS] Error en inspección macro/textural:', err);
+        showToast('Error al analizar la geometría o textura del envase.', 'danger');
         return null;
     } finally {
         if (btnMacro) {
@@ -558,9 +584,11 @@ export function nexusSaveToBitacora() {
 }
 
 /**
- * Guarda la imagen inspeccionada en el Banco IA para Few-Shot RAG.
+ * Guarda la imagen inspeccionada en el Banco IA para Few-Shot RAG y re-entrenamiento continuo.
+ * @param {string} [presetDefectId] - ID del defecto detectado o sugerido
+ * @param {string} [presetDefectName] - Nombre amigable para notas de planta
  */
-export function nexusSaveToDataset() {
+export function nexusSaveToDataset(presetDefectId = null, presetDefectName = null) {
     if (nexusCurrentImageBase64) {
         window.tempCapturedBase64 = nexusCurrentImageBase64;
         const previewContainer = document.getElementById('datasetPreviewContainer');
@@ -569,14 +597,43 @@ export function nexusSaveToDataset() {
             previewImg.src = nexusCurrentImageBase64;
             previewContainer.style.display = 'block';
         }
-        if (state.lastGeminiResult && state.lastGeminiResult.analisis && state.lastGeminiResult.analisis.length > 0) {
-            const defId = state.lastGeminiResult.analisis[0].defecto_id;
-            const select = document.getElementById('datasetDefectSelect');
-            if (select && defId) select.value = defId;
+
+        const select = document.getElementById('datasetDefectSelect');
+        const notesInput = document.getElementById('datasetNotes');
+
+        let defIdToSelect = presetDefectId;
+        if (!defIdToSelect && window.lastMacroResult && window.lastMacroResult.defectos && window.lastMacroResult.defectos.length > 0) {
+            defIdToSelect = window.lastMacroResult.defectos[0].id;
+        } else if (!defIdToSelect && state.lastGeminiResult && state.lastGeminiResult.analisis && state.lastGeminiResult.analisis.length > 0) {
+            defIdToSelect = state.lastGeminiResult.analisis[0].defecto_id;
+        }
+
+        if (select && defIdToSelect) {
+            let found = false;
+            for (let opt of select.options) {
+                if (opt.value === defIdToSelect) {
+                    select.value = defIdToSelect;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && typeof defIdToSelect === 'string' && defIdToSelect.startsWith('calcinado')) {
+                for (let opt of select.options) {
+                    if (opt.value.includes('calcinado') || opt.value.includes('carbon') || opt.value.includes('grasa')) {
+                        select.value = opt.value;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (notesInput) {
+            const defLabel = presetDefectName || (window.lastMacroResult?.defectos?.[0]?.nombre) || 'Muestra de defecto';
+            notesInput.value = `Captura VitroDiag: ${defLabel} (Validado en Planta)`;
         }
     }
     switchView('dataset');
-    showToast('Foto cargada en el Banco IA. Asigna la etiqueta y presiona Guardar Muestra.', 'success');
+    showToast('Foto cargada en el Banco IA. Confirma la etiqueta y presiona Guardar Muestra.', 'success');
 }
 
 // Exponer funciones globales a window para compatibilidad estricta
@@ -600,6 +657,8 @@ window.closeCameraPermissionModal = closeCameraPermissionModal;
 window.retryCameraPermissions = retryCameraPermissions;
 window.checkCameraPermissions = checkCameraPermissions;
 window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
+window.detectFineDefects = detectFineDefects;
+window.drawFineDefectsOverlay = drawFineDefectsOverlay;
 
 // Exponer funciones UI y Artículos
 window.switchView = switchView;

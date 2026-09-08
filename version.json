@@ -1,11 +1,14 @@
 {
-  "version": "2.3.0",
-  "buildTime": 1788880000000,
-  "releaseName": "Motor de Detección de Defectos Evidentes (Fase 1): Plomada Digital Láser, Torcidos, Roturas y Asimetría Bilateral",
+  "version": "2.4.0",
+  "buildTime": 1788885000000,
+  "releaseName": "Motor Unificado de Defectos Evidentes & Finos (Fase 1 + 2): Plomada Digital Láser, Detección Local de Calcinados/Pintas y Banco IA Asistido con Few-Shot RAG",
   "features": [
     "Motor de Plomada Digital Láser con cálculo angular en grados para botellas y cuellos torcidos en <30ms en local",
     "Detector de roturas y desportillados en corona (anillo de boca) y fondo por discontinuidad de silueta",
     "Inspector de asimetría bilateral de silueta y hombros con HUD Cyber-Obsidian interactivo",
-    "Integración instantánea en carga de fotos y disparos de visor con doble veredicto (Macro Local + Gemini IA)"
+    "Motor Local de Defectos Finos y Texturales: escaneo continuo en Y y clústering de calcinados (grasa/grafito quemado) y piedras",
+    "Miras tácticas circulares y en cruz sobre puntos calcinados con clasificación zonal (Boca, Cuello, Hombro, Cuerpo, Fondo)",
+    "Flujo Asistido de Alimentación al Banco de Entrenamiento IA con 1-tap directo desde cada defecto detectado",
+    "Inyección Few-Shot RAG multimodal enriquecida para calibración offline/online de Gemini 2.0 Flash"
   ]
 }

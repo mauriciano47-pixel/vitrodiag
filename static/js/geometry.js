@@ -214,6 +214,23 @@ export function imageSourceToCanvas(source) {
             return;
         }
 
+        // Soporte directo para ImageData o buffers sintéticos { data, width, height }
+        if (source && source.data && typeof source.width === 'number' && typeof source.height === 'number') {
+            const mockCanvas = {
+                width: source.width,
+                height: source.height,
+                getContext: () => ({
+                    getImageData: () => ({
+                        width: source.width,
+                        height: source.height,
+                        data: source.data
+                    })
+                })
+            };
+            resolve(mockCanvas);
+            return;
+        }
+
         if (typeof Image === 'undefined') {
             reject(new Error('El constructor Image no está disponible en este entorno'));
             return;
@@ -590,7 +607,8 @@ export async function analyzeImageGeometricDefects(imageSource) {
             neckLine,
             rows,
             canvasWidth: w,
-            canvasHeight: h
+            canvasHeight: h,
+            sourceCanvas: canvas
         }
     };
 }
@@ -748,24 +766,29 @@ export function renderMacroInspectionCard(macroResult) {
     const isConforme = macroResult.conforme;
 
     if (diagTitulo) {
-        diagTitulo.innerHTML = isConforme
-            ? `✅ ENVASE GEOMÉTRICAMENTE CONFORME`
-            : `🚨 ${macroResult.defectos[0].nombre.toUpperCase()}`;
+        if (isConforme) {
+            diagTitulo.innerHTML = `✅ ENVASE GEOMÉTRICAMENTE CONFORME`;
+        } else {
+            const count = macroResult.defectos.length;
+            const extra = count > 1 ? ` (+${count - 1} DEFECTO${count > 2 ? 'S' : ''})` : '';
+            diagTitulo.innerHTML = `🚨 ${macroResult.defectos[0].nombre.toUpperCase()}${extra}`;
+        }
     }
 
     if (diagGravedad) {
         if (isConforme) {
             diagGravedad.className = "status-alert status-success";
-            diagGravedad.innerText = "Conforme (Plomada OK)";
+            diagGravedad.innerText = "Conforme (Plomada y Textura OK)";
         } else {
-            const grav = macroResult.defectos[0].gravedad;
-            diagGravedad.className = `status-alert ${grav === 'Crítico' ? 'critico' : 'mayor'}`;
-            diagGravedad.innerText = `Defecto: ${grav}`;
+            const hasCritico = macroResult.defectos.some(d => d.gravedad === 'Crítico');
+            diagGravedad.className = `status-alert ${hasCritico ? 'critico' : 'mayor'}`;
+            diagGravedad.innerText = `Defecto: ${hasCritico ? 'Crítico' : 'Mayor'} (${macroResult.defectos.length} fallo${macroResult.defectos.length > 1 ? 's' : ''})`;
         }
         diagGravedad.style.display = "inline-block";
     }
 
     if (diagEstado) {
+        const calcinadosCount = macroResult.calcinados?.count || 0;
         let metricsHtml = `
             <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:10px; margin:8px 0; border:1px solid rgba(255,255,255,0.1);">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; font-size:0.82rem;">
@@ -773,16 +796,31 @@ export function renderMacroInspectionCard(macroResult) {
                     <div>🎯 <strong>Simetría Silueta:</strong> <span style="color:${m.simetriaGeneral > 85 ? '#10b981' : '#f59e0b'}">${m.simetriaGeneral}%</span></div>
                     <div>🍾 <strong>Alineación Cuello:</strong> <span style="color:${m.desviacionCuelloVsCuerpo > 2.2 ? '#ef4444' : '#10b981'}">${m.desviacionCuelloVsCuerpo}°</span></div>
                     <div>⭕ <strong>Integridad Corona:</strong> <span style="color:${m.integridadCorona > 90 ? '#10b981' : '#ef4444'}">${m.integridadCorona}%</span></div>
+                    ${calcinadosCount > 0 ? `<div style="grid-column: 1 / -1; padding-top:4px; border-top:1px dashed rgba(255,255,255,0.15);">⚫ <strong>Calcinados / Puntos de Grafito:</strong> <span style="color:#f59e0b; font-weight:bold;">${calcinadosCount} detectado(s)</span></div>` : ''}
                 </div>
             </div>
         `;
 
         if (isConforme) {
-            diagEstado.innerHTML = `<strong>Inspección Macro Satisfactoria:</strong> El envase cumple con los parámetros de verticalidad, simetría y contorno de boca.${metricsHtml}
-            <em>Puedes disparar el '⚡ Diagnóstico con Gemini IA' para buscar micro-defectos como calcinados o fisuras.</em>`;
+            diagEstado.innerHTML = `<strong>Inspección Macro y Textural Satisfactoria:</strong> El envase cumple con los parámetros de verticalidad, simetría, contorno de boca y ausencia de calcinados.${metricsHtml}
+            <em>Puedes disparar el '⚡ Diagnóstico con Gemini IA' para un análisis multimodal profundo con Few-Shot RAG.</em>`;
         } else {
-            const defPrincipal = macroResult.defectos[0];
-            diagEstado.innerHTML = `<strong>Falla Detectada:</strong> ${defPrincipal.descripcion}${metricsHtml}`;
+            let defectsListHtml = macroResult.defectos.map((d, idx) => `
+                <div style="margin-top:6px; padding:8px; background:rgba(0,0,0,0.3); border-left:3px solid ${d.gravedad === 'Crítico' ? '#ef4444' : '#f59e0b'}; border-radius:4px; font-size:0.8rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong>#${idx + 1} [${d.zona.toUpperCase()}] ${d.nombre}</strong>
+                        <span style="font-size:0.7rem; color:${d.gravedad === 'Crítico' ? '#ef4444' : '#f59e0b'}; font-weight:bold;">${d.gravedad}</span>
+                    </div>
+                    <div style="margin-top:2px; color:var(--text-muted);">${d.descripcion}</div>
+                    <div style="margin-top:6px; display:flex; gap:6px;">
+                        <button onclick="if(window.nexusSaveToDataset) window.nexusSaveToDataset('${d.id}', '${d.nombre.replace(/'/g, "\\'")}');" style="background:rgba(16,185,129,0.2); border:1px solid #10b981; color:#10b981; font-size:0.72rem; padding:3px 8px; border-radius:4px; cursor:pointer;" title="Guardar esta foto en el banco IA con esta etiqueta para entrenar a Gemini">
+                            🏷️ Alimentar a Banco IA
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            diagEstado.innerHTML = `<strong>Fallas Detectadas (${macroResult.defectos.length}):</strong>${defectsListHtml}${metricsHtml}`;
         }
     }
 
@@ -790,10 +828,11 @@ export function renderMacroInspectionCard(macroResult) {
         if (isConforme) {
             diagAcciones.innerHTML = `
                 <li>Envase dentro de la plomada nominal (desviación < 1.5°).</li>
-                <li>Si sospechas de contaminación o fisuras, presiona <strong>⚡ DIAGNOSTICAR CON IA</strong>.</li>
+                <li>Ausencia de calcinados o inclusiones visibles.</li>
+                <li>Si sospechas de micro-fisuras internas, presiona <strong>⚡ DIAGNOSTICAR CON IA</strong>.</li>
             `;
         } else {
-            diagAcciones.innerHTML = macroResult.defectos.flatMap(d => d.acciones || []).slice(0, 3).map(a => `<li>${a}</li>`).join('');
+            diagAcciones.innerHTML = macroResult.defectos.flatMap(d => d.acciones || []).slice(0, 4).map(a => `<li>${a}</li>`).join('');
         }
     }
 

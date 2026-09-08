@@ -358,9 +358,16 @@ export async function analyzeWithGemini(canvas, videoElement) {
         try {
             const samples = await getFewShotExamplesForDefect(null, 2);
             if (samples && samples.length > 0) {
-                samples.forEach((sample) => {
+                samples.forEach((sample, sIdx) => {
                     if (sample.fotoBase64) {
                         const cleanB64 = sample.fotoBase64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+                        fewShotParts.push({
+                            text: `[MUESTRA DE ENTRENAMIENTO PLANTA CRISTAL CHILE #${sIdx + 1}]
+Defecto Confirmado: ${sample.defectoNombre || sample.defectoId} (ID Oficial: ${sample.defectoId})
+Zona Anatómica: ${sample.zona || 'general'}
+Gravedad: ${sample.gravedad || 'Mayor'}
+Observaciones de Planta: ${sample.notas || 'Muestra de referencia'}`
+                        });
                         fewShotParts.push({
                             inline_data: { mime_type: "image/jpeg", data: cleanB64 }
                         });
@@ -440,9 +447,16 @@ export async function runDeepDiagnosis(imageBase64) {
             try {
                 const samples = await getFewShotExamplesForDefect(null, 2);
                 if (samples && samples.length > 0) {
-                    samples.forEach((sample) => {
+                    samples.forEach((sample, sIdx) => {
                         if (sample.fotoBase64) {
                             const sampleB64 = sample.fotoBase64.replace(/^data:image\/(png|jpeg|jpg|webp);base64,/, '');
+                            fewShotParts.push({
+                                text: `[MUESTRA DE ENTRENAMIENTO PLANTA CRISTAL CHILE #${sIdx + 1}]
+Defecto Confirmado: ${sample.defectoNombre || sample.defectoId} (ID Oficial: ${sample.defectoId})
+Zona Anatómica: ${sample.zona || 'general'}
+Gravedad: ${sample.gravedad || 'Mayor'}
+Observaciones de Planta: ${sample.notas || 'Muestra de referencia'}`
+                            });
                             fewShotParts.push({
                                 inline_data: { mime_type: "image/jpeg", data: sampleB64 }
                             });
