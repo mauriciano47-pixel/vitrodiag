@@ -1,13 +1,13 @@
-# VitroDiag NEXUS v2.2.7 — Always-Live Architecture
+# VitroDiag NEXUS v2.3.0 — Motor de Defectos Evidentes & Plomada Láser
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristal Chile.
 
-## 🚀 Novedades v2.2.7: Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag
+## 🚀 Novedades v2.3.0: Fase 1 — Motor de Defectos Evidentes y Plomada Digital Láser
 
-- **Sincronización Inmediata de Hardware & Loop de Visión:** Vinculación directa de `startProcessing()` y `stopProcessing()` al ciclo de vida de `getUserMedia`, eliminando la latencia del watchdog y asegurando 0ms de retardo al iniciar o alternar cámaras.
-- **Renderizado Adaptativo de Bounding Boxes (`nexusBboxCanvas`):** Proyección visual garantizada de los recuadros de defectos con soporte dual de escalas normalizadas (0-1000 y 0.0-1.0) sobre la foto capturada.
-- **Filtros Ópticos Industriales Vinculados:** Variable global sincronizada para aplicar polarizado, calcinados y micro-fisuras directamente en el procesamiento de fotogramas y envíos a Gemini IA.
-- **Inferencia Robusta con Validación de Dimensiones Canvas:** Prevención de excepciones WebGL en TensorFlow.js y cascada tolerante de endpoints de Gemini con timeout anti-congelamiento de 8s.
+- **Plomada Digital Láser y Cálculo Angular Instantáneo (<30ms):** Análisis de regresión lineal axial que mide en grados la inclinación de la botella y la desviación del cuello respecto al cuerpo (alertas automáticas de *Botella Torcida* y *Cuello Torcido*).
+- **Detector de Roturas y Desportillados:** Detección de discontinuidades de contorno y saltos abruptos en la corona (anillo de boca) y talón (fondo picado).
+- **Inspector de Asimetría Bilateral:** Medición de radio izquierdo vs. derecho a lo largo de toda la silueta para alertar *Hombro Hundido* y aplastamiento con recuadros Cyber HUD.
+- **Doble Veredicto (Macro Local + Gemini IA):** Diagnóstico instantáneo en el dispositivo sin conexión a internet y botón directo para análisis profundo con Gemini 2.0 Flash.
 
 ## URL de Producción
 

@@ -1,11 +1,11 @@
 {
-  "version": "2.2.7",
-  "buildTime": 1787698940000,
-  "releaseName": "Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag",
+  "version": "2.3.0",
+  "buildTime": 1788880000000,
+  "releaseName": "Motor de Detección de Defectos Evidentes (Fase 1): Plomada Digital Láser, Torcidos, Roturas y Asimetría Bilateral",
   "features": [
-    "Sincronización instantánea de ciclo de vida de cámara WebRTC y loop de visión (startProcessing / stopProcessing)",
-    "Renderizado garantizado de Bounding Boxes (nexusBboxCanvas) con escalado adaptativo (0-1000 y 0.0-1.0)",
-    "Filtros ópticos industriales activos en tiempo real y vinculados a captura fotográfica",
-    "Cascada tolerante de IA con timeout anti-congelamiento de 8s y fallback algorítmico seguro"
+    "Motor de Plomada Digital Láser con cálculo angular en grados para botellas y cuellos torcidos en <30ms en local",
+    "Detector de roturas y desportillados en corona (anillo de boca) y fondo por discontinuidad de silueta",
+    "Inspector de asimetría bilateral de silueta y hombros con HUD Cyber-Obsidian interactivo",
+    "Integración instantánea en carga de fotos y disparos de visor con doble veredicto (Macro Local + Gemini IA)"
   ]
 }

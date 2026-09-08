@@ -1,13 +1,13 @@
-# VitroDiag NEXUS v2.2.7 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.3.0 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Aplicación Web Progresiva (PWA) de Diagnóstico Óptico Asistido por IA y Control de Moldería para la Fabricación de Envases de Vidrio**  
 *Desarrollado para operadores e inspectores de línea en plantas vidrieras (Procesos Blow-Blow y NNPB en Máquinas I.S.)*
 
 ---
 
-**Versión:** 2.2.7 Always-Live (Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag)  
-**Fecha de Actualización:** 25 de Agosto de 2026  
-**Estado del Proyecto:** Prototipo Funcional Finalizado (v2.2.7 — Estabilización Integral del Motor de Visión, Bounding Boxes Adaptativos y Cero-Lag)  
+**Versión:** 2.3.0 Always-Live (Motor de Defectos Evidentes: Plomada Digital Láser, Torcidos, Roturas y Asimetría)  
+**Fecha de Actualización:** 8 de Septiembre de 2026  
+**Estado del Proyecto:** Prototipo Funcional Operativo (v2.3.0 — Motor Geométrico de Defectos Evidentes en Local + Diagnóstico Profundo Gemini IA)  
 
 ---
 
@@ -100,6 +100,7 @@ Diseñada bajo una arquitectura híbrida inteligente (Offline-First local + Gemi
 
 | Versión | Descripción |
 | --- | --- |
+| **v2.3.0** | Implementación del Motor de Detección de Defectos Evidentes (Fase 1): Plomada Digital Láser instantánea (<30ms) con cálculo angular en grados para botellas torcidas y cuellos desviados, detector de discontinuidades en corona (boca rota / desportillado) y talón, inspector de asimetría bilateral de silueta/hombros, y botón de doble veredicto (Inspección Macro Local + Diagnóstico Profundo Gemini IA). |
 | **v2.2.7** | Estabilización integral del motor de visión por cámara: sincronización instantánea del loop de procesamiento con `getUserMedia` (0ms de latencia), renderizado de Bounding Boxes (`nexusBboxCanvas`) con escalado adaptativo (0-1000 y 0.0-1.0), filtros ópticos industriales activos en tiempo real y vinculados a captura fotográfica, e inferencia tolerante con timeout de 8s. |
 | **v2.2.6** | Compresión y normalización óptica en cliente (reducción de fotos de 50MP/25MB a JPEG 1280px en 30ms), desacoplamiento de eventos de captura para evitar colisiones al retornar de la cámara y tarjeta de inspección preliminar con resiliencia garantizada. |
 | **v2.2.5** | Independencia total de permisos WebRTC: Modo Foto Directa Nativa (Zero-Permisos) como estándar predeterminado en planta, auto-diagnóstico instantáneo tras captura, selector de Modo Dual (Nativo vs WebRTC), soporte de arrastrar imágenes (Drag & Drop) y pegar desde portapapeles (Ctrl+V). |

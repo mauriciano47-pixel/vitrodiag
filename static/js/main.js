@@ -96,6 +96,11 @@ import {
     deleteAcopioPhoto,
     clearAllAcopioPhotos
 } from './acopioManager.js';
+import {
+    analyzeImageGeometricDefects,
+    drawLaserPlumbOverlay,
+    renderMacroInspectionCard
+} from './geometry.js';
 
 // === NEXUS: Sistema de Inspección por Foto + Gemini IA ===
 
@@ -207,12 +212,15 @@ export function nexusSnapLiveWebcam() {
             }
             updateCameraControlsUI();
             
+            // 3. Ejecutar Inspección Macro Inmediata (Plomada Láser y Defectos Evidentes <30ms)
+            await nexusRunMacroInspection();
+
             const autoDiagToggle = document.getElementById('autoDiagnoseToggle');
-            if (autoDiagToggle && autoDiagToggle.checked) {
-                showToast('📸 Fotograma capturado. Auto-diagnosticando...', 'info');
-                nexusDiagnoseWithAI();
+            if (autoDiagToggle && autoDiagToggle.checked && state.geminiApiKey) {
+                showToast('📸 Fotograma capturado. Diagnosticando con IA...', 'info');
+                await nexusDiagnoseWithAI();
             } else {
-                showToast('📸 Foto capturada del visor en vivo y guardada en el acopio.', 'success');
+                showToast('📸 Foto capturada, acopiada y analizada con Plomada Láser.', 'success');
             }
             return;
         }
@@ -220,6 +228,70 @@ export function nexusSnapLiveWebcam() {
     
     // Si la cámara no estaba encendida, encenderla
     startDiagnosticCamera(true);
+}
+
+/**
+ * Ejecuta la inspección macroscópica instantánea (<30ms en cliente):
+ * - Plomada digital láser (eje axial, ángulo en grados y plomada de referencia)
+ * - Detección de cuello torcido vs cuerpo
+ * - Detección de rotura / desportillado en corona y talón
+ * - Asimetría bilateral de hombros y silueta
+ */
+export async function nexusRunMacroInspection() {
+    if (!nexusCurrentImageBase64) {
+        const frame = captureCurrentVideoFrameBase64();
+        if (frame) {
+            nexusCurrentImageBase64 = frame;
+            window.nexusCurrentImageBase64 = frame;
+        }
+    }
+
+    if (!nexusCurrentImageBase64) {
+        showToast('Primero toma o sube una foto del envase.', 'warning');
+        return;
+    }
+
+    const btnMacro = document.getElementById('btnRunMacroInspection');
+    if (btnMacro) {
+        btnMacro.disabled = true;
+        btnMacro.innerHTML = '📐 Midiendo Plomada Láser...';
+        btnMacro.style.opacity = '0.7';
+    }
+
+    try {
+        const macroResult = await analyzeImageGeometricDefects(nexusCurrentImageBase64);
+        window.lastMacroResult = macroResult;
+
+        // Renderizar Plomada Láser y guías sobre el canvas superior
+        const bboxCanvas = document.getElementById('nexusBboxCanvas');
+        const previewImg = document.getElementById('nexusPreviewImg');
+        if (bboxCanvas && previewImg) {
+            bboxCanvas.width = previewImg.naturalWidth || previewImg.clientWidth || 640;
+            bboxCanvas.height = previewImg.naturalHeight || previewImg.clientHeight || 480;
+            bboxCanvas.style.display = 'block';
+            drawLaserPlumbOverlay(bboxCanvas, macroResult);
+        }
+
+        // Renderizar resultado en la tarjeta de diagnóstico
+        renderMacroInspectionCard(macroResult);
+
+        if (macroResult.conforme) {
+            showToast(`✅ Envase Conforme. Desviación: ${macroResult.metricas.anguloTorcidoEje}° (Dentro de tolerancia).`, 'success');
+        } else {
+            showToast(`🚨 Defecto detectado: ${macroResult.defectos[0].nombre}`, 'danger');
+        }
+        return macroResult;
+    } catch (err) {
+        console.error('[NEXUS] Error en inspección macro:', err);
+        showToast('Error al analizar la geometría del envase.', 'danger');
+        return null;
+    } finally {
+        if (btnMacro) {
+            btnMacro.disabled = false;
+            btnMacro.innerHTML = '📐 INSPECCIÓN MACRO (PLOMADA LÁSER)';
+            btnMacro.style.opacity = '1';
+        }
+    }
 }
 
 /**
@@ -278,15 +350,18 @@ export async function nexusProcessIncomingImageFile(file) {
             console.warn('[NEXUS] Auto-acopio:', acErr);
         }
 
-        // 3. Auto-Diagnóstico inmediato con Gemini IA o fallback local
-        const autoDiagToggle = document.getElementById('autoDiagnoseToggle');
-        const shouldAutoDiagnose = autoDiagToggle ? autoDiagToggle.checked : true;
+        // 3. Ejecutar Inspección Macro Inmediata (Plomada Láser y Defectos Evidentes <30ms)
+        await nexusRunMacroInspection();
 
-        if (shouldAutoDiagnose) {
-            showToast('🔍 Analizando defectos del envase con IA...', 'info');
+        // 4. Auto-Diagnóstico opcional con Gemini IA (si está activo el switch y configurada la clave)
+        const autoDiagToggle = document.getElementById('autoDiagnoseToggle');
+        const shouldAutoDiagnose = autoDiagToggle ? autoDiagToggle.checked : false;
+
+        if (shouldAutoDiagnose && state.geminiApiKey) {
+            showToast('🔍 Analizando micro-defectos con Gemini IA...', 'info');
             await nexusDiagnoseWithAI();
         } else {
-            showToast('✅ Foto lista en el visor y acopiada. Toca DIAGNOSTICAR.', 'success');
+            showToast('✅ Plomada láser lista. Toca DIAGNOSTICAR para IA profunda.', 'success');
         }
     } catch (err) {
         console.error('[NEXUS] Error procesando imagen:', err);
@@ -511,6 +586,7 @@ window.handleNexusUploadSelect = nexusHandleImageSelect;
 window.nexusProcessIncomingImageFile = nexusProcessIncomingImageFile;
 window.compressImageFile = compressImageFile;
 window.nexusSnapLiveWebcam = nexusSnapLiveWebcam;
+window.nexusRunMacroInspection = nexusRunMacroInspection;
 window.nexusDiagnoseWithAI = nexusDiagnoseWithAI;
 window.triggerNexusDiagnosis = nexusDiagnoseWithAI;
 window.nexusSaveToBitacora = nexusSaveToBitacora;

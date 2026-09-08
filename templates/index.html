@@ -3,35 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.1.1 — Inspección IA</title>
+    <title>VitroDiag NEXUS v2.2.0 — Inspección IA & Moldería Always-Live</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <!-- Directivas Estrictas Anti-Caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <!-- Carga de Tesseract.js para OCR y Escáner de Consola Offline -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.5/dist/tesseract.min.js" defer></script>
     <script>
-    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES AL SUBIR NUEVA VERSIÓN (v2.1.1)
+    // PURGA AUTOMÁTICA E INMEDIATA DE CACHÉ EN MÓVILES (v2.2.0 Always-Live)
     if ('caches' in window) {
         caches.keys().then(function(names) {
             names.forEach(function(name) {
-                if (!name.includes('v2.1.1')) {
-                    caches.delete(name);
-                    console.log('[PWA] Purga de caché antigua ejecutada:', name);
-                }
+                caches.delete(name);
+                console.log('[Always-Live] Purga de caché ejecutada:', name);
             });
         });
     }
-    // Autopurga de versión anterior en localStorage
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.1.1') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.1.1');
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-                for (let r of regs) r.unregister();
-            });
-        }
+    // Desregistro inmediato de Service Workers
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (let r of regs) r.unregister();
+        });
+    }
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.2.0') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.2.0');
     }
     window.clearAppCache = async function() {
         if ('serviceWorker' in navigator) {
@@ -44,7 +43,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en v2.1.1.');
+        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.2.0.');
         window.location.reload(true);
     };
 
@@ -186,6 +185,32 @@
         }
     };
 
+    window.openModal = function(modalId) {
+        try {
+            if (typeof modalId === 'string' && modalId) {
+                var m = document.getElementById(modalId);
+                if (m) m.classList.add('active');
+            } else {
+                window.openArticlesModal();
+            }
+        } catch (e) {
+            console.error('[NEXUS UI] Error en openModal:', e);
+        }
+    };
+
+    window.closeModal = function(modalId) {
+        try {
+            if (typeof modalId === 'string' && modalId) {
+                var m = document.getElementById(modalId);
+                if (m) m.classList.remove('active');
+            } else {
+                window.closeArticlesModal();
+            }
+        } catch (e) {
+            console.error('[NEXUS UI] Error en closeModal:', e);
+        }
+    };
+
     window.setOpticalFilter = function(mode, btnEl) {
         try {
             var video = document.getElementById('webcam');
@@ -225,6 +250,7 @@
             console.error('[NEXUS UI] Error en triggerNexusDiagnosis:', e);
         }
     };
+    window.triggerGeminiVisionAnalysis = window.triggerNexusDiagnosis;
 
     // Recarga transparente cuando el Service Worker se actualiza
     if ('serviceWorker' in navigator) {
@@ -300,7 +326,15 @@
         .form-row { display: flex; gap: 10px; margin-bottom: 14px; }
         .form-group-half { flex: 1; margin-bottom: 0; }
         .calc-diff { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-        .preset-block { margin-top: 16px; }
+        /* Filtros Ópticos para Alta Iluminación en Planta */
+        .optical-filters-bar { display: flex; gap: 8px; justify-content: center; margin: 8px 0 12px 0; flex-wrap: wrap; }
+        .filter-chip { background: rgba(30, 34, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
+        .filter-chip:hover { border-color: var(--primary); color: var(--text-main); }
+        .filter-chip.active { background: rgba(255, 111, 0, 0.18); border-color: var(--primary); color: #ff9800; font-weight: 600; box-shadow: 0 0 12px rgba(255, 111, 0, 0.25); }
+        .webcam-video.filter-normal, .nexus-preview-img.filter-normal { filter: none; }
+        .webcam-video.filter-polarized, .nexus-preview-img.filter-polarized { filter: contrast(175%) saturate(135%) brightness(90%) drop-shadow(0 0 2px rgba(0,0,0,0.8)); }
+        .webcam-video.filter-carbon, .nexus-preview-img.filter-carbon { filter: contrast(240%) grayscale(60%) brightness(82%); }
+        .webcam-video.filter-cracks, .nexus-preview-img.filter-cracks { filter: invert(90%) hue-rotate(180deg) contrast(180%); }
 
         /* Clases utilitarias reemplazando estilos inline */
         .version-badge { font-size: 0.8rem; vertical-align: middle; padding: 2px 6px; border-radius: 6px; background: rgba(6, 182, 212, 0.2); color: #06b6d4; margin-left: 6px; font-weight: normal; border: 1px solid rgba(6, 182, 212, 0.3); }
@@ -2615,10 +2649,13 @@
             </div>
         </div>
 
-        <!-- BOTÓN DE DIAGNÓSTICO PROFUNDO CON GEMINI IA -->
-        <div class="diag-btn-container">
-            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()">
-                ⚡ DIAGNOSTICAR CON IA (GEMINI 2.0)
+        <!-- BOTONES DE DIAGNÓSTICO: INSPECCIÓN MACRO Y PROFUNDA IA -->
+        <div class="diag-btn-container" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+            <button id="btnRunMacroInspection" class="btn-action btn-nexus-diag" style="flex:1; min-width:180px; background:linear-gradient(135deg, #0284c7, #0369a1); border:1px solid rgba(14, 165, 233, 0.5); box-shadow:0 4px 16px rgba(14, 165, 233, 0.3); font-size:0.92rem;" onclick="if(window.nexusRunMacroInspection) window.nexusRunMacroInspection();" title="Medir plomada láser, torcidos, roturas y asimetría en <30ms">
+                📐 INSPECCIÓN MACRO (PLOMADA LÁSER)
+            </button>
+            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" style="flex:1; min-width:180px; font-size:0.92rem;" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis();" title="Diagnóstico profundo con Gemini 2.0 Flash">
+                ⚡ DIAGNÓSTICO IA (GEMINI 2.0)
             </button>
         </div>
 
@@ -6650,7 +6687,7 @@
                 <div class="sample-modal-actions" style="margin-top:14px;">
                     <button class="btn-action btn-modal-diagnose" onclick="window.analyzeActiveLightboxWithGemini()">⚡ Diagnosticar con Gemini IA (1-Tap)</button>
                     <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.transferActiveLightboxToDataset()">🏷️ Guardar en Banco IA</button>
-                    <button class="btn-action btn-action-danger btn-dataset-flex" onclick="if(window.deleteAcopioPhoto) window.deleteAcopioPhoto(activeLightboxPhotoId)">🗑️ Eliminar</button>
+                    <button class="btn-action btn-action-danger btn-dataset-flex" onclick="window.deleteAcopioPhoto(activeLightboxPhotoId)">🗑️ Eliminar</button>
                 </div>
             </div>
         </div>
@@ -6693,6 +6730,6 @@
     }
     window.switchToolTab = switchToolTab;
     </script>
-    <script type="module" src="static/js/main.js?v=2.1.1"></script>
+    <script src="static/js/bootstrapper.js"></script>
 </body>
 </html>

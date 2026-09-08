@@ -2649,10 +2649,13 @@
             </div>
         </div>
 
-        <!-- BOTÓN DE DIAGNÓSTICO PROFUNDO CON GEMINI IA -->
-        <div class="diag-btn-container">
-            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis()">
-                ⚡ DIAGNOSTICAR CON IA (GEMINI 2.0)
+        <!-- BOTONES DE DIAGNÓSTICO: INSPECCIÓN MACRO Y PROFUNDA IA -->
+        <div class="diag-btn-container" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+            <button id="btnRunMacroInspection" class="btn-action btn-nexus-diag" style="flex:1; min-width:180px; background:linear-gradient(135deg, #0284c7, #0369a1); border:1px solid rgba(14, 165, 233, 0.5); box-shadow:0 4px 16px rgba(14, 165, 233, 0.3); font-size:0.92rem;" onclick="if(window.nexusRunMacroInspection) window.nexusRunMacroInspection();" title="Medir plomada láser, torcidos, roturas y asimetría en <30ms">
+                📐 INSPECCIÓN MACRO (PLOMADA LÁSER)
+            </button>
+            <button id="btnRunDiagnosis" class="btn-action btn-action-primary btn-nexus-diag" style="flex:1; min-width:180px; font-size:0.92rem;" onclick="if(window.triggerNexusDiagnosis) window.triggerNexusDiagnosis();" title="Diagnóstico profundo con Gemini 2.0 Flash">
+                ⚡ DIAGNÓSTICO IA (GEMINI 2.0)
             </button>
         </div>
 
