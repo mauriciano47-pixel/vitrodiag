@@ -1,5 +1,5 @@
 // VitroDiag - Service Worker (Network-First Strategy with Cache Fallback for PWA Offline)
-const CACHE_NAME = 'vitrodiag-nexus-v2.1.2';
+const CACHE_NAME = 'vitrodiag-nexus-v2.4.0';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -17,6 +17,9 @@ const ASSETS_TO_CACHE = [
   'static/js/log.js',
   'static/js/swab.js',
   'static/js/geometry.js',
+  'static/js/fineDefects.js',
+  'static/js/datasetManager.js',
+  'static/js/acopioManager.js',
   'static/js/geminiVision.js',
   'static/icons/icon-192.svg',
   'static/icons/icon-512.svg',

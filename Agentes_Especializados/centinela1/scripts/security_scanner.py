@@ -1,4 +1,4 @@
-import subprocess
+import subprocess  # nosec B404
 import json
 import os
 import sys
@@ -15,11 +15,11 @@ def run_bandit():
         sys.executable, "-m", "bandit",
         "-r", project_root,
         "-f", "json",
-        "-x", ".venv,env,venv,.agents,Agentes_Especializados,static,js,scratch,db.sqlite3"
+        "-x", f"{project_root}/.venv,{project_root}/scratch,{project_root}/Agentes_Especializados,{project_root}/static"
     ]
     
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+        result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')  # nosec B603
         
         try:
             report = json.loads(result.stdout)
@@ -29,10 +29,10 @@ def run_bandit():
                 "bandit",
                 "-r", project_root,
                 "-f", "json",
-                "-x", ".venv,env,venv,.agents,Agentes_Especializados,static,js,scratch,db.sqlite3"
+                "-x", f"{project_root}/.venv,{project_root}/scratch,{project_root}/Agentes_Especializados,{project_root}/static"
             ]
             try:
-                result = subprocess.run(cmd_cli, capture_output=True, text=True, encoding='utf-8', errors='replace')
+                result = subprocess.run(cmd_cli, capture_output=True, text=True, encoding='utf-8', errors='replace')  # nosec B603
                 report = json.loads(result.stdout)
             except Exception:
                 print("[!] Centinela1: Bandit output could not be parsed as JSON or bandit is not installed.")

@@ -95,7 +95,7 @@ for d in defects:
                             {causas_html}
                         </ul>
                         <div class="section-title">🛠️ Corrección en Máquina IS:</div>
-                        <ul class="list-items" style="color: #cbd5e1;">
+                        <ul class="list-items list-items-correction">
                             {acciones_html}
                         </ul>
                     </div>

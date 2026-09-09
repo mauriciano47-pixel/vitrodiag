@@ -27,7 +27,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
        → Detección Local de Calcinados: Algoritmo de contraste adaptativo y clústering para manchas de grasa quemada y piedras.
        → Overlay Táctico: Línea de eje nominal vs real + miras circulares/cruz sobre calcinados.
 2. ⚡  Diagnóstico Profundo con Gemini 2.0 Flash Vision
-       → Inferencia multimodal contra el catálogo de 96 defectos industriales.
+       → Inferencia multimodal contra el catálogo de 111 defectos industriales.
        → Few-Shot RAG: Inyección dinámica de fotos reales de planta registradas en el Banco IA.
 3. 🏷️  Alimentación Asistida del Banco IA (1-Tap Feed)
        → El operador guarda cualquier defecto detectado con 1 clic en IndexedDB para calibrar a Gemini.
@@ -68,7 +68,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 
 ### Tab 4 — Directorio de Defectos Industriales
 
-1. **Catálogo de 96 Defectos:**  
+1. **Catálogo de 111 Defectos:**  
    Fichas técnicas con causas comunes, puntos de control en máquina I.S. y filtros por zona anatómica y gravedad.
 
 ---
@@ -76,7 +76,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 ## 4. Arquitectura del Sistema
 
 - **Frontend Core:** HTML5, CSS3 vanilla de alto rendimiento con animaciones fluidas y glassmorphism industrial, JavaScript ES6+ estructurado modularmente en 15 módulos:
-  - `main.js` (Orquestador NEXUS), `geometry.js` (Motor de Plomada Láser y Defectos Evidentes), `fineDefects.js` (Detector Local de Calcinados y Defectos Finos), `geminiVision.js` (Gemini 2.0 Flash Vision API + Few-Shot RAG), `datasetManager.js` (Banco IA en IndexedDB), `db.js` (Catálogo 96 defectos), `ui.js` (Navegación y vistas), `camera.js` (Cámara nativa y WebRTC), `timing.js` (Calculadora SOP), `log.js` (Bitácora), `ocr.js` (Tesseract.js), `swab.js` (Temporizador Swabbing), `state.js` (Estado reactivo global).
+  - `main.js` (Orquestador NEXUS), `geometry.js` (Motor de Plomada Láser y Defectos Evidentes), `fineDefects.js` (Detector Local de Calcinados y Defectos Finos), `geminiVision.js` (Gemini 2.0 Flash Vision API + Few-Shot RAG), `datasetManager.js` (Banco IA en IndexedDB), `db.js` (Catálogo 111 defectos), `ui.js` (Navegación y vistas), `camera.js` (Cámara nativa y WebRTC), `timing.js` (Calculadora SOP), `log.js` (Bitácora), `ocr.js` (Tesseract.js), `swab.js` (Temporizador Swabbing), `state.js` (Estado reactivo global).
 - **Persistencia Local:** `IndexedDB` y `LocalStorage` para operación 100% sin conexión.
 - **Modo de Despliegue:** GitHub Pages Always-Live (<https://mauriciano47-pixel.github.io/vitrodiag/>).
 
