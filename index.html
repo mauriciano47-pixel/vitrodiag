@@ -6734,7 +6734,7 @@
         document.querySelectorAll('.tool-subtab').forEach(el => el.classList.remove('active'));
         const target = document.getElementById('tool' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Content');
         if (target) { target.style.display = 'block'; target.classList.add('active'); }
-        if (event && event.target) { event.target.classList.add('active'); }
+        if (typeof event !== 'undefined' && event && event.target) { event.target.classList.add('active'); }
     }
     window.switchToolTab = switchToolTab;
     </script>
