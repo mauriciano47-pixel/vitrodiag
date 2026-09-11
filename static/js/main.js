@@ -774,12 +774,14 @@ export function initNexusApp() {
         }).catch(() => {});
     }
 
-    console.log("[NEXUS] VitroDiag v2.2.5 inicializado correctamente en modo Always-Live Zero-Permisos.");
+    console.log("[NEXUS] VitroDiag v2.4.1 inicializado correctamente en modo Always-Live Zero-Permisos.");
 }
 
 // Inicialización defensiva independiente del estado de carga del documento
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initNexusApp);
-} else {
-    initNexusApp();
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNexusApp);
+    } else {
+        initNexusApp();
+    }
 }

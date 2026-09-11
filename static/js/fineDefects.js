@@ -102,10 +102,10 @@ export function detectFineDefects(source, datosPlomada) {
             const centerLum = gray[centerIdx];
 
             // Promedio en cruz a distancia de 5px (fondo circundante)
-            const topLum = gray[(y - 5) * w + x];
-            const bottomLum = gray[(y + 5) * w + x];
-            const leftLum = gray[y * w + (x - 5)];
-            const rightLum = gray[y * w + (x + 5)];
+            const topLum = gray[(y - 5) * w + x] ?? 128;
+            const bottomLum = gray[(y + 5) * w + x] ?? 128;
+            const leftLum = gray[y * w + (x - 5)] ?? 128;
+            const rightLum = gray[y * w + (x + 5)] ?? 128;
             const surroundAvg = (topLum + bottomLum + leftLum + rightLum) / 4;
 
             // Caída de luminosidad (mancha más oscura que su entorno inmediato)

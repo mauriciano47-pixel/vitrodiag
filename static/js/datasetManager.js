@@ -24,7 +24,13 @@ export function initDatasetDB() {
             return;
         }
 
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        if (typeof window === 'undefined' || !('indexedDB' in window)) {
+            console.warn('[DatasetManager] IndexedDB no soportado en este entorno.');
+            resolve(null);
+            return;
+        }
+
+        const request = window.indexedDB.open(DB_NAME, DB_VERSION);
 
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
@@ -44,7 +50,7 @@ export function initDatasetDB() {
 
         request.onerror = (event) => {
             console.error('[DatasetManager] Error al abrir IndexedDB:', event.target.error);
-            reject(event.target.error);
+            resolve(null);
         };
     });
 }
@@ -57,6 +63,10 @@ export function initDatasetDB() {
 export async function saveSample(sampleData) {
     try {
         const db = await initDatasetDB();
+        if (!db) {
+            console.warn('[DatasetManager] IndexedDB no disponible para guardar muestra.');
+            return null;
+        }
         const defectoInfo = DEFECTOS_DB.find(d => d.id === sampleData.defectoId) || {
             nombre: 'Defecto Personalizado',
             zona: 'general',
@@ -105,6 +115,7 @@ export async function saveSample(sampleData) {
 export async function getAllSamples() {
     try {
         const db = await initDatasetDB();
+        if (!db) return [];
         return new Promise((resolve, reject) => {
             const tx = db.transaction(STORE_SAMPLES, 'readonly');
             const store = tx.objectStore(STORE_SAMPLES);
@@ -136,6 +147,7 @@ export async function getAllSamples() {
 export async function deleteSample(sampleId) {
     try {
         const db = await initDatasetDB();
+        if (!db) return false;
         return new Promise((resolve, reject) => {
             const tx = db.transaction(STORE_SAMPLES, 'readwrite');
             const store = tx.objectStore(STORE_SAMPLES);

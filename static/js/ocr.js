@@ -148,8 +148,8 @@ async function runScannerOcr() {
 
     if (!state.scannerImageBase64) return;
 
-    resultsCard.style.display = 'none';
-    loader.style.display = 'block';
+    if (resultsCard) resultsCard.style.display = 'none';
+    if (loader) loader.style.display = 'block';
     if (runOcrBtn) runOcrBtn.setAttribute('disabled', 'true');
 
     // Timeout de seguridad (30 seg para primera carga de WASM)
@@ -159,11 +159,11 @@ async function runScannerOcr() {
 
     const ocrPromise = (async () => {
         // Paso 1: Pre-procesamiento de imagen
-        statusMsg.innerText = "Preprocesando imagen (contraste, binarización)...";
+        if (statusMsg) statusMsg.innerText = "Preprocesando imagen (contraste, binarización)...";
         const processedImage = await preprocessImageForOcr(state.scannerImageBase64);
 
         if (!isWorkerReady || !tesseractWorker) {
-            statusMsg.innerText = "Inicializando motor OCR...";
+            if (statusMsg) statusMsg.innerText = "Inicializando motor OCR...";
             await initTesseractWorker();
         }
 
@@ -172,7 +172,7 @@ async function runScannerOcr() {
         }
 
         // Paso 2: OCR con idioma inglés (paneles BDF usan texto en inglés)
-        statusMsg.innerText = "Digitalizando caracteres del panel...";
+        if (statusMsg) statusMsg.innerText = "Digitalizando caracteres del panel...";
         await tesseractWorker.setParameters({
             tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.:° -/',
             tessedit_pageseg_mode: '6' // Bloque de texto uniforme
@@ -199,14 +199,14 @@ async function runScannerOcr() {
     try {
         const { fullText, digitText } = await Promise.race([ocrPromise, timeoutPromise]);
 
-        statusMsg.innerText = "Interpretando datos de grados de la consola BDF...";
+        if (statusMsg) statusMsg.innerText = "Interpretando datos de grados de la consola BDF...";
         parseScannerOcrText(fullText, digitText);
 
-        loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
         if (runOcrBtn) runOcrBtn.removeAttribute('disabled');
     } catch (err) {
         console.error("Error o timeout en motor OCR Tesseract.js:", err);
-        loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
         if (runOcrBtn) runOcrBtn.removeAttribute('disabled');
 
         let errorMsg = "Error al digitalizar imagen. Intenta con mejor enfoque o luz.";

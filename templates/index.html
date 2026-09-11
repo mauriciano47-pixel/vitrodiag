@@ -239,7 +239,9 @@
 
     window.triggerNexusDiagnosis = function() {
         try {
-            if (typeof window.runDeepDiagnosis === 'function') {
+            if (typeof window.nexusDiagnoseWithAI === 'function') {
+                window.nexusDiagnoseWithAI();
+            } else if (typeof window.runDeepDiagnosis === 'function') {
                 var imgB64 = window.nexusCurrentImageBase64 || (window.state ? window.state.scannerImageBase64 : null);
                 window.runDeepDiagnosis(imgB64);
             } else {
