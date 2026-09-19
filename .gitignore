@@ -6,3 +6,6 @@ pages_config.json
 browser_logs.txt
 scratch/
 bandit_results.json
+
+# V-GUARD Auto-Hardening
+.env
