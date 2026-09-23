@@ -5,9 +5,11 @@ on:
     branches: [ main ]
     paths:
       - '**/*'
+  workflow_dispatch:
 
 jobs:
   build_and_deploy:
+    if: ${{ secrets.CF_API_TOKEN != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -23,7 +25,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           python manage.py collectstatic --noinput
-          # Si usas un proceso de build JS, añádelo aquí
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -31,7 +32,7 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           projectName: ${{ secrets.CF_PROJECT_VITRODIAG }}
-          directory: ./static   # Ajusta si tu output está en otro folder
+          directory: ./static
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify success
