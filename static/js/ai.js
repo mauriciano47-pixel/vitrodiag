@@ -1,7 +1,11 @@
+// Motor de Detección e Inferencia (VitroDiag AI Engine)
+// Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 import { state } from './state.js';
 import { showToast } from './ui.js';
 import { processFrame } from './vision.js';
 import { DEFECTOS_DB, getDefectsByZone, getDefectById } from './db.js';
+import { setSafeHTML } from './domUtils.js';
+import { warmUpModel, loadCustomUploadedModel, loadTensorFlowModel } from './aiModelLoader.js';
 
 
 // ⚠️ FIX #4: Referencias DOM obtenidas de forma lazy dentro de las funciones
@@ -13,123 +17,12 @@ function getCard() { return document.getElementById('resultadoCard'); }
 function getCanvas() { return document.getElementById('canvasOutput'); }
 
 function updateConfidenceThresholdDisplay(val) {
-            state.confidenceThreshold = parseInt(val);
-            const badge = document.getElementById('iaConfidenceBadge');
-            if (badge) badge.innerText = `Filtro: >${state.confidenceThreshold}%`;
-        }
-
-async function warmUpModel(model) {
-    if (!model || typeof tf === 'undefined') return;
-    const tfjsStatus = getTfjsStatus();
-    try {
-        if (tfjsStatus) {
-            tfjsStatus.innerText = "Motor de Visión: Calibrando modelo local (Warm-up)...";
-            tfjsStatus.style.color = "#fbbf24";
-        }
-        tf.tidy(() => {
-            const dummy = tf.zeros([1, 224, 224, 3]);
-            const prediction = model.predict(dummy);
-            prediction.dataSync(); // Fuerza la ejecución sincrona para compilar shaders
-        });
-        console.log("TFJS: Warm-up completado.");
-    } catch (e) {
-        console.warn("TFJS: Warm-up omitido o fallido: ", e);
-    }
+    state.confidenceThreshold = parseInt(val);
+    const badge = document.getElementById('iaConfidenceBadge');
+    if (badge) badge.innerText = `Filtro: >${state.confidenceThreshold}%`;
 }
 
-async function loadCustomUploadedModel() {
-            const jsonInput = document.getElementById('uploadModelJson');
-            const binInput = document.getElementById('uploadModelBin');
-            const tfjsStatus = getTfjsStatus();
-
-            if (!jsonInput || !binInput || jsonInput.files.length === 0 || binInput.files.length === 0) {
-                showToast("Debes seleccionar el archivo model.json y sus pesos (.bin)", "warning");
-                return;
-            }
-
-            const modelJsonFile = jsonInput.files[0];
-            const weightsFiles = Array.from(binInput.files);
-
-            if (tfjsStatus) {
-                tfjsStatus.innerText = "Cargando modelo personalizado en GPU local...";
-                tfjsStatus.style.color = "#fbbf24";
-            }
-
-            try {
-                // Carga dinámica local usando IndexedDB y FileReader en TF.js
-                state.tfModel = await tf.loadLayersModel(tf.io.browserFiles([modelJsonFile, ...weightsFiles]));
-                await warmUpModel(state.tfModel);
-                if (tfjsStatus) {
-                    tfjsStatus.innerText = "Motor IA: Red Neuronal Personalizada cargada con éxito";
-                    tfjsStatus.style.color = "#10b981";
-                }
-                showToast("Modelo de IA personalizado conectado con éxito", "success");
-            } catch (err) {
-                console.error("Error al cargar modelo subido:", err);
-                if (tfjsStatus) {
-                    tfjsStatus.innerText = "Error: Fallo al cargar los archivos de la Red Neuronal";
-                    tfjsStatus.style.color = "#ef4444";
-                }
-                showToast("Error al procesar modelo. Asegúrate que correspondan a TensorFlow.js", "danger");
-            }
-        }
-
-async function loadTensorFlowModel() {
-    const tfjsStatus = getTfjsStatus();
-    if (typeof tf === 'undefined') {
-        if (tfjsStatus) {
-            tfjsStatus.innerText = "Motor de Visión: Análisis de Contornos Activo (Algorítmico)";
-            tfjsStatus.style.color = "#06b6d4";
-        }
-        return;
-    }
-
-    try {
-        await tf.setBackend('webgl');
-        console.log("Backend TFJS activo:", tf.getBackend());
-    } catch (e) {
-        try {
-            await tf.setBackend('cpu');
-            console.log("Backend TFJS CPU activo:", tf.getBackend());
-        } catch (cpuErr) {
-            console.warn("Backend WebGL/CPU no disponible, usando defecto:", cpuErr);
-        }
-    }
-
-    const possiblePaths = [
-        'static/model/model.json',
-        './static/model/model.json'
-    ];
-
-    let loadedModel = null;
-    for (const path of possiblePaths) {
-        try {
-            console.log(`[TFJS] Probando modelo en: ${path}`);
-            loadedModel = await tf.loadLayersModel(path);
-            if (loadedModel) {
-                console.log(`[TFJS] Modelo cargado con éxito desde: ${path}`);
-                state.tfModel = loadedModel;
-                break;
-            }
-        } catch (e) {
-            // Continuar al siguiente path de fallback
-        }
-    }
-
-    if (state.tfModel) {
-        await warmUpModel(state.tfModel);
-        if (tfjsStatus) {
-            tfjsStatus.innerText = "Motor IA: Red Neuronal CNN cargada offline";
-            tfjsStatus.style.color = "#10b981"; // Verde (Success)
-        }
-    } else {
-        console.log("[TFJS] Modelo CNN personalizado no encontrado. Usando diagnóstico de contornos algorítmico.");
-        if (tfjsStatus) {
-            tfjsStatus.innerText = "Motor de Visión: Análisis de Contornos Activo (Algorítmico)";
-            tfjsStatus.style.color = "#06b6d4"; // Cyan
-        }
-    }
-}
+// warmUpModel, loadCustomUploadedModel, loadTensorFlowModel importados desde ./aiModelLoader.js
 
 let lastDiagStatus = 'alineando'; // Estado de diagnóstico anterior: 'alineando', 'aceptable', 'rechazo'
 let audioCtx = null;
@@ -269,10 +162,10 @@ function fallbackAlgorithmicDiagnosis() {
         }
         if (diagEstado) diagEstado.innerText = "El sistema no detecta suficientes bordes para realizar la comparación geométrica.";
         if (diagAcciones) {
-            diagAcciones.innerHTML = `
+            setSafeHTML(diagAcciones, `
                 <li>Comprobar alineación de la botella respecto al molde patrón.</li>
                 <li>Asegurarse de activar el 'Modo Contorno / Silueta'.</li>
-            `;
+            `);
         }
         return;
     }
@@ -303,10 +196,10 @@ function fallbackAlgorithmicDiagnosis() {
         }
         if (diagEstado) diagEstado.innerText = "Buscando envase... Coloca el cuerpo y cuello de la botella en las guías.";
         if (diagAcciones) {
-            diagAcciones.innerHTML = `
+            setSafeHTML(diagAcciones, `
                 <li>Centra la botella en la pantalla.</li>
                 <li>Verifica que el contraste sea suficiente para delimitar los bordes.</li>
-            `;
+            `);
         }
         return;
     }
@@ -524,7 +417,7 @@ function fallbackAlgorithmicDiagnosis() {
                 diagGravedad.innerText = `Rechazo (${detectedDefectObj.gravedad || 'Crítico'})`;
             }
             if (diagEstado) diagEstado.innerText = `Desviación observada en ${defectZone}: ${defectDev.toFixed(1)}% (Límite: ${toleranceLimit}%). Ficha: ${articleName}. ${detectedDefectObj.descripcion || ''}`;
-            if (diagAcciones) diagAcciones.innerHTML = defectActions;
+            if (diagAcciones) setSafeHTML(diagAcciones, defectActions);
             
             if (tfjsStatus) {
                 tfjsStatus.innerText = `Patrón Moldería: ${detectedName} (${defectDev.toFixed(1)}%)`;
@@ -557,10 +450,10 @@ function fallbackAlgorithmicDiagnosis() {
             }
             if (diagEstado) diagEstado.innerText = `Silueta en las 5 zonas dentro de los parámetros de moldería patrón: ${percentDeviation.toFixed(1)}% desvío max.`;
             if (diagAcciones) {
-                diagAcciones.innerHTML = `
+                setSafeHTML(diagAcciones, `
                     <li>El envase cumple con las especificaciones de moldería para ${articleName}.</li>
                     <li>Mantener velocidad nominal de producción.</li>
-                `;
+                `);
             }
             if (tfjsStatus) {
                 tfjsStatus.innerText = `Patrón Moldería: Envase Conforme (${articleName})`;
@@ -780,10 +673,10 @@ export function runLiveDiagnosis() {
             }
             if (diagEstado) diagEstado.innerText = "Coloque el envase de vidrio centrado dentro de las guías de la cámara para iniciar el diagnóstico en tiempo real.";
             if (diagAcciones) {
-                diagAcciones.innerHTML = `
+                setSafeHTML(diagAcciones, `
                     <li>Alinee el cuello y cuerpo de la botella dentro de la retícula de disparo.</li>
                     <li>Asegúrese de contar con iluminación o contraste adecuados.</li>
-                `;
+                `);
             }
             if (tfjsStatus) {
                 tfjsStatus.innerText = "Motor de Visión: Esperando Envase en Guías...";
@@ -829,11 +722,11 @@ export function runLiveDiagnosis() {
                 }
                 if (diagEstado) diagEstado.innerText = "El motor de visión artificial ha detectado una asimetría estructural grave.";
                 if (diagAcciones) {
-                    diagAcciones.innerHTML = `
+                    setSafeHTML(diagAcciones, `
                         <li><strong>Motor IS:</strong> Revisar alineación de mecanismos de cuello.</li>
                         <li><strong>Molde:</strong> Inspeccionar estado de los anillos de cuello.</li>
                         <li><strong>Preforma:</strong> Verificar distribución de masa en zona superior.</li>
-                    `;
+                    `);
                 }
 
                 if (cursorText) {
@@ -862,9 +755,9 @@ export function runLiveDiagnosis() {
                 }
                 if (diagEstado) diagEstado.innerText = "El modelo no ha detectado malformaciones críticas.";
                 if (diagAcciones) {
-                    diagAcciones.innerHTML = `
+                    setSafeHTML(diagAcciones, `
                         <li>El envase cumple con la simetría básica estructural.</li>
-                    `;
+                    `);
                 }
 
                 if (cursorText) {

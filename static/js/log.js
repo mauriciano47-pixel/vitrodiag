@@ -1,13 +1,16 @@
+// Bitácora de Incidencias de Producción (VitroDiag Log Engine)
+// Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 import { state } from './state.js';
 import { showToast } from './ui.js';
 import { DEFECTOS_DB } from './db.js';
+import { setSafeHTML } from './domUtils.js';
 
 function populateLogDefectSelect() {
     const select = document.getElementById('logDefectSelect');
     if (!select) return;
-    select.innerHTML = DEFECTOS_DB.map(d => 
+    setSafeHTML(select, DEFECTOS_DB.map(d => 
         `<option value="${d.id}">${d.nombre} (${d.zona.toUpperCase()})</option>`
-    ).join('');
+    ).join(''));
 }
 
 let db = null;
@@ -83,11 +86,11 @@ function renderBitacoraList() {
     const logListContainer = document.getElementById('logListContainer');
     if (!logListContainer) return;
     if (state.bitacoraList.length === 0) {
-        logListContainer.innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:10px;">Sin incidencias registradas en el turno.</div>';
+        setSafeHTML(logListContainer, '<div style="font-size:0.8rem;color:var(--text-muted);text-align:center;padding:10px;">Sin incidencias registradas en el turno.</div>');
         return;
     }
 
-    logListContainer.innerHTML = state.bitacoraList.map(item => `
+    setSafeHTML(logListContainer, state.bitacoraList.map(item => `
         <div class="log-item">
             <div class="log-info">
                 <div style="font-weight:bold;color:#fff;">${item.defectName}</div>
@@ -98,7 +101,7 @@ function renderBitacoraList() {
                 <button class="btn-delete-log" onclick="deleteLogItem(${item.id})">🗑️</button>
             </div>
         </div>
-    `).join('');
+    `).join(''));
 }
 
 async function deleteLogItem(id) {

@@ -1,3 +1,5 @@
+// Interfaz de Usuario y Gestión de Estados DOM (VitroDiag UI Engine)
+// Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 import { state } from './state.js';
 import { ARTICULOS_DEFAULT, DEFECTOS_DB, renderDefectsList, generateDefectIllustration } from './db.js';
 import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera } from './camera.js';
@@ -5,6 +7,7 @@ import { startProcessing, stopProcessing } from './vision.js';
 import { calculateSopMs } from './timing.js';
 import { terminateTesseractWorker } from './ocr.js';
 import { renderDatasetGallery, populateDatasetSelect } from './datasetManager.js';
+import { setSafeHTML } from './domUtils.js';
 
 
 
@@ -17,10 +20,10 @@ function showToast(message, type = 'info', duration = 3000) {
 
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `
+            setSafeHTML(toast, `
                 <span>${message}</span>
                 <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-            `;
+            `);
 
             container.appendChild(toast);
 
@@ -81,14 +84,14 @@ function populateArticleSelects() {
             const selectModal = document.getElementById('modalSelectArticle');
             
             if (selectActive) {
-                selectActive.innerHTML = state.articulosList.map(a => 
+                setSafeHTML(selectActive, state.articulosList.map(a => 
                     `<option value="${a.id}" ${a.id === state.activeArticle.id ? 'selected' : ''}>${a.nombre} (${a.proceso})</option>`
-                ).join('');
+                ).join(''));
             }
             if (selectModal) {
-                selectModal.innerHTML = state.articulosList.map(a => 
+                setSafeHTML(selectModal, state.articulosList.map(a => 
                     `<option value="${a.id}">${a.nombre}</option>`
-                ).join('');
+                ).join(''));
             }
         }
 

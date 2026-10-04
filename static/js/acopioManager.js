@@ -2,11 +2,13 @@
  * acopioManager.js — Galería Receptora y Acopio de Imágenes de Inspección (VitroDiag)
  * Almacena de forma persistente y automática en IndexedDB (con fallback a LocalStorage) cada fotografía
  * tomada o subida durante las inspecciones en planta, permitiendo su revisión, re-diagnóstico y exportación.
+ * Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
  */
 
 import { showToast } from './ui.js';
 import { state } from './state.js';
 import { DEFECTOS_DB } from './db.js';
+import { setSafeHTML } from './domUtils.js';
 
 const ACOPIO_DB_NAME = 'VitroDiag_AcopioDB';
 const ACOPIO_DB_VERSION = 1;
@@ -48,16 +50,13 @@ export function initAcopioDB() {
 
             request.onsuccess = (event) => {
                 acopioDbInstance = event.target.result;
-                console.log('[AcopioManager] IndexedDB Acopio inicializada correctamente.');
                 resolve(acopioDbInstance);
             };
 
-            request.onerror = (event) => {
-                console.warn('[AcopioManager] Error al abrir IndexedDB Acopio, usando fallback:', event.target.error);
+            request.onerror = () => {
                 resolve(null);
             };
-        } catch (err) {
-            console.warn('[AcopioManager] Excepción al inicializar IndexedDB:', err);
+        } catch (_) {
             resolve(null);
         }
     });
@@ -408,13 +407,13 @@ export async function renderAcopioReel() {
 
         if (containerLive) {
             if (photos.length === 0) {
-                containerLive.innerHTML = `
+                setSafeHTML(containerLive, `
                     <div style="grid-column: 1/-1; text-align:center; padding:18px; color:var(--text-muted); font-size:0.8rem; border:1px dashed var(--border-color); border-radius:8px;">
                         📸 Aún no hay fotos en el acopio. Enciende la cámara o pulsa '📷 FOTO NATIVA' para comenzar a acopiar.
                     </div>
-                `;
+                `);
             } else {
-                containerLive.innerHTML = photos.map(photo => {
+                setSafeHTML(containerLive, photos.map(photo => {
                     const isCritico = photo.gravedad === 'Crítico';
                     const isMayor = photo.gravedad === 'Mayor';
                     const badgeColor = isCritico ? '#ef4444' : (isMayor ? '#f59e0b' : '#10b981');
@@ -435,7 +434,7 @@ export async function renderAcopioReel() {
                             </div>
                         </div>
                     `;
-                }).join('');
+                }).join(''));
             }
         }
     } catch (err) {

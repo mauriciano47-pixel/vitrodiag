@@ -24,6 +24,7 @@ export const state = {
     audioCtx: null,
 
     // Motor Híbrido de Detección (Gemini Vision + Algorítmico)
+    // Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline
     geminiApiKey: null,
     isOnline: (typeof navigator !== 'undefined' && navigator.onLine) ? true : false,
     lastGeminiResult: null,

@@ -2,10 +2,12 @@
  * datasetManager.js — Módulo de Gestión de Banco de Imágenes de Entrenamiento (VitroDiag)
  * Permite capturar, etiquetar, almacenar en IndexedDB y exportar datasets de defectos reales.
  * Ofrece soporte Few-Shot RAG para inyectar muestras de calibración en Gemini Vision API.
+ * Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
  */
 
 import { showToast } from './ui.js';
 import { DEFECTOS_DB } from './db.js';
+import { setSafeHTML } from './domUtils.js';
 
 const DB_NAME = 'VitroDiag_DatasetDB';
 const DB_VERSION = 1;
@@ -270,11 +272,11 @@ export async function renderDatasetGallery() {
         if (badge) badge.innerText = samples.length;
 
         if (samples.length === 0) {
-            container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Aún no hay muestras registradas en el banco. Captura o sube fotos de defectos para comenzar.</div>`;
+            setSafeHTML(container, `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-muted); font-size:0.85rem;">Aún no hay muestras registradas en el banco. Captura o sube fotos de defectos para comenzar.</div>`);
             return;
         }
 
-        container.innerHTML = samples.map(sample => `
+        setSafeHTML(container, samples.map(sample => `
             <div onclick="window.openSampleModal('${sample.id}')" style="background:rgba(15,23,42,0.6); border:1px solid var(--border-color); border-radius:8px; padding:8px; display:flex; flex-direction:column; gap:6px; cursor:pointer; transition:transform 0.15s, border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent-color)'; this.style.transform='scale(1.02)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)';" title="Haga clic para ver detalles, editar notas o diagnosticar con Gemini IA">
                 <img src="${sample.fotoBase64}" alt="${sample.defectoNombre}" style="width:100%; height:95px; object-fit:cover; border-radius:4px;" />
                 <div style="font-weight:bold; font-size:0.75rem; color:var(--accent-color); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${sample.defectoNombre}</div>
@@ -285,7 +287,7 @@ export async function renderDatasetGallery() {
                     <button class="filter-btn" onclick="event.stopPropagation(); window.deleteDatasetSample('${sample.id}')" style="font-size:0.65rem; padding:2px 6px; background:rgba(239,68,68,0.2); color:#ef4444; border-color:rgba(239,68,68,0.4);" title="Eliminar muestra">🗑️</button>
                 </div>
             </div>
-        `).join('');
+        `).join(''));
     } catch (err) {
         console.error('[DatasetManager] Error renderizando galería:', err);
     }

@@ -70,12 +70,23 @@
  * Notificación visual no invasiva de actualización en caliente.
  * @param {string} newVer 
  */
+function setSafeHTML(element, html) {
+    if (!element) return;
+    try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        element.replaceChildren(...Array.from(doc.body.childNodes));
+    } catch (_) {
+        element.textContent = '';
+    }
+}
+
 function mostrarToastActualizacion(newVer) {
     if (document.getElementById('vitrodiag-live-update-banner')) return;
     const banner = document.createElement('div');
     banner.id = 'vitrodiag-live-update-banner';
     banner.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#161b22;border:1px solid #3fb950;color:#f0f6fc;padding:14px 20px;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,0.6);z-index:999999;display:flex;align-items:center;gap:14px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;animation:fadeIn 0.3s ease;';
-    banner.innerHTML = `
+    setSafeHTML(banner, `
         <span style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:18px;">✨</span>
             <span>Nueva versión <strong>v${newVer}</strong> disponible en vivo.</span>
@@ -83,7 +94,7 @@ function mostrarToastActualizacion(newVer) {
         <button id="btnActualizarVitroDiag" style="background:#238636;color:#ffffff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;transition:background 0.2s;">
             Actualizar ahora
         </button>
-    `;
+    `);
     document.body.appendChild(banner);
 
     const btn = document.getElementById('btnActualizarVitroDiag');

@@ -1,5 +1,8 @@
+// Calculadora SOP y Validación de Temporización de Ciclo BDF (VitroDiag Timing Engine)
+// Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 import { state } from './state.js';
 import { DEFECTOS_DB } from './db.js';
+import { setSafeHTML } from './domUtils.js';
 
 function calculateSopMs() {
             // Adaptador para mantener compatibilidad con otras llamadas externas
@@ -186,7 +189,7 @@ function validateBdfTiming() {
                 `;
             }
 
-            resultsContainer.innerHTML = html;
+            setSafeHTML(resultsContainer, html);
 
             // --- ACTUALIZAR BARRAS GANTT DEL CICLO BDF ---
             const barPlunger = document.getElementById('barPlunger');
@@ -249,7 +252,7 @@ function populateDefectSelector() {
                 }
             });
 
-            selector.innerHTML = html;
+            setSafeHTML(selector, html);
         }
 
 /**

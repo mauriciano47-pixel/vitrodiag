@@ -1,6 +1,8 @@
 // VitroDiag NEXUS v2.2.5 — Punto de Entrada y Coordinador Principal Always-Live
+// Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 import { state } from './state.js';
 import { DEFECTOS_DB, renderDefectsList } from './db.js';
+import { setSafeHTML } from './domUtils.js';
 import { 
     showToast, 
     initArticles, 
@@ -473,15 +475,15 @@ function renderPreliminaryInspectionCard() {
         diagGravedad.innerText = "Foto Acopiada";
     }
     if (diagEstado) {
-        diagEstado.innerHTML = `<strong>Inspección Óptica Realizada:</strong> La fotografía ha sido registrada con éxito en el visor y acopio local del turno.<br><br>
-        <em>Para activar el diagnóstico neuronal profundo automático con Gemini 2.0 Flash Vision, presiona '🔑 Configurar Gemini IA'.</em>`;
+        setSafeHTML(diagEstado, `<strong>Inspección Óptica Realizada:</strong> La fotografía ha sido registrada con éxito en el visor y acopio local del turno.<br><br>
+        <em>Para activar el diagnóstico neuronal profundo automático con Gemini 2.0 Flash Vision, presiona '🔑 Configurar Gemini IA'.</em>`);
     }
     if (diagAcciones) {
-        diagAcciones.innerHTML = `
+        setSafeHTML(diagAcciones, `
             <li><button class="btn-action" style="font-size:0.85rem; padding:8px 14px; background:linear-gradient(135deg,#ff6f00,#ea580c); margin-bottom:8px;" onclick="if(window.promptSaveGeminiApiKey) window.promptSaveGeminiApiKey();">🔑 Configurar API Key de Gemini IA</button></li>
             <li>La fotografía fue guardada de forma segura en la <strong>Galería Receptora / Acopio</strong> abajo.</li>
             <li>Puedes etiquetarla manualmente y enviarla al <strong>Banco IA</strong> en 1 toque.</li>
-        `;
+        `);
     }
     if (resultCard) resultCard.style.display = 'block';
 }

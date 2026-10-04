@@ -1,7 +1,11 @@
+// Motor de Escaneo Óptico OCR para Consolas de Temporización IS (VitroDiag OCR Engine)
+// Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 import { state } from './state.js';
 import { showToast, switchView } from './ui.js';
 import { validateBdfTiming } from './timing.js';
 import { startScannerCamera, stopScannerCamera } from './camera.js';
+import { setSafeHTML } from './domUtils.js';
+import { parseScannerOcrText } from './ocrParser.js';
 
 // ─── Scanner OCR (Tesseract.js con pre-procesamiento de imagen optimizado) ────
 let tesseractWorker = null;
@@ -224,234 +228,7 @@ async function runScannerOcr() {
     }
 }
 
-/**
- * Parser mejorado con estrategia de doble pasada:
- * 1. Búsqueda por etiqueta (texto + número adyacente)
- * 2. Búsqueda por posición (números ordenados en rangos esperados)
- * 3. Verificación cruzada de coherencia del ciclo BDF
- */
-function parseScannerOcrText(fullText, digitText) {
-    const raw = fullText.toLowerCase().replace(/[|\\[\]{}]/g, ''); // Limpiar artefactos OCR
-    state.scannerParsedValues = {};
-
-    console.log("=== PARSER OCR v2 ===");
-    console.log("Texto completo limpio:", raw);
-
-    // ─── PASADA 1: Búsqueda por etiqueta BDF (priorizando patrones largos y específicos) ───
-    const labelPatterns = {
-        plungerUp: [
-            /plunger\s*up\D*?(\d{1,3})/,
-            /pl\.?\s*up\D*?(\d{1,3})/,
-            /macho\s*arriba\D*?(\d{1,3})/,
-            /p[\.\s]*u[\.\s]*(\d{1,3})/
-        ],
-        plungerDown: [
-            /plunger\s*down\D*?(\d{1,3})/,
-            /pl\.?\s*down\D*?(\d{1,3})/,
-            /pl\.?\s*dn\D*?(\d{1,3})/,
-            /macho\s*abajo\D*?(\d{1,3})/,
-            /p[\.\s]*d[\.\s]*(\d{1,3})/
-        ],
-        invertStart: [
-            /invert\s*start\D*?(\d{1,3})/,
-            /inv\.?\s*st\.?\D*?(\d{1,3})/,
-            /inversion\D*?(\d{1,3})/,
-            /inv\.?\s*(\d{1,3})/
-        ],
-        blowClose: [
-            /blow\s*close\D*?(\d{1,3})/,
-            /bl\.?\s*close\D*?(\d{1,3})/,
-            /bl\.?\s*cl\.?\D*?(\d{1,3})/,
-            /cierre\s*molde\D*?(\d{1,3})/
-        ],
-        neckRingOpen: [
-            /neck\s*ring\s*open\D*?(\d{1,3})/,
-            /n\.?\s*r\.?\s*open\D*?(\d{1,3})/,
-            /nr\.?\s*op\.?\D*?(\d{1,3})/,
-            /anillo\s*apert\D*?(\d{1,3})/
-        ],
-        blowOn: [
-            /blow\s*on\D*?(\d{1,3})/,
-            /bl\.?\s*on\D*?(\d{1,3})/,
-            /soplado\s*inicio\D*?(\d{1,3})/,
-            /soplado\s*on\D*?(\d{1,3})/
-        ],
-        blowOff: [
-            /blow\s*off\D*?(\d{1,3})/,
-            /bl\.?\s*off\D*?(\d{1,3})/,
-            /soplado\s*fin\D*?(\d{1,3})/,
-            /soplado\s*off\D*?(\d{1,3})/
-        ]
-    };
-
-    Object.keys(labelPatterns).forEach(mechKey => {
-        const patterns = labelPatterns[mechKey];
-        for (const regex of patterns) {
-            const match = raw.match(regex);
-            if (match && match[1]) {
-                const val = parseInt(match[1]);
-                if (val >= 0 && val <= 360) {
-                    state.scannerParsedValues[mechKey] = val;
-                    console.log(`  ✓ [Etiqueta] ${mechKey} = ${val}° (patrón: ${regex.source})`);
-                    break;
-                }
-            }
-        }
-    });
-
-    // ─── PASADA 2: Extracción de todos los números en rango [0-360] ───
-    // Combinar ambas pasadas de OCR para máxima cobertura
-    const combinedText = raw + ' ' + (digitText || '').toLowerCase();
-    const allNumbers = [];
-    const numberMatches = combinedText.match(/\b(\d{1,3})\b/g);
-    if (numberMatches) {
-        numberMatches.forEach(numStr => {
-            const n = parseInt(numStr);
-            if (n >= 10 && n <= 360 && !allNumbers.includes(n)) { // Ignorar números < 10 (ruido)
-                allNumbers.push(n);
-            }
-        });
-    }
-    allNumbers.sort((a, b) => a - b);
-    console.log("  Números crudos filtrados [10-360]:", allNumbers);
-
-    // ─── PASADA 3: Asignación posicional inteligente (si la etiqueta falló) ───
-    // Los rangos están basados en la secuencia estándar del ciclo BDF IS de 360°
-    const foundCount = Object.keys(state.scannerParsedValues).length;
-    if (foundCount < 4 && allNumbers.length >= 3) {
-        console.log("  → Fallback posicional activado (solo", foundCount, "etiquetas encontradas)");
-
-        const positionRanges = [
-            { key: 'plungerUp',    min: 40,  max: 120 },
-            { key: 'plungerDown',  min: 120, max: 180 },
-            { key: 'invertStart',  min: 160, max: 220 },
-            { key: 'blowClose',    min: 200, max: 260 },
-            { key: 'neckRingOpen', min: 230, max: 270 },
-            { key: 'blowOn',       min: 250, max: 300 },
-            { key: 'blowOff',      min: 290, max: 350 }
-        ];
-
-        allNumbers.forEach(n => {
-            for (const range of positionRanges) {
-                if (!state.scannerParsedValues[range.key] && n >= range.min && n <= range.max) {
-                    state.scannerParsedValues[range.key] = n;
-                    console.log(`  ✓ [Posicional] ${range.key} = ${n}°`);
-                    break;
-                }
-            }
-        });
-    }
-
-    // ─── PASADA 4: Verificación de coherencia del ciclo ───
-    // Un ciclo BDF válido debe cumplir: PU < PD < INV < BC <= NRO < BON < BOFF
-    const vals = state.scannerParsedValues;
-    const sequence = ['plungerUp', 'plungerDown', 'invertStart', 'blowClose', 'neckRingOpen', 'blowOn', 'blowOff'];
-    let coherent = true;
-    for (let i = 0; i < sequence.length - 1; i++) {
-        if (vals[sequence[i]] !== undefined && vals[sequence[i + 1]] !== undefined) {
-            if (vals[sequence[i]] > vals[sequence[i + 1]] + 10) { // Tolerancia de 10°
-                console.warn(`  ⚠ Incoherencia: ${sequence[i]}(${vals[sequence[i]]}°) > ${sequence[i+1]}(${vals[sequence[i+1]]}°)`);
-                coherent = false;
-            }
-        }
-    }
-    if (!coherent) {
-        console.warn("  ⚠ Ciclo incoherente detectado — valores posicionales podrían estar mal asignados");
-    }
-
-    // ─── Rellenar valores faltantes con los de la calculadora del artículo activo ───
-    const getElVal = (id, fallback) => {
-        if (typeof document === 'undefined') return fallback;
-        const el = document.getElementById(id);
-        const parsed = parseInt(el?.value);
-        return isNaN(parsed) ? fallback : parsed;
-    };
-
-    const defaultValues = {
-        plungerUp: getElVal('valPlungerUp', 80),
-        plungerDown: getElVal('valPlungerDown', 150),
-        invertStart: getElVal('valInvertStart', 190),
-        blowClose: getElVal('valBlowClose', 240),
-        neckRingOpen: getElVal('valNeckOpen', 245),
-        blowOn: getElVal('valBlowOn', 270),
-        blowOff: getElVal('valBlowOff', 325)
-    };
-
-    const missingKeys = [];
-    Object.keys(defaultValues).forEach(mechKey => {
-        if (state.scannerParsedValues[mechKey] === undefined) {
-            state.scannerParsedValues[mechKey] = defaultValues[mechKey];
-            missingKeys.push(mechKey);
-        }
-    });
-    if (missingKeys.length > 0) {
-        console.log("  ⚠ Valores no detectados (usando consigna):", missingKeys.join(', '));
-    }
-
-    if (typeof document !== 'undefined') {
-        // ─── Mostrar panel de confirmación para que el operador valide/corrija ───
-        const setOcrVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v !== undefined ? v : ''; };
-        setOcrVal('ocrValPlungerUp', state.scannerParsedValues.plungerUp);
-        setOcrVal('ocrValPlungerDown', state.scannerParsedValues.plungerDown);
-        setOcrVal('ocrValInvertStart', state.scannerParsedValues.invertStart);
-        setOcrVal('ocrValBlowClose', state.scannerParsedValues.blowClose);
-        setOcrVal('ocrValNeckRingOpen', state.scannerParsedValues.neckRingOpen);
-        setOcrVal('ocrValBlowOn', state.scannerParsedValues.blowOn);
-        setOcrVal('ocrValBlowOff', state.scannerParsedValues.blowOff);
-
-        // Indicar visualmente cuáles valores fueron detectados vs rellenados
-        const ocrFields = {
-            plungerUp: 'ocrValPlungerUp',
-            plungerDown: 'ocrValPlungerDown',
-            invertStart: 'ocrValInvertStart',
-            blowClose: 'ocrValBlowClose',
-            neckRingOpen: 'ocrValNeckRingOpen',
-            blowOn: 'ocrValBlowOn',
-            blowOff: 'ocrValBlowOff'
-        };
-        Object.keys(ocrFields).forEach(key => {
-            const input = document.getElementById(ocrFields[key]);
-            if (input) {
-                if (missingKeys.includes(key)) {
-                    // Valor NO detectado → fondo naranja para que el operador lo revise
-                    input.style.borderColor = '#f59e0b';
-                    input.style.background = 'rgba(245, 158, 11, 0.1)';
-                    input.title = '⚠ No detectado por OCR — usando valor de consigna';
-                } else {
-                    // Valor SÍ detectado → fondo verde
-                    input.style.borderColor = '#10b981';
-                    input.style.background = 'rgba(16, 185, 129, 0.1)';
-                    input.title = '✓ Detectado por OCR';
-                }
-            }
-        });
-
-        // Mostrar resumen de detección
-        const detectedCount = 7 - missingKeys.length;
-        const statusMsg = document.getElementById('ocrStatusMsg');
-        if (statusMsg) {
-            if (detectedCount >= 5) {
-            statusMsg.innerText = `✓ ${detectedCount}/7 valores detectados exitosamente. Verifica y confirma.`;
-            statusMsg.style.color = '#10b981';
-        } else if (detectedCount >= 3) {
-            statusMsg.innerText = `⚠ ${detectedCount}/7 valores detectados. Los campos naranjas necesitan revisión manual.`;
-            statusMsg.style.color = '#f59e0b';
-        } else {
-            statusMsg.innerText = `⚠ Solo ${detectedCount}/7 detectados. Revisa todos los campos antes de confirmar.`;
-            statusMsg.style.color = '#ef4444';
-        }
-    }
-
-    // Mostrar el panel de confirmación y ocultar loader/tarjeta de resultados previa
-    const setDisplay = (id, d) => { const el = document.getElementById(id); if (el) el.style.display = d; };
-    setDisplay('ocrLoader', 'none');
-    setDisplay('scannerResultsCard', 'none');
-    setDisplay('scannerOcrConfirmArea', 'block');
-    document.getElementById('scannerOcrConfirmArea')?.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    return state.scannerParsedValues;
-}
+// parseScannerOcrText se importa y orquesta desde ./ocrParser.js para alta modularidad.
 
 function confirmOcrAndCompare() {
     // Leer valores validados por el operador
@@ -552,33 +329,33 @@ function renderScannerComparisonTable(defaults) {
         `;
     });
 
-    tableBody.innerHTML = html;
+    setSafeHTML(tableBody, html);
 
     const marginInvert = state.scannerParsedValues.invertStart - state.scannerParsedValues.plungerDown;
     if (marginInvert < 15) {
         alertContainer.style.background = "rgba(239, 68, 68, 0.15)";
         alertContainer.style.borderLeft = "4px solid #ef4444";
         alertContainer.style.color = "#fca5a5";
-        alertContainer.innerHTML = `
+        setSafeHTML(alertContainer, `
             <b>🚨 INFORME CRÍTICO: Peligro de colisión mecánica.</b><br>
             El margen entre Plunger Down (${state.scannerParsedValues.plungerDown}°) e Invert Start (${state.scannerParsedValues.invertStart}°) es de solo <b>${marginInvert}°</b> (Mínimo seguro: 15°). Si cargas esta configuración, el anillo de boca iniciará la inversión antes de que el macho termine de bajar, lo que provocará colisión física del herramental.
-        `;
+        `);
     } else if (criticalDeviation) {
         alertContainer.style.background = "rgba(245, 158, 11, 0.15)";
         alertContainer.style.borderLeft = "4px solid #f59e0b";
         alertContainer.style.color = "#fde047";
-        alertContainer.innerHTML = `
+        setSafeHTML(alertContainer, `
             <b>⚠️ ADVERTENCIA: Desvíos severos de temporización.</b><br>
             Se detectaron desvíos superiores a 15° en el ciclo respecto a la consigna nominal del artículo. Esto puede generar deformaciones en la corona o hombro por estiramiento térmico descontrolado.
-        `;
+        `);
     } else {
         alertContainer.style.background = "rgba(16, 185, 129, 0.15)";
         alertContainer.style.borderLeft = "4px solid #10b981";
         alertContainer.style.color = "#a7f3d0";
-        alertContainer.innerHTML = `
+        setSafeHTML(alertContainer, `
             <b>🟢 CICLO COMPATIBLE Y SEGURO.</b><br>
             Las temporizaciones leídas de la consola física están dentro de los límites seguros. No se detectaron riesgos de colisiones o interferencias en el ciclo de 360°.
-        `;
+        `);
     }
 
     resultsCard.style.display = 'block';

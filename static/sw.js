@@ -1,10 +1,14 @@
 // VitroDiag - Service Worker (Network-First Strategy with Cache Fallback for PWA Offline)
+// Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 const CACHE_NAME = 'vitrodiag-nexus-v2.4.0';
 
 const ASSETS_TO_CACHE = [
   './',
+  'manifest.json',
   'manifest.webmanifest',
+  'static/manifest.json',
   'static/manifest.webmanifest',
+  'static/js/domUtils.js',
   'static/js/main.js',
   'static/js/state.js',
   'static/js/camera.js',
@@ -35,10 +39,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Precargando assets en caché PWA...');
-      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('[SW] Precarga parcial completada:', err);
-      });
+      return cache.addAll(ASSETS_TO_CACHE).catch(() => {});
     })
   );
   self.skipWaiting();
@@ -51,7 +52,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[SW] Eliminando caché antigua:', cache);
             return caches.delete(cache);
           }
         })

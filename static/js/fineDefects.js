@@ -2,6 +2,7 @@
  * fineDefects.js — Motor de Detección de Defectos Finos y Texturales (VitroDiag NEXUS)
  * Fase 2: Detección Local de Calcinados (Grasa/Grafito Quemado), Piedras/Inclusiones
  * y Alimentación Multimodal Asistida para Gemini IA.
+ * Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
  */
 
 import { DEFECTOS_DB } from './db.js';

@@ -1,4 +1,6 @@
         // --- BASE DE DATOS DE ARTÍCULOS ESTÁNDAR Y PERSONALIZADOS ---
+        // Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
+        import { setSafeHTML } from './domUtils.js';
         export const ARTICULOS_DEFAULT = [
             {
                 id: "ssp_296",
@@ -216,14 +218,14 @@
             const selectModal = document.getElementById('modalSelectArticle');
             
             if (selectActive) {
-                selectActive.innerHTML = articulosList.map(a => 
+                setSafeHTML(selectActive, articulosList.map(a => 
                     `<option value="${a.id}" ${a.id === activeArticle.id ? 'selected' : ''}>${a.nombre} (${a.proceso})</option>`
-                ).join('');
+                ).join(''));
             }
             if (selectModal) {
-                selectModal.innerHTML = articulosList.map(a => 
+                setSafeHTML(selectModal, articulosList.map(a => 
                     `<option value="${a.id}">${a.nombre}</option>`
-                ).join('');
+                ).join(''));
             }
         }
 
@@ -369,10 +371,10 @@
 
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `
+            setSafeHTML(toast, `
                 <span>${message}</span>
                 <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
-            `;
+            `);
 
             container.appendChild(toast);
 
@@ -2174,12 +2176,13 @@
         // RENDERIZAR DEFECTOS EN EL DIRECTORIO
         export function renderDefectsList(defects) {
             const container = document.getElementById('defectsContainer');
-            container.innerHTML = "";
+            if (!container) return;
+            container.replaceChildren();
             
             if (defects.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:30px; font-size:0.9rem;">
+                setSafeHTML(container, `<div style="text-align:center; color:var(--text-muted); padding:30px; font-size:0.9rem;">
                                             No se encontraron defectos con ese criterio.
-                                       </div>`;
+                                       </div>`);
                 return;
             }
 
@@ -2196,7 +2199,7 @@
                 // Obtener el HTML del SVG del defecto
                 const svgIllustration = generateDefectIllustration(defect);
 
-                item.innerHTML = `
+                setSafeHTML(item, `
                     <div class="defect-header" onclick="toggleDefectCard(this)">
                         <div class="defect-header-left">
                             <span class="defect-name">${defect.nombre}</span>
@@ -2231,7 +2234,7 @@
                             </div>
                         </div>
                     </div>
-                `;
+                `);
                 container.appendChild(item);
             });
         }
