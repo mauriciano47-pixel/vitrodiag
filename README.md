@@ -12,6 +12,7 @@ Inspección Asistida por IA & Moldería I.S. para Operador de Cristal Chile.
 - **Alimentación Asistida al Banco IA (1-Tap Feed):** Botón directo en cada tarjeta de defecto para catalogar la foto en el Banco de Entrenamiento con etiqueta técnica oficial.
 - **Few-Shot RAG Multimodal:** Inyección de fotos reales de planta en las peticiones de Gemini 2.0 Flash para máxima exactitud en diagnósticos avanzados.
 
-## URL de Producción
+## URL de Producción & Acceso Rápido
 
-<https://mauriciano47-pixel.github.io/vitrodiag/>
+- **Producción Oficial:** <https://mauriciano47-pixel.github.io/vitrodiag/>
+- **URL Corta Directa:** <https://tinyurl.com/vitrodiag>
