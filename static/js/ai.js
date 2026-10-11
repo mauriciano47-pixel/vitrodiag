@@ -31,16 +31,15 @@ let audioCtx = null;
 function initAudioContext() {
     if (audioCtx) {
         if (audioCtx.state === 'suspended') {
-            audioCtx.resume().catch(e => console.log("Error al reanudar AudioContext:", e));
+            audioCtx.resume().catch(() => {});
         }
         return audioCtx;
     }
     try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioCtx();
-        console.log("[Audio] AudioContext global instanciado.");
-    } catch (e) {
-        console.warn("[Audio] Navegador no soporta Web Audio API:", e);
+    } catch {
+        // Fallback silencioso si el navegador bloquea AudioContext
     }
     return audioCtx;
 }
@@ -49,9 +48,7 @@ function initAudioContext() {
 function unlockAudio() {
     const ctx = initAudioContext();
     if (ctx && ctx.state === 'suspended') {
-        ctx.resume().then(() => {
-            console.log("[Audio] AudioContext desbloqueado y reanudado.");
-        });
+        ctx.resume().catch(() => {});
     }
     // Confirmar audio en Safari con un pulso silencioso
     if (ctx) {

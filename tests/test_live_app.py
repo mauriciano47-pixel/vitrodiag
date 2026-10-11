@@ -116,30 +116,33 @@ def test_live_server():
         
     return summary_ok
 
+import unittest
+
+class TestLiveApp(unittest.TestCase):
+    def test_live_app_integrity(self):
+        import http.server
+        import threading
+        import time
+        
+        httpd = None
+        try:
+            urllib.request.urlopen(BASE_URL, timeout=1)  # nosec B310
+        except Exception:
+            class QuietHandler(http.server.SimpleHTTPRequestHandler):
+                def log_message(self, format, *args):
+                    pass
+            httpd = http.server.HTTPServer(('127.0.0.1', 8089), QuietHandler)
+            server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+            server_thread.start()
+            time.sleep(0.5)
+
+        try:
+            success = test_live_server()
+            self.assertTrue(success, "El test de servidor y recursos en vivo falló")
+        finally:
+            if httpd:
+                httpd.shutdown()
 
 if __name__ == "__main__":
-    import http.server
-    import threading
-    import time
-    
-    httpd = None
-    try:
-        urllib.request.urlopen(BASE_URL, timeout=1)  # nosec B310
-    except Exception:
-        print("[MECANICO1] Servidor no detectado. Iniciando servidor efímero en 127.0.0.1:8089...")
-        class QuietHandler(http.server.SimpleHTTPRequestHandler):
-            def log_message(self, format, *args):
-                pass
-        httpd = http.server.HTTPServer(('127.0.0.1', 8089), QuietHandler)
-        server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-        server_thread.start()
-        time.sleep(0.5)
+    unittest.main()
 
-    try:
-        success = test_live_server()
-        if not success:
-            exit(1)
-    finally:
-        if httpd:
-            httpd.shutdown()
-            print("[MECANICO1] Servidor efímero detenido.")

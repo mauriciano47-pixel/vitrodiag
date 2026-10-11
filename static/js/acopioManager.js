@@ -30,7 +30,6 @@ export function initAcopioDB() {
         }
 
         if (typeof window === 'undefined' || !('indexedDB' in window)) {
-            console.warn('[AcopioManager] IndexedDB no soportada, usando LocalStorage fallback.');
             resolve(null);
             return;
         }
@@ -80,8 +79,8 @@ function saveToLocalStorageBackup(record) {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
             } catch (_) {}
         }
-    } catch (e) {
-        console.warn('[AcopioManager] LocalStorage lleno o restringido:', e);
+    } catch (_) {
+        // Fallback silencioso si LocalStorage está deshabilitado
     }
 }
 

@@ -1,0 +1,10 @@
+{
+  "name": "vitrodiag-nexus",
+  "version": "2.4.0",
+  "description": "Plataforma de Diagnóstico Óptico Asistido por IA y Control de Moldería en Máquinas I.S.",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:python": "python -m unittest discover -s tests -p \"test_*.py\""
+  }
+}
