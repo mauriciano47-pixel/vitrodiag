@@ -1,0 +1,6 @@
+---
+exclude_paths:
+  - "db.sqlite3"
+  - "browser_logs.txt"
+  - "*.png"
+  - "*.ico"
