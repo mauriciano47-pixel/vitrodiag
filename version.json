@@ -1,7 +1,7 @@
 {
-  "version": "2.4.0",
-  "buildTime": 1788885000000,
-  "releaseName": "Motor Unificado de Defectos Evidentes & Finos (Fase 1 + 2): Plomada Digital Láser, Detección Local de Calcinados/Pintas y Banco IA Asistido con Few-Shot RAG",
+  "version": "2.4.1",
+  "buildTime": 1792551268980,
+  "releaseName": "VitroDiag v2.4.1 — Estabilización Integral de Módulos ES6, Hardware de Cámara y Desbloqueo de UI",
   "features": [
     "Motor de Plomada Digital Láser con cálculo angular en grados para botellas y cuellos torcidos en <30ms en local",
     "Detector de roturas y desportillados en corona (anillo de boca) y fondo por discontinuidad de silueta",

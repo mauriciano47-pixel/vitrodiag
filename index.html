@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.2.0 — Inspección IA & Moldería Always-Live</title>
+    <title>VitroDiag NEXUS v2.4.1 — Inspección IA & Moldería Always-Live</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -31,8 +31,8 @@
             for (let r of regs) r.unregister();
         });
     }
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.2.0') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.2.0');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.1') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.4.1');
     }
     window.clearAppCache = async function() {
         if ('serviceWorker' in navigator) {
@@ -45,7 +45,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.2.0.');
+        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.1.');
         window.location.reload(true);
     };
 
@@ -2466,7 +2466,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag NEXUS <span class="version-badge">v2.4.0</span></h1>
+        <h1>VitroDiag NEXUS <span class="version-badge">v2.4.1</span></h1>
         <div class="subtitle">Inspección Asistida por IA — Moldería I.S.</div>
     </header>
 

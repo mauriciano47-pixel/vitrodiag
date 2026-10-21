@@ -398,6 +398,14 @@ export function retryCameraPermissions() {
     startDiagnosticCamera(true);
 }
 
+/**
+ * Solicita permisos de cámara directamente o reintenta conexión al hardware.
+ */
+export async function requestCameraPermissionDirectly() {
+    closeCameraPermissionModal();
+    return await startDiagnosticCamera(true);
+}
+
 export async function checkCameraPermissions() {
     if (!navigator.permissions || !navigator.permissions.query) return 'unknown';
     try {
@@ -421,5 +429,6 @@ if (typeof window !== 'undefined') {
     window.openCameraPermissionModal = openCameraPermissionModal;
     window.closeCameraPermissionModal = closeCameraPermissionModal;
     window.retryCameraPermissions = retryCameraPermissions;
+    window.requestCameraPermissionDirectly = requestCameraPermissionDirectly;
     window.checkCameraPermissions = checkCameraPermissions;
 }
