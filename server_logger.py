@@ -1,5 +1,4 @@
 from http.server import HTTPServer, BaseHTTPRequestHandler
-import urllib.parse
 
 class RequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
