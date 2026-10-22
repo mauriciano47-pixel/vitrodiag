@@ -1,5 +1,5 @@
 // scratch/test_fine_defects.js — Pruebas unitarias para el detector de calcinados y defectos finos
-const fs = require('fs');
+import fs from 'fs';
 
 async function testFineDefects() {
     console.log('🧪 Iniciando pruebas de detección de calcinados (fineDefects.js)...\n');

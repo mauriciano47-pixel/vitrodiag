@@ -1,6 +1,6 @@
 // scratch/test_geometry_engine.js — Pruebas unitarias y de estrés para geometry.js
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 // Mock de DOM básico si es necesario
 global.document = {

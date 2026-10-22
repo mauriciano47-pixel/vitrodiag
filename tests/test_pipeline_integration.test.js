@@ -1,5 +1,5 @@
 // scratch/test_pipeline_integration.js — Prueba de integración completa Macro + Defectos Finos (Calcinados)
-const assert = require('assert');
+import assert from 'assert';
 
 async function runIntegrationTest() {
     console.log('🧪 Iniciando prueba de integración Macro (Plomada) + Fine Defects (Calcinados)...\n');
