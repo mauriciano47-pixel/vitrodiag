@@ -4,7 +4,7 @@ from pathlib import Path
 
 BASE_URL = "http://127.0.0.1:8089/"
 
-def test_live_server():
+def _run_live_server_check():
     print("=== MECANICO1: PRUEBA DE SERVIDOR Y RECURSOS EN VIVO ===")
     
     # 1. Fetch index.html
@@ -137,7 +137,7 @@ class TestLiveApp(unittest.TestCase):
             time.sleep(0.5)
 
         try:
-            success = test_live_server()
+            success = _run_live_server_check()
             self.assertTrue(success, "El test de servidor y recursos en vivo falló")
         finally:
             if httpd:
