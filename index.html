@@ -2661,6 +2661,20 @@
             </div>
         </div>
 
+                <!-- BOTONERA DE MUESTRAS RÁPIDAS DE FÁBRICA (TEST MODE) -->
+        <div class="quick-samples-bar" style="display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; padding:10px; background:rgba(15,23,42,0.7); border:1px solid rgba(59,130,246,0.3); border-radius:8px; align-items:center;">
+            <span style="font-size:0.75rem; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:4px; width:100%;">
+                🧪 Probar Sensores con Muestras de Fábrica (1-Tap):
+            </span>
+            <button type="button" class="filter-btn" onclick="window.loadQuickSample('cuerpo_torcido')" style="font-size:0.7rem; padding:4px 8px; border-color:#ef4444; color:#ef4444;" title="Probar Plomada Láser con Botella Torcida">📐 Botella Torcida (4.6°)</button>
+            <button type="button" class="filter-btn" onclick="window.loadQuickSample('cuello_torcido')" style="font-size:0.7rem; padding:4px 8px; border-color:#f59e0b; color:#f59e0b;" title="Probar desviación angular de cuello">📐 Cuello Torcido (4.5°)</button>
+            <button type="button" class="filter-btn" onclick="window.loadQuickSample('boca_rota')" style="font-size:0.7rem; padding:4px 8px; border-color:#ef4444; color:#ef4444;" title="Probar sensor de roturas en corona">💥 Corona Rota</button>
+            <button type="button" class="filter-btn" onclick="window.loadQuickSample('calcinado_cuerpo')" style="font-size:0.7rem; padding:4px 8px; border-color:#38bdf8; color:#38bdf8;" title="Probar sensor de calcinados por grafito">⚫ Calcinado Swabbing</button>
+            <button type="button" class="filter-btn" onclick="window.loadQuickSample('calcinado_boca')" style="font-size:0.7rem; padding:4px 8px; border-color:#38bdf8; color:#38bdf8;" title="Probar calcinado en anillo de boca">⚫ Calcinado Corona</button>
+            <button type="button" class="filter-btn" onclick="window.loadQuickSample('hombro_hundido')" style="font-size:0.7rem; padding:4px 8px; border-color:#eab308; color:#eab308;" title="Probar sensor de asimetría bilateral">⚖️ Hombro Hundido</button>
+            <button type="button" class="filter-btn" onclick="window.loadQuickSample('conforme_ok')" style="font-size:0.7rem; padding:4px 8px; border-color:#10b981; color:#10b981;" title="Probar envase conforme 100%">✅ Envase Conforme</button>
+        </div>
+
         <!-- BOTONES DE DIAGNÓSTICO: INSPECCIÓN MACRO Y PROFUNDA IA -->
         <div class="diag-btn-container">
             <button id="btnRunMacroInspection" class="btn-action btn-nexus-diag btn-nexus-macro" onclick="if(window.nexusRunMacroInspection) window.nexusRunMacroInspection();" title="Medir plomada láser, torcidos, roturas y asimetría en <30ms">
@@ -3180,6 +3194,7 @@
             <div class="dataset-actions-row">
                 <button class="btn-action btn-action-success btn-dataset-flex" id="btnSaveDatasetSample" onclick="window.saveDatasetSample()">💾 Guardar Muestra</button>
                 <button class="btn-action btn-action-alt btn-dataset-flex" id="btnExportDatasetJSON" onclick="window.exportDatasetJSON()">📥 Exportar Dataset (.JSON)</button>
+                <button class="btn-action btn-action-accent btn-dataset-flex" id="btnLoadSeedSamples" onclick="window.loadFactorySeedSamples(true)" title="Carga las 8 fotos de defectos industriales reales de máquina I.S.">🏭 Cargar Muestras de Fábrica</button>
             </div>
         </div>
 
@@ -6674,6 +6689,7 @@
                 </div>
 
                 <div class="sample-modal-actions">
+                    <button class="btn-action btn-action-primary btn-dataset-flex" onclick="window.loadSampleToInspectionVisor(window.currentActiveSampleId)">🔬 Cargar en Visor (Probar Sensor)</button>
                     <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.updateSampleNotesFromModal()">💾 Guardar Notas</button>
                     <button class="btn-action btn-modal-diagnose" onclick="window.analyzeSampleWithGeminiFromModal()">🧠 Diagnosticar con Gemini IA</button>
                     <button class="btn-action btn-action-danger btn-dataset-flex" onclick="window.deleteSampleFromModal()">🗑️ Eliminar</button>

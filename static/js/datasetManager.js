@@ -8,6 +8,7 @@
 import { showToast } from './ui.js';
 import { DEFECTOS_DB } from './db.js';
 import { setSafeHTML } from './domUtils.js';
+import { FACTORY_SEED_SAMPLES, loadFactorySeedSamplesToDB } from './seedDataset.js';
 
 const DB_NAME = 'VitroDiag_DatasetDB';
 const DB_VERSION = 1;
@@ -498,10 +499,89 @@ export async function analyzeSampleWithGeminiFromModal() {
 }
 
 /**
+ * Carga una muestra del banco directamente al visor de inspección principal y ejecuta el sensor de defectos.
+ * @param {string} sampleId 
+ */
+export async function loadSampleToInspectionVisor(sampleId) {
+    try {
+        const samples = await getAllSamples();
+        const sample = samples.find(s => s.id === sampleId) || FACTORY_SEED_SAMPLES.find(s => s.id === sampleId);
+        if (!sample || !sample.fotoBase64) return;
+
+        closeSampleModal();
+
+        // 1. Cambiar a la vista de inspección en vivo
+        if (typeof window.switchView === 'function') {
+            await window.switchView('live');
+        }
+
+        // 2. Colocar la imagen en el visor principal
+        window.nexusCurrentImageBase64 = sample.fotoBase64;
+        const previewImg = document.getElementById('nexusPreviewImg');
+        const placeholder = document.getElementById('nexusPlaceholder');
+        const webcamVideo = document.getElementById('webcam');
+        const bboxCanvas = document.getElementById('nexusBboxCanvas');
+        const btnDiagnose = document.getElementById('btnRunDiagnosis');
+
+        if (webcamVideo) webcamVideo.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'none';
+        if (bboxCanvas) bboxCanvas.style.display = 'none';
+
+        if (previewImg) {
+            previewImg.src = sample.fotoBase64;
+            previewImg.style.display = 'block';
+        }
+
+        if (btnDiagnose) {
+            btnDiagnose.disabled = false;
+            btnDiagnose.style.opacity = '1';
+        }
+
+        // 3. Ejecutar automáticamente la inspección local (Plomada Láser + Sensor de Calcinados)
+        if (typeof window.nexusRunMacroInspection === 'function') {
+            setTimeout(() => {
+                window.nexusRunMacroInspection();
+            }, 120);
+        }
+
+        showToast(`Muestra cargada: ${sample.defectoNombre}. Plomada láser y sensores activos.`, 'success');
+
+        const visor = document.getElementById('nexusPreviewArea');
+        if (visor) visor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (err) {
+        console.error('[DatasetManager] Error cargando muestra a visor:', err);
+    }
+}
+
+/**
+ * Carga rápida de una muestra de fábrica por su clave de defecto (Test Mode 1-Tap).
+ * @param {string} defectKey 
+ */
+export function loadQuickSample(defectKey) {
+    const sample = FACTORY_SEED_SAMPLES.find(s => s.defectoId === defectKey || s.id.includes(defectKey));
+    if (sample) {
+        loadSampleToInspectionVisor(sample.id);
+    } else {
+        showToast(`Muestra para "${defectKey}" no encontrada en el banco semilla.`, 'warning');
+    }
+}
+
+/**
  * Inicializa los controladores de UI y eventos globales para la gestión del banco de entrenamiento.
  */
-export function initDatasetUI() {
+export async function initDatasetUI() {
     populateDatasetSelect();
+
+    // Auto-cargar las 8 muestras de fábrica si el banco está completamente vacío
+    try {
+        const samples = await getAllSamples();
+        if (samples.length === 0) {
+            await loadFactorySeedSamplesToDB(false);
+        }
+    } catch (e) {
+        console.warn('[DatasetManager] Error en auto-carga de muestras semilla:', e);
+    }
+
     renderDatasetGallery();
 
     // Exponer funciones al ámbito global (window) para compatibilidad con eventos inline del HTML
@@ -515,6 +595,13 @@ export function initDatasetUI() {
     window.updateSampleNotesFromModal = updateSampleNotesFromModal;
     window.deleteSampleFromModal = deleteSampleFromModal;
     window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
+    window.loadSampleToInspectionVisor = loadSampleToInspectionVisor;
+    window.loadQuickSample = loadQuickSample;
+    window.loadFactorySeedSamples = async (force = true) => {
+        const count = await loadFactorySeedSamplesToDB(force);
+        await renderDatasetGallery();
+        showToast(`Cargadas ${count || 8} muestras industriales oficiales al Banco IA.`, 'success');
+    };
 
     window.deleteDatasetSample = async (sampleId) => {
         await deleteSample(sampleId);
@@ -535,6 +622,13 @@ if (typeof window !== 'undefined') {
     window.updateSampleNotesFromModal = updateSampleNotesFromModal;
     window.deleteSampleFromModal = deleteSampleFromModal;
     window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
+    window.loadSampleToInspectionVisor = loadSampleToInspectionVisor;
+    window.loadQuickSample = loadQuickSample;
+    window.loadFactorySeedSamples = async (force = true) => {
+        const count = await loadFactorySeedSamplesToDB(force);
+        await renderDatasetGallery();
+        showToast(`Cargadas ${count || 8} muestras industriales oficiales al Banco IA.`, 'success');
+    };
 }
 
 
