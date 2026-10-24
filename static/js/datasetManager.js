@@ -557,6 +557,33 @@ export async function loadSampleToInspectionVisor(sampleId) {
  * Carga rápida de una muestra de fábrica por su clave de defecto (Test Mode 1-Tap).
  * @param {string} defectKey 
  */
+/**
+ * Descarga la fotografía de la muestra abierta actualmente en el modal.
+ */
+export async function downloadCurrentSamplePhoto() {
+    try {
+        if (!currentActiveSampleId) return;
+        const samples = await getAllSamples();
+        const sample = samples.find(s => s.id === currentActiveSampleId);
+        if (!sample || !sample.fotoBase64) {
+            showToast('No se encontró la foto para descargar.', 'warning');
+            return;
+        }
+        const link = document.createElement('a');
+        link.href = sample.fotoBase64;
+        const ext = sample.fotoBase64.startsWith('data:image/png') ? 'png' : 'jpg';
+        const filename = `${sample.defectoId || "defecto"}_${(sample.zona || "envase").toLowerCase()}.${ext}`;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`Descargando foto: ${filename}`, "success");
+    } catch (err) {
+        console.error('[DatasetManager] Error descargando foto:', err);
+        showToast('Error al descargar la foto.', 'danger');
+    }
+}
+
 export function loadQuickSample(defectKey) {
     const sample = FACTORY_SEED_SAMPLES.find(s => s.defectoId === defectKey || s.id.includes(defectKey));
     if (sample) {
@@ -597,6 +624,7 @@ export async function initDatasetUI() {
     window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
     window.loadSampleToInspectionVisor = loadSampleToInspectionVisor;
     window.loadQuickSample = loadQuickSample;
+    window.downloadCurrentSamplePhoto = downloadCurrentSamplePhoto;
     window.loadFactorySeedSamples = async (force = true) => {
         const count = await loadFactorySeedSamplesToDB(force);
         await renderDatasetGallery();
@@ -624,6 +652,7 @@ if (typeof window !== 'undefined') {
     window.analyzeSampleWithGeminiFromModal = analyzeSampleWithGeminiFromModal;
     window.loadSampleToInspectionVisor = loadSampleToInspectionVisor;
     window.loadQuickSample = loadQuickSample;
+    window.downloadCurrentSamplePhoto = downloadCurrentSamplePhoto;
     window.loadFactorySeedSamples = async (force = true) => {
         const count = await loadFactorySeedSamplesToDB(force);
         await renderDatasetGallery();

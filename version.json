@@ -1,14 +1,13 @@
 {
-  "version": "2.4.1",
-  "buildTime": 1792551268980,
-  "releaseName": "VitroDiag v2.4.1 — Estabilización Integral de Módulos ES6, Hardware de Cámara y Desbloqueo de UI",
+  "version": "2.4.2",
+  "buildTime": 1792796400000,
+  "releaseName": "VitroDiag v2.4.2 — Banco de Defectos Industriales Oficiales (Fábrica + MVTec AD) y Descarga Integrada",
   "features": [
-    "Motor de Plomada Digital Láser con cálculo angular en grados para botellas y cuellos torcidos en <30ms en local",
-    "Detector de roturas y desportillados en corona (anillo de boca) y fondo por discontinuidad de silueta",
-    "Inspector de asimetría bilateral de silueta y hombros con HUD Cyber-Obsidian interactivo",
-    "Motor Local de Defectos Finos y Texturales: escaneo continuo en Y y clústering de calcinados (grasa/grafito quemado) y piedras",
-    "Miras tácticas circulares y en cruz sobre puntos calcinados con clasificación zonal (Boca, Cuello, Hombro, Cuerpo, Fondo)",
-    "Flujo Asistido de Alimentación al Banco de Entrenamiento IA con 1-tap directo desde cada defecto detectado",
-    "Inyección Few-Shot RAG multimodal enriquecida para calibración offline/online de Gemini 2.0 Flash"
+    "Integración de 20 muestras fotográficas certificadas de defectos industriales (8 NNPB/Blow-Blow de moldería I.S. + 12 MVTec AD Bottle Benchmark)",
+    "Descarga directa de paquete completo (.ZIP) de fotos desde la interfaz de Banco IA",
+    "Descarga individual de fotografía y metadatos desde el modal interactivo de inspección",
+    "Barra de pruebas táctiles 1-Tap en visor de cámara con acceso instantáneo a muestras de defectos reales y de fábrica",
+    "Carpeta local organizada en Escritorio con guía técnica de subida (00_GUIA_SUBIDA_BANCO_IA.txt)",
+    "Eliminación del 100% de inline styles y cumplimiento estricto de accesibilidad y Zero-Warning Standard"
   ]
 }

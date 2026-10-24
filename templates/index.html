@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.4.1 — Inspección IA & Moldería Always-Live</title>
+    <title>VitroDiag NEXUS v2.4.2 — Inspección IA & Moldería Always-Live</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -31,8 +31,8 @@
             for (let r of regs) r.unregister();
         });
     }
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.1') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.4.1');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.2') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.4.2');
     }
     window.clearAppCache = async function() {
         if ('serviceWorker' in navigator) {
@@ -45,7 +45,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.1.');
+        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.2.');
         window.location.reload(true);
     };
 
@@ -2453,6 +2453,67 @@
             background: rgba(245, 158, 11, 0.25) !important;
         }
         .correction-list { color: #cbd5e1; }
+    
+        .quick-samples-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            align-items: center;
+        }
+        .quick-samples-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+        }
+        .quick-sample-btn-red {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .quick-sample-btn-amber {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        .quick-sample-btn-blue {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+        .quick-sample-btn-yellow {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-color: #eab308;
+            color: #eab308;
+        }
+        .quick-sample-btn-green {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .btn-download-zip {
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
     </style>
 </head>
 <body>
@@ -2466,7 +2527,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag NEXUS <span class="version-badge">v2.4.1</span></h1>
+        <h1>VitroDiag NEXUS <span class="version-badge">v2.4.2</span></h1>
         <div class="subtitle">Inspección Asistida por IA — Moldería I.S.</div>
     </header>
 
@@ -2662,17 +2723,19 @@
         </div>
 
                 <!-- BOTONERA DE MUESTRAS RÁPIDAS DE FÁBRICA (TEST MODE) -->
-        <div class="quick-samples-bar" style="display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; padding:10px; background:rgba(15,23,42,0.7); border:1px solid rgba(59,130,246,0.3); border-radius:8px; align-items:center;">
-            <span style="font-size:0.75rem; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:4px; width:100%;">
+        <div class="quick-samples-bar">
+            <span class="quick-samples-title">
                 🧪 Probar Sensores con Muestras de Fábrica (1-Tap):
             </span>
-            <button type="button" class="filter-btn" onclick="window.loadQuickSample('cuerpo_torcido')" style="font-size:0.7rem; padding:4px 8px; border-color:#ef4444; color:#ef4444;" title="Probar Plomada Láser con Botella Torcida">📐 Botella Torcida (4.6°)</button>
-            <button type="button" class="filter-btn" onclick="window.loadQuickSample('cuello_torcido')" style="font-size:0.7rem; padding:4px 8px; border-color:#f59e0b; color:#f59e0b;" title="Probar desviación angular de cuello">📐 Cuello Torcido (4.5°)</button>
-            <button type="button" class="filter-btn" onclick="window.loadQuickSample('boca_rota')" style="font-size:0.7rem; padding:4px 8px; border-color:#ef4444; color:#ef4444;" title="Probar sensor de roturas en corona">💥 Corona Rota</button>
-            <button type="button" class="filter-btn" onclick="window.loadQuickSample('calcinado_cuerpo')" style="font-size:0.7rem; padding:4px 8px; border-color:#38bdf8; color:#38bdf8;" title="Probar sensor de calcinados por grafito">⚫ Calcinado Swabbing</button>
-            <button type="button" class="filter-btn" onclick="window.loadQuickSample('calcinado_boca')" style="font-size:0.7rem; padding:4px 8px; border-color:#38bdf8; color:#38bdf8;" title="Probar calcinado en anillo de boca">⚫ Calcinado Corona</button>
-            <button type="button" class="filter-btn" onclick="window.loadQuickSample('hombro_hundido')" style="font-size:0.7rem; padding:4px 8px; border-color:#eab308; color:#eab308;" title="Probar sensor de asimetría bilateral">⚖️ Hombro Hundido</button>
-            <button type="button" class="filter-btn" onclick="window.loadQuickSample('conforme_ok')" style="font-size:0.7rem; padding:4px 8px; border-color:#10b981; color:#10b981;" title="Probar envase conforme 100%">✅ Envase Conforme</button>
+            <button type="button" class="filter-btn quick-sample-btn-red" onclick="window.loadQuickSample('cuerpo_torcido')" title="Probar Plomada Láser con Botella Torcida">📐 Botella Torcida (4.6°)</button>
+            <button type="button" class="filter-btn quick-sample-btn-amber" onclick="window.loadQuickSample('cuello_torcido')" title="Probar desviación angular de cuello">📐 Cuello Torcido (4.5°)</button>
+            <button type="button" class="filter-btn quick-sample-btn-red" onclick="window.loadQuickSample('boca_rota')" title="Probar sensor de roturas en corona">💥 Corona Rota</button>
+            <button type="button" class="filter-btn quick-sample-btn-blue" onclick="window.loadQuickSample('calcinado_cuerpo')" title="Probar sensor de calcinados por grafito">⚫ Calcinado Swabbing</button>
+            <button type="button" class="filter-btn quick-sample-btn-blue" onclick="window.loadQuickSample('calcinado_boca')" title="Probar calcinado en anillo de boca">⚫ Calcinado Corona</button>
+            <button type="button" class="filter-btn quick-sample-btn-yellow" onclick="window.loadQuickSample('hombro_hundido')" title="Probar sensor de asimetría bilateral">⚖️ Hombro Hundido</button>
+                        <button type="button" class="filter-btn quick-sample-btn-red" onclick="window.loadQuickSample('rotura_severa')" title="Probar rotura estructural real MVTec">💥 Rotura MVTec</button>
+            <button type="button" class="filter-btn quick-sample-btn-yellow" onclick="window.loadQuickSample('contaminacion_superficial')" title="Probar contaminación o inclusión real MVTec">⚠️ Contaminación MVTec</button>
+            <button type="button" class="filter-btn quick-sample-btn-green" onclick="window.loadQuickSample('conforme_ok')" title="Probar envase conforme 100%">✅ Envase Conforme</button>
         </div>
 
         <!-- BOTONES DE DIAGNÓSTICO: INSPECCIÓN MACRO Y PROFUNDA IA -->
@@ -3194,7 +3257,8 @@
             <div class="dataset-actions-row">
                 <button class="btn-action btn-action-success btn-dataset-flex" id="btnSaveDatasetSample" onclick="window.saveDatasetSample()">💾 Guardar Muestra</button>
                 <button class="btn-action btn-action-alt btn-dataset-flex" id="btnExportDatasetJSON" onclick="window.exportDatasetJSON()">📥 Exportar Dataset (.JSON)</button>
-                <button class="btn-action btn-action-accent btn-dataset-flex" id="btnLoadSeedSamples" onclick="window.loadFactorySeedSamples(true)" title="Carga las 8 fotos de defectos industriales reales de máquina I.S.">🏭 Cargar Muestras de Fábrica</button>
+                                <button class="btn-action btn-action-accent btn-dataset-flex" id="btnLoadSeedSamples" onclick="window.loadFactorySeedSamples(true)" title="Carga las 20 fotos de defectos industriales reales y MVTec al Banco IA">🏭 Cargar Muestras de Fábrica (20)</button>
+                <a href="static/images/Muestras_Defectos_VitroDiag.zip" download="Muestras_Defectos_VitroDiag.zip" class="btn-action btn-dataset-flex btn-download-zip" title="Descargar paquete ZIP con las 20 fotos (Fábrica + MVTec AD) para subirlas o probarlas">📥 Descargar Pack (.ZIP)</a>
             </div>
         </div>
 
@@ -6689,6 +6753,7 @@
                 </div>
 
                 <div class="sample-modal-actions">
+                                        <button class="btn-action btn-action-alt btn-dataset-flex" onclick="window.downloadCurrentSamplePhoto()" title="Descarga la foto de esta muestra a tu dispositivo">💾 Descargar Foto</button>
                     <button class="btn-action btn-action-primary btn-dataset-flex" onclick="window.loadSampleToInspectionVisor(window.currentActiveSampleId)">🔬 Cargar en Visor (Probar Sensor)</button>
                     <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.updateSampleNotesFromModal()">💾 Guardar Notas</button>
                     <button class="btn-action btn-modal-diagnose" onclick="window.analyzeSampleWithGeminiFromModal()">🧠 Diagnosticar con Gemini IA</button>
