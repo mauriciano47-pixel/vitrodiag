@@ -1,13 +1,13 @@
 {
-  "version": "2.4.2",
-  "buildTime": 1792796400000,
-  "releaseName": "VitroDiag v2.4.2 — Banco de Defectos Industriales Oficiales (Fábrica + MVTec AD) y Descarga Integrada",
+  "version": "2.4.3",
+  "buildTime": 1792877500000,
+  "releaseName": "VitroDiag v2.4.3 — Catálogo Fotográfico Industrial Réflex (Perfil Real) y Purga de MVTec",
   "features": [
-    "Integración de 20 muestras fotográficas certificadas de defectos industriales (8 NNPB/Blow-Blow de moldería I.S. + 12 MVTec AD Bottle Benchmark)",
-    "Descarga directa de paquete completo (.ZIP) de fotos desde la interfaz de Banco IA",
-    "Descarga individual de fotografía y metadatos desde el modal interactivo de inspección",
-    "Barra de pruebas táctiles 1-Tap en visor de cámara con acceso instantáneo a muestras de defectos reales y de fábrica",
-    "Carpeta local organizada en Escritorio con guía técnica de subida (00_GUIA_SUBIDA_BANCO_IA.txt)",
-    "Eliminación del 100% de inline styles y cumplimiento estricto de accesibilidad y Zero-Warning Standard"
+    "Reemplazo total de vistas cenitales abstractas MVTec por 8 fotografías DSLR de alta fidelidad en perfil lateral completo",
+    "Visualización nítida de anatomía de envase ámbar (corona, cuello, hombro, cuerpo y fondo) y defectos evidentes de moldería I.S.",
+    "Auto-purga proactiva de registros obsoletos de MVTec en IndexedDB al pulsar 'Cargar Muestras de Fábrica'",
+    "Actualización del paquete de descarga Muestras_Defectos_VitroDiag.zip (516 KB) en Escritorio y web pública",
+    "Botonera 1-Tap sincronizada con las nuevas capturas de calidad réflex en mesa de inspección de acero inoxidable",
+    "Cumplimiento 100% de tests unitarios y estándares Zero-Warning en todo el codebase"
   ]
 }
