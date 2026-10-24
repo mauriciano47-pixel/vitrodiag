@@ -31,8 +31,14 @@
             for (let r of regs) r.unregister();
         });
     }
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.2') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.4.2');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.4') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.4.4');
+        if ('indexedDB' in window) {
+            try {
+                window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
+                console.log('[Always-Live] BD IndexedDB antigua de muestras MVTec purgada por actualización v2.4.4.');
+            } catch(e) {}
+        }
     }
     window.clearAppCache = async function() {
         if ('serviceWorker' in navigator) {
@@ -43,9 +49,14 @@
             const keys = await caches.keys();
             for (let k of keys) await caches.delete(k);
         }
+        if ('indexedDB' in window) {
+            try {
+                window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
+            } catch(e) {}
+        }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.2.');
+        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.4.');
         window.location.reload(true);
     };
 

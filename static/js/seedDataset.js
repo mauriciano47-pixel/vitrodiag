@@ -16,8 +16,8 @@ export async function loadFactorySeedSamplesToDB(forceReload = false) {
         if (!db) return 0;
 
         const current = await getAllSamples();
-        // Si se fuerza o si tiene muestras antiguas (como las cenitales de MVTec), purgar y recargar
-        if (current.length > 0 && !forceReload && !current.some(s => s.id && s.id.includes('mvtec'))) {
+        const hasLegacy = current.some(s => s.id && (s.id.includes('mvtec') || (s.defectoNombre && s.defectoNombre.includes('MVTec')))) || (current.length > 0 && current.length !== FACTORY_SEED_SAMPLES.length);
+        if (current.length === FACTORY_SEED_SAMPLES.length && !forceReload && !hasLegacy) {
             return 0;
         }
 

@@ -11,7 +11,7 @@ import { setSafeHTML } from './domUtils.js';
 import { FACTORY_SEED_SAMPLES, loadFactorySeedSamplesToDB } from './seedDataset.js';
 
 const DB_NAME = 'VitroDiag_DatasetDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_SAMPLES = 'samples';
 
 let dbInstance = null;
@@ -37,7 +37,13 @@ export function initDatasetDB() {
 
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_SAMPLES)) {
+            if (db.objectStoreNames.contains(STORE_SAMPLES)) {
+                // Migración v2: purgar automáticamente para erradicar cualquier residuo de tomas cenitales MVTec
+                const tx = event.target.transaction;
+                const store = tx.objectStore(STORE_SAMPLES);
+                store.clear();
+                console.log('[DatasetManager] DB v2 migración: almacén de muestras limpiado de registros antiguos.');
+            } else {
                 const store = db.createObjectStore(STORE_SAMPLES, { keyPath: 'id' });
                 store.createIndex('defectoId', 'defectoId', { unique: false });
                 store.createIndex('zona', 'zona', { unique: false });
@@ -599,11 +605,16 @@ export function loadQuickSample(defectKey) {
 export async function initDatasetUI() {
     populateDatasetSelect();
 
-    // Auto-cargar las 8 muestras de fábrica si el banco está completamente vacío
+    // Auto-migración y carga de las 8 muestras de fábrica reales (perfil lateral)
     try {
         const samples = await getAllSamples();
-        if (samples.length === 0) {
-            await loadFactorySeedSamplesToDB(false);
+        const hasLegacyMvtec = samples.some(s => s.id && (s.id.includes('mvtec') || (s.defectoNombre && s.defectoNombre.includes('MVTec'))));
+        const hasLegacyCount = samples.length === 20 || (samples.length > 0 && samples.length !== 8);
+        const hasLegacySynthetic = samples.some(s => s.id && s.id.startsWith('seed_') && s.fotoBase64 && s.fotoBase64.length < 50000);
+
+        if (samples.length === 0 || hasLegacyMvtec || hasLegacyCount || hasLegacySynthetic) {
+            console.log('[DatasetManager] Muestras obsoletas detectadas. Ejecutando purga y carga de 8 fotos oficiales...');
+            await loadFactorySeedSamplesToDB(true);
         }
     } catch (e) {
         console.warn('[DatasetManager] Error en auto-carga de muestras semilla:', e);

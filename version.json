@@ -1,13 +1,12 @@
 {
-  "version": "2.4.3",
-  "buildTime": 1792877500000,
-  "releaseName": "VitroDiag v2.4.3 — Catálogo Fotográfico Industrial Réflex (Perfil Real) y Purga de MVTec",
+  "version": "2.4.4",
+  "buildTime": 1792882608924,
+  "releaseName": "VitroDiag v2.4.4 — Auto-Purga Obligatoria IndexedDB (v2) y Carga de Fotos Réflex de Perfil",
   "features": [
-    "Reemplazo total de vistas cenitales abstractas MVTec por 8 fotografías DSLR de alta fidelidad en perfil lateral completo",
-    "Visualización nítida de anatomía de envase ámbar (corona, cuello, hombro, cuerpo y fondo) y defectos evidentes de moldería I.S.",
-    "Auto-purga proactiva de registros obsoletos de MVTec en IndexedDB al pulsar 'Cargar Muestras de Fábrica'",
-    "Actualización del paquete de descarga Muestras_Defectos_VitroDiag.zip (516 KB) en Escritorio y web pública",
-    "Botonera 1-Tap sincronizada con las nuevas capturas de calidad réflex en mesa de inspección de acero inoxidable",
-    "Cumplimiento 100% de tests unitarios y estándares Zero-Warning en todo el codebase"
+    "Migración forzada de base de datos local IndexedDB a versión 2 con erradicación automática de registros MVTec cenitales",
+    "Carga inmediata y sin intervención manual de las 8 fotografías DSLR oficiales de fábrica (perfil lateral en mesa de acero)",
+    "Validación de conteo estricto (8 muestras) en datasetManager.js impidiendo la visualización de datasets obsoletos",
+    "Soporte de purga profunda en clearAppCache eliminando almacenamiento IndexedDB persistente",
+    "Pase exitoso del 100% de tests unitarios y estándares Zero-Warning"
   ]
 }
