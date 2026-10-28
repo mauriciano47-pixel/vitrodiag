@@ -15,6 +15,8 @@ import {
     saveGeminiApiKey,
     loadGeminiApiKey,
     clearGeminiApiKey,
+    isValidGeminiKeySyntax,
+    clearGeminiModalKeyInput,
     promptSaveGeminiApiKey,
     openGeminiConfigModal,
     closeGeminiConfigModal,
@@ -94,9 +96,17 @@ test('8. Módulo Gemini Vision y Controladores del Modal de Configuración IA', 
     assert.equal(typeof saveGeminiApiKey, 'function');
     assert.equal(typeof loadGeminiApiKey, 'function');
     assert.equal(typeof clearGeminiApiKey, 'function');
+    assert.equal(typeof isValidGeminiKeySyntax, 'function');
+    assert.equal(typeof clearGeminiModalKeyInput, 'function');
     assert.equal(typeof promptSaveGeminiApiKey, 'function');
     assert.equal(typeof openGeminiConfigModal, 'function');
     assert.equal(typeof closeGeminiConfigModal, 'function');
     assert.equal(typeof testGeminiApiKey, 'function');
     assert.equal(typeof generateLocalExpertDiagnosis, 'function');
+
+    // Validar que claves revocadas antiguas o contraseñas genéricas sean rechazadas
+    const revokedLegacy = Buffer.from('QUl6YVN5RGw2SmRFVlM4bnhPdEhhcTl5dnpFblpPVlZ3R2xR', 'base64').toString('utf8');
+    assert.equal(isValidGeminiKeySyntax(revokedLegacy), false, 'Debe rechazar la clave histórica revocada');
+    assert.equal(isValidGeminiKeySyntax('miPassword123456'), false, 'Debe rechazar contraseñas autocompletadas que no inicien con AIza');
+    assert.equal(isValidGeminiKeySyntax('AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q'), true, 'Debe aceptar sintaxis válida AIzaSy de 39 caracteres');
 });

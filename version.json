@@ -1,12 +1,12 @@
 {
-  "version": "2.4.7",
-  "buildTime": 1793198574716,
-  "releaseName": "VitroDiag v2.4.7 — Reparación de Sintaxis ESM en geminiVision.js y Nuevo Modal Interactivo de Configuración Gemini IA",
+  "version": "2.4.8",
+  "buildTime": 1793209800000,
+  "releaseName": "VitroDiag v2.4.8 — Auto-Purga de Claves Revocadas, Auto-Conmutación a Motor Local Experto y Alto Contraste en Modal Gemini IA",
   "features": [
-    "Corrección de llave de cierre huérfana (SyntaxError línea 57) en static/js/geminiVision.js que impedía la carga del módulo en navegador",
-    "Nuevo Modal Interactivo de Configuración Gemini IA (#geminiConfigModal) bajo el estándar Form Shield (Zero Modal Jail), reemplazando el bloqueante window.prompt()",
-    "Verificador de API Key en vivo integrado dentro del modal con reporte de latencia y botón de 1 clic para operar en Modo Local Experto Cristalerías de Chile",
-    "Controladores defensivos inline en index.html garantizando respuesta instantánea del botón Configurar Gemini IA en cualquier milisegundo de carga",
-    "Suite de pruebas ampliada con validación directa de importación ESM de geminiVision.js y geminiUI.js"
+    "Purga automática de claves históricas revocadas (HTTP 400 API_KEY_INVALID) y contraseñas autocompletadas en localStorage",
+    "Auto-saneamiento inmediato cuando Google AI Studio rechaza una clave: limpia localStorage y conmuta sin interrupción al Motor Local Experto Cristalerías de Chile",
+    "Botón directo '🔑 Paso 1: Crear Clave Gratis en Google AI Studio ↗' y botón de limpieza rápida '🧹' en el modal #geminiConfigModal",
+    "Corrección de contraste Cyber-Obsidian en botones del modal para visibilidad nítida en monitores industriales sin sobreexposición luminosa",
+    "Eliminación de ícono duplicado (❌ ❌) en mensajes de validación del modal"
   ]
 }
