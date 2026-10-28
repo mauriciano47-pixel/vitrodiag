@@ -514,16 +514,9 @@ export async function nexusDiagnoseWithAI() {
     const btnDiagnose = document.getElementById('btnRunDiagnosis') || document.getElementById('btnNexusDiagnose');
     const resultCard = document.getElementById('resultadoCard') || document.getElementById('nexusResultCard');
 
-    // Si aún no hay clave configurada, mostrar tarjeta de inspección lista y pedir clave amistosamente
-    if (!state.geminiApiKey) {
-        renderPreliminaryInspectionCard();
-        showToast("📸 Foto guardada. Configura tu API Key para análisis IA completo.", "info");
-        return;
-    }
-
     if (btnDiagnose) {
         btnDiagnose.disabled = true;
-        btnDiagnose.innerHTML = '⏳ Analizando con Gemini 2.0 Flash...';
+        btnDiagnose.innerHTML = state.geminiApiKey ? '⏳ Analizando con Gemini Vision...' : '⚡ Analizando con Motor Experto Local...';
         btnDiagnose.style.opacity = '0.6';
     }
     

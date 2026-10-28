@@ -498,5 +498,225 @@ export const DEFECTOS_CUERPO = [
                     "Reemplazar o limpiar los insertos del empujador.",
                     "Suavizar el perfil de movimiento neumático."
                 ]
-            }
+            },
+// === DEFECTOS OFICIALES CRISTALERÍAS DE CHILE S.A. (CUERPO Y HOMBRO) ===
+    {
+        id: "columpio_cuerpo",
+        nombre: "Columpio Cuerpo (Birdswing / Birdcage)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Presencia de un hilo de vidrio adherido en sus extremos a la pared interna del cuerpo del envase, suspendido transversalmente. Defecto crítico de seguridad alimentaria (AQL 0.0%) de descarte inmediato.",
+        causas: [
+            "Lubricación inadecuada o excesiva en premoldes, moldes y fondos (hisopo grande o cargado que emite vapores que colapsan el parison).",
+            "Vidrio en perforaciones de contrasoplo del macho (pérdida de flujo de contrasoplo).",
+            "Presión de contrasoplo demasiado baja o débil.",
+            "Inicio del soplado final demasiado tarde.",
+            "Fuga de aire en sistema Vertiflow en la placa de fondo.",
+            "Temporización de transferencia vs cierre de molde muy estrecha (parison golpea el molde de hierro)."
+        ],
+        acciones: [
+            "Reducir carga de hisopo y usar lubricación seca.",
+            "Revisar y destapar orificios de contrasoplo en el macho.",
+            "Ajustar altura de toberas de ventilación para no soplar bajo el borde del molde.",
+            "Adelantar soplado final para evitar colapso del parison durante el recalentamiento.",
+            "Aplicar Counter Blow Puff para estabilizar el parison en la inversión.",
+            "Rechazar inmediatamente en caliente y notificar de urgencia a supervisión."
+        ]
+    },
+    {
+        id: "hundido_cuerpo",
+        nombre: "Hundido Cuerpo (Sunken Side)",
+        zona: "cuerpo",
+        gravedad: "Mayor",
+        descripcion: "Hundimiento cóncavo localizado en uno de los costados del cuerpo del envase. Altera la geometría normal, reduce la capacidad volumétrica y genera fallas en el etiquetado.",
+        causas: [
+            "Desigualdad en la ventilación del molde de soplado o de la plancha muerta.",
+            "Tiempo de molde insuficiente o evacuación desigual de calor en el lado parisón.",
+            "Escapes de aire de la cabeza sopladora o de los moldes inadecuados.",
+            "Barredor fuera de posición o mantención de sacadora demasiado prolongada."
+        ],
+        acciones: [
+            "Equilibrar el caudal de ventilación entre ambas mitades del molde.",
+            "Limpiar orificios y canales de escape en molde y cabeza sopladora.",
+            "Ajustar la altura de la torre de ventilación del molde.",
+            "Alinear el barredor sobre la plancha muerta y regular temporización de sacadora."
+        ]
+    },
+    {
+        id: "perpendicularidad",
+        nombre: "Perpendicularidad (Leaner / Botella Inclinada)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Desviación del centro de la boca respecto a la línea vertical perpendicular que atraviesa el centro del fondo del envase. Puede provocar aplastamiento o rotura en los cabezales de llenado en fábrica embotelladora.",
+        causas: [
+            "Tiempo insuficiente de permanencia en el molde o soplado final débil.",
+            "Circulación de aire de soplado final insuficiente a través de la botella.",
+            "Botella no se sostiene derecha con la pinza de la sacadora.",
+            "Enfriamiento deficiente sobre la plancha muerta.",
+            "Temporización del barredor demasiado adelantada empujando la botella caliente."
+        ],
+        acciones: [
+            "Aumentar el tiempo de soplado final para fijar la verticalidad del envase.",
+            "Calibrar pinzas de la sacadora para tomar el envase rigurosamente derecho.",
+            "Verificar y destapar ductos de aire comprimido de ventilación de moldes.",
+            "Ajustar tiempo de enfriamiento en plancha muerta antes del barrido hacia el conveyor."
+        ]
+    },
+    {
+        id: "costura_molde_cuerpo",
+        nombre: "Costura Molde Cuerpo (Prominent Mould Seam)",
+        zona: "cuerpo",
+        gravedad: "Mayor",
+        descripcion: "Protuberancia continua de vidrio ubicada en la línea de partición longitudinal del molde del envase. Afecta la estética y puede concentrar tensiones mecánicas durante el llenado.",
+        causas: [
+            "Bisagra del molde gastada con juego lateral.",
+            "Pasadores o bieletas gastadas en el mecanismo de apertura y cierre de molde.",
+            "Presión de soplado final excesiva que abre las mitades del molde.",
+            "Acumulación de suciedad o carbón de grafito en la costura del molde."
+        ],
+        acciones: [
+            "Reemplazar pasadores y bieletas con holgura en el lado molde.",
+            "Limpiar minuciosamente las caras de unión y costuras del molde.",
+            "Regular la comba del molde y ajustar el encastre entre el molde y el fondo.",
+            "Reducir la presión del soplado final a los valores nominales."
+        ]
+    },
+    {
+        id: "costura_parison_cuerpo",
+        nombre: "Costura Parisón Cuerpo",
+        zona: "cuerpo",
+        gravedad: "Mayor",
+        descripcion: "Protuberancia de vidrio en la zona de la costura del parisón en el cuerpo del envase. A diferencia de la costura de molde, no presenta superficie lisa y corre paralela a esta.",
+        causas: [
+            "Premoldes mal cerrados o con acumulación de grafito en los encastres.",
+            "Bisagra de premolde con pasadores o bieletas desgastadas.",
+            "Tiempo o presión de cierre de premolde insuficiente al recibir la gota."
+        ],
+        acciones: [
+            "Limpiar residuos de grafito quemado en las caras de cierre del premolde.",
+            "Ajustar tensión y juego de cierre en el mecanismo de premolde.",
+            "Revisar bujes y pasadores del brazo porta premoldes."
+        ]
+    },
+    {
+        id: "cuerpo_martelado",
+        nombre: "Cuerpo Martelado (Cold Mould / Piel de Naranja)",
+        zona: "cuerpo",
+        gravedad: "Menor",
+        descripcion: "Superficie del cuerpo con aspecto martillado, ondulado o rugoso. Se produce cuando el vidrio o el molde operan por debajo de la temperatura de brillo.",
+        causas: [
+            "Ventilación excesiva sobre el molde o premolde.",
+            "Velocidad de la máquina demasiado lenta para la masa térmica de moldería.",
+            "Tiempo de parisón excesivo o insuficiente recalentamiento de la vela.",
+            "Vidrio frío procedente del canal alimentador."
+        ],
+        acciones: [
+            "Reducir el viento de refrigeración en los moldes de soplado.",
+            "Ajustar la velocidad de la máquina a la curva de producción del artículo.",
+            "Permitir mayor tiempo de recalentamiento del parisón antes del soplado final.",
+            "Verificar temperatura de gota en el alimentador."
+        ]
+    },
+    {
+        id: "calcinado_grabado",
+        nombre: "Calcinado en el Grabado (Letter Checks / Pressure Checks)",
+        zona: "cuerpo",
+        gravedad: "Mayor",
+        descripcion: "Pequeñas fisuras o grietas en forma de 'V' que nacen en los bordes de letras, marcas o leyendas en relieve (ej. logos, ACL, 750ml, Recyclable Glass).",
+        causas: [
+            "Presión de soplado final excesiva que acuña el vidrio contra el grabado.",
+            "Relieve del grabado con aristas vivas o radios demasiado pequeños.",
+            "Molde trabajando a temperatura desbalanceada o escapes obstruidos en las letras.",
+            "Grabado demasiado cercano a la línea de partición (costura)."
+        ],
+        acciones: [
+            "Suavizar los cantos del grabado y asegurar suficiente ángulo de salida.",
+            "Reducir la presión del soplado final.",
+            "Limpiar orificios de ventilación en la zona del grabado.",
+            "Verificar que el molde no esté operando sobrecalentado."
+        ]
+    },
+    {
+        id: "lados_hinchados",
+        nombre: "Lados Hinchados (Bulged Sides)",
+        zona: "cuerpo",
+        gravedad: "Mayor",
+        descripcion: "Paredes laterales del cuerpo abombadas hacia afuera respecto al perfil nominal del envase.",
+        causas: [
+            "Apertura del molde de soplado antes de que el vidrio consolide su forma.",
+            "Válvula de soplado final pegada o soplado prolongado fuera de ciclo.",
+            "Tiempo insuficiente de permanencia en molde o vidrio excesivamente caliente."
+        ],
+        acciones: [
+            "Retardar la apertura del molde respecto a la subida de la cabeza sopladora.",
+            "Inspeccionar electroválvula de soplado final.",
+            "Aumentar refrigeración en el molde de soplado."
+        ]
+    },
+    {
+        id: "vidrio_pegado_interior",
+        nombre: "Vidrio Pegado Interior (Fused Glass)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Masa o trozo de vidrio fundido soldado en la pared interior del envase. Defecto crítico de inocuidad alimentaria (AQL 0.0%).",
+        causas: [
+            "Carga de gota incorrecta o desalineada que golpea y raspa el equipo de entrega.",
+            "Fragmentos de vidrio en secciones contiguas que saltan al interior del molde.",
+            "Uso indebido de aire comprimido para soplado de máquina en caliente."
+        ],
+        acciones: [
+            "Alinear canaletas y scoops para carga limpia y centrada.",
+            "Instalar mallas de protección entre secciones en el conveyor de rechazo.",
+            "Prohibir el uso de pistolas de aire comprimido sobre moldes abiertos.",
+            "Rechazar inmediatamente en caliente."
+        ]
+    },
+    {
+        id: "arruga_cuerpo",
+        nombre: "Arruga Cuerpo (Wash Board)",
+        zona: "cuerpo",
+        gravedad: "Mayor",
+        descripcion: "Serie de grietas o estrías superficiales paralelas en el cuerpo del envase causadas por contacto con superficies frías o lubricación excesiva.",
+        causas: [
+            "Equipo de entrega sucio, frío o demasiado pequeño.",
+            "Ventilación desbalanceada del parisón.",
+            "Lubricación excesivamente húmeda."
+        ],
+        acciones: [
+            "Equilibrar temperatura del parisón y regular entrega de gota.",
+            "Utilizar lubricación seca y espaciar el hisopeado."
+        ]
+    },
+    {
+        id: "envase_rayado_tratamiento",
+        nombre: "Envase Rayado por Tratamiento (Scratch)",
+        zona: "cuerpo",
+        gravedad: "Menor",
+        descripcion: "Marcas o rayas superficiales por fricción entre botellas por aplicación deficiente del recubrimiento de línea caliente o fría.",
+        causas: [
+            "Cantidad insuficiente de compuesto de tratamiento (titanio/estaño en caliente o cera en frío).",
+            "Boquillas de pulverización de tratamiento obstruidas o mal direccionadas."
+        ],
+        acciones: [
+            "Ajustar dosificación y caudal de las boquillas de tratamiento.",
+            "Verificar temperatura de envases en la campana de aplicación."
+        ]
+    },
+    {
+        id: "distribucion_dispareja",
+        nombre: "Distribución Dispareja (Uneven Distribution)",
+        zona: "cuerpo",
+        gravedad: "Mayor",
+        descripcion: "Variación de espesor de pared entre flancos opuestos del cuerpo del envase.",
+        causas: [
+            "Carga de gota descentrada que entra ladeada al premolde.",
+            "Enfriamiento desbalanceado entre las dos mitades del premolde.",
+            "Gota de vidrio con gradiente térmico transversal (vidrio frío en un costado)."
+        ],
+        acciones: [
+            "Centrar el embudo de carga sobre el eje del premolde.",
+            "Ajustar válvulas de viento de enfriamiento para lograr temperatura simétrica.",
+            "Verificar homogeneidad térmica de la gota en el alimentador."
+        ]
+    }
 ];

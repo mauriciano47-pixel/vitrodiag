@@ -1,12 +1,14 @@
 {
-  "version": "2.4.4",
-  "buildTime": 1792882608924,
-  "releaseName": "VitroDiag v2.4.4 — Auto-Purga Obligatoria IndexedDB (v2) y Carga de Fotos Réflex de Perfil",
+  "version": "2.4.5",
+  "buildTime": 1793145802449,
+  "releaseName": "VitroDiag v2.4.5 — Catálogo Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API",
   "features": [
-    "Migración forzada de base de datos local IndexedDB a versión 2 con erradicación automática de registros MVTec cenitales",
-    "Carga inmediata y sin intervención manual de las 8 fotografías DSLR oficiales de fábrica (perfil lateral en mesa de acero)",
-    "Validación de conteo estricto (8 muestras) en datasetManager.js impidiendo la visualización de datasets obsoletos",
-    "Soporte de purga profunda en clearAppCache eliminando almacenamiento IndexedDB persistente",
-    "Pase exitoso del 100% de tests unitarios y estándares Zero-Warning"
+    "Incorporación exhaustiva de 36 nuevos defectos oficiales de Cristalerías de Chile S.A. y Bucher Emhart Glass (total 147 defectos en 10 familias)",
+    "Integración de la Tríada Crítica de Columpios (columpio_cuerpo, columpio_cuello / stuck plunger, puntas_vidrio / picos_base)",
+    "Fortificación definitiva de Gemini Vision API: erradicación de llaves expiradas y conmutación transparente entre Cloud AI y Modo Local Experto (SOP)",
+    "Motor diagnóstico autónomo local offline (generateLocalExpertDiagnosis) que garantiza respuesta inmediata aún sin conexión o sin API Key",
+    "Probador de API Key en tiempo real (testGeminiApiKey) con feedback visual de latencia y estado",
+    "Ampliación del Banco IA a 11 fotografías industriales DSLR de perfil lateral y botonera 1-Tap para Columpio Cuerpo, Columpio Cuello y Calcinado Gollete",
+    "Auto-purga atómica de IndexedDB y recarga de 11 muestras oficiales en estación de control de calidad"
   ]
 }

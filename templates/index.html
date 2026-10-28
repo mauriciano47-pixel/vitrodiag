@@ -31,12 +31,12 @@
             for (let r of regs) r.unregister();
         });
     }
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.4') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.4.4');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.5') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.4.5');
         if ('indexedDB' in window) {
             try {
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
-                console.log('[Always-Live] BD IndexedDB antigua de muestras MVTec purgada por actualización v2.4.4.');
+                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.4.5 (11 muestras oficiales Cristalerías de Chile).');
             } catch(e) {}
         }
     }
@@ -56,7 +56,7 @@
         }
         localStorage.clear();
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.4.');
+        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.5.');
         window.location.reload(true);
     };
 
@@ -2738,6 +2738,9 @@
             <span class="quick-samples-title">
                 🧪 Probar Sensores con Muestras de Fábrica (1-Tap):
             </span>
+            <button type="button" class="filter-btn quick-sample-btn-red" onclick="window.loadQuickSample('columpio_cuerpo')" title="Probar sensor con Columpio de Cuerpo (Birdswing)">🪶 Columpio Cuerpo</button>
+            <button type="button" class="filter-btn quick-sample-btn-red" onclick="window.loadQuickSample('columpio_cuello')" title="Probar sensor con Columpio de Cuello (Stuck Plunger)">🪶 Columpio Cuello</button>
+            <button type="button" class="filter-btn quick-sample-btn-amber" onclick="window.loadQuickSample('calcinado_gollete')" title="Probar Calcinado de Gollete (Check Under the Bead)">⚡ Calcinado Gollete</button>
             <button type="button" class="filter-btn quick-sample-btn-red" onclick="window.loadQuickSample('cuerpo_torcido')" title="Probar Plomada Láser con Botella Torcida">📐 Botella Torcida (4.6°)</button>
             <button type="button" class="filter-btn quick-sample-btn-amber" onclick="window.loadQuickSample('cuello_torcido')" title="Probar desviación angular de cuello">📐 Cuello Torcido (4.5°)</button>
             <button type="button" class="filter-btn quick-sample-btn-red" onclick="window.loadQuickSample('boca_rota')" title="Probar sensor de roturas en corona">💥 Corona Rota</button>

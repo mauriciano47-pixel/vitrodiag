@@ -1,6 +1,6 @@
 {
   "name": "vitrodiag-nexus",
-  "version": "2.4.4",
+  "version": "2.4.5",
   "type": "module",
   "description": "Plataforma de Diagnóstico Óptico Asistido por IA y Control de Moldería en Máquinas I.S.",
   "private": true,

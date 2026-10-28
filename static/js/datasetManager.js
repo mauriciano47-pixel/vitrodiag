@@ -609,11 +609,11 @@ export async function initDatasetUI() {
     try {
         const samples = await getAllSamples();
         const hasLegacyMvtec = samples.some(s => s.id && (s.id.includes('mvtec') || (s.defectoNombre && s.defectoNombre.includes('MVTec'))));
-        const hasLegacyCount = samples.length === 20 || (samples.length > 0 && samples.length !== 8);
+        const hasLegacyCount = samples.length === 20 || (samples.length > 0 && samples.length !== FACTORY_SEED_SAMPLES.length);
         const hasLegacySynthetic = samples.some(s => s.id && s.id.startsWith('seed_') && s.fotoBase64 && s.fotoBase64.length < 50000);
 
         if (samples.length === 0 || hasLegacyMvtec || hasLegacyCount || hasLegacySynthetic) {
-            console.log('[DatasetManager] Muestras obsoletas detectadas. Ejecutando purga y carga de 8 fotos oficiales...');
+            console.log(`[DatasetManager] Muestras desfasadas detectadas. Ejecutando auto-carga de ${FACTORY_SEED_SAMPLES.length} fotos oficiales...`);
             await loadFactorySeedSamplesToDB(true);
         }
     } catch (e) {
@@ -639,7 +639,7 @@ export async function initDatasetUI() {
     window.loadFactorySeedSamples = async (force = true) => {
         const count = await loadFactorySeedSamplesToDB(force);
         await renderDatasetGallery();
-        showToast(`Cargadas ${count || 8} muestras industriales oficiales al Banco IA.`, 'success');
+        showToast(`Cargadas ${count || FACTORY_SEED_SAMPLES.length} muestras industriales oficiales al Banco IA.`, 'success');
     };
 
     window.deleteDatasetSample = async (sampleId) => {
@@ -667,7 +667,7 @@ if (typeof window !== 'undefined') {
     window.loadFactorySeedSamples = async (force = true) => {
         const count = await loadFactorySeedSamplesToDB(force);
         await renderDatasetGallery();
-        showToast(`Cargadas ${count || 8} muestras industriales oficiales al Banco IA.`, 'success');
+        showToast(`Cargadas ${count || FACTORY_SEED_SAMPLES.length} muestras industriales oficiales al Banco IA.`, 'success');
     };
 }
 

@@ -645,5 +645,180 @@ export const DEFECTOS_FONDO_GENERAL = [
                 acciones: [
                     "Limpiar y pintar con grafito seco los deflectores de la sección."
                 ]
-            }
+            },
+// === DEFECTOS OFICIALES CRISTALERÍAS DE CHILE S.A. (FONDO Y GENERAL) ===
+    {
+        id: "puntas_vidrio",
+        nombre: "Puntas de Vidrio / Picos en Base (Spike)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Espícula, aguja o filamento de vidrio puntiagudo y filoso que sobresale verticalmente desde el fondo hacia el interior del envase. Defecto crítico de seguridad alimentaria (AQL 0.0%) con peligro inminente de desprendimiento.",
+        causas: [
+            "Macho con Colmonoy desgastado o agrietado en la punta que hace contacto directo con el hierro.",
+            "Tubo de refrigeración del macho obstruido, doblado o con fugas de aire.",
+            "Vidrio frío pegado en la punta del émbolo al finalizar la carrera.",
+            "Cuerda de pájaro (columpio) parcialmente formada que se corta dejando la base en punta."
+        ],
+        acciones: [
+            "Reemplazar el macho de inmediato cumpliendo el programa de moldería.",
+            "Revisar y purgar conductos de refrigeración del macho con aire comprimido.",
+            "Verificar que la punta del émbolo esté concéntrica y pulida.",
+            "Rechazar en caliente y notificar a supervisión."
+        ]
+    },
+    {
+        id: "corte_tijera_fondo",
+        nombre: "Corte de Tijera en el Fondo (Shear Mark)",
+        zona: "fondo",
+        gravedad: "Mayor",
+        descripcion: "Presencia de una marca en forma de 'C' o cicatriz superficial en el fondo del envase originada por el corte de las cuchillas.",
+        causas: [
+            "Hojas de tijera desafiladas, con juego o mal alineadas.",
+            "Tensión o ángulo de las tijeras incorrecto.",
+            "Pulverizado de agua de tijeras deficiente o con dosificación incorrecta de aceite.",
+            "Vidrio frío en el orificio del alimentador."
+        ],
+        acciones: [
+            "Reemplazar o calibrar las cuchillas de tijera en el alimentador.",
+            "Ajustar la tensión de las hojas y la excéntrica de tijeras.",
+            "Regular el caudal y mezcla de agua/aceite del pulverizado de tijeras.",
+            "Verificar la temperatura de acondicionamiento del vidrio."
+        ]
+    },
+    {
+        id: "tapa_fondo_corrida",
+        nombre: "Tapa Fondo Corrida (Swung Baffle)",
+        zona: "fondo",
+        gravedad: "Mayor",
+        descripcion: "Costura de la tapa (baffle) desfasada o desplazada respecto al centro del fondo del envase.",
+        causas: [
+            "Velocidad de inversión del brazo de transferencia incorrecta.",
+            "Enfriamiento disparejo del parisón en el premolde.",
+            "Resorte del porta platinas débil o apertura desigual."
+        ],
+        acciones: [
+            "Ajustar la velocidad y amortiguación del mecanismo de inversión.",
+            "Equilibrar el enfriamiento del premolde.",
+            "Cambiar resortes vencidos en el porta platinas."
+        ]
+    },
+    {
+        id: "deformado_fondo",
+        nombre: "Deformado Fondo (Down Rocker Bottom / Fondo Oscilante)",
+        zona: "fondo",
+        gravedad: "Mayor",
+        descripcion: "El centro del fondo (picadura) queda abombado hacia abajo más allá de la superficie de apoyo, provocando que la botella tambalee al apoyarse en una superficie plana.",
+        causas: [
+            "Tiempo de enfriamiento en plancha muerta insuficiente.",
+            "Soplado final accionado demasiado tarde o presión baja.",
+            "Fondo trabajando caliente o con lubricación deficiente.",
+            "Barrido prematuro de la botella caliente hacia el transportador."
+        ],
+        acciones: [
+            "Aumentar el tiempo de permanencia y ventilación en la plancha muerta.",
+            "Adelantar el soplado final y verificar su presión neumática.",
+            "Ajustar la altura de la placa de fondo y verificar su refrigeración.",
+            "Retardar el empuje del barredor."
+        ]
+    },
+    {
+        id: "picado_fondo",
+        nombre: "Picado Fondo (Bruised Bearing Surface)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Saltadura, picadura o desprendimiento de vidrio en la superficie de apoyo o moleteado (crecent) del fondo del envase.",
+        causas: [
+            "Desprendimiento o daño metálico en la zona de encastre del molde con la placa de fondo.",
+            "Ajuste excesivamente apretado entre el fondo y las mitades del molde.",
+            "Impacto mecánico de la pinza de la sacadora."
+        ],
+        acciones: [
+            "Reemplazar placa de fondo o molde con aristas desportilladas.",
+            "Ajustar la tolerancia de holgura entre molde y fondo.",
+            "Calibrar carrera y amortiguación de las pinzas de la sacadora."
+        ]
+    },
+    {
+        id: "fondo_disparejo",
+        nombre: "Fondo Disparejo (Heavy Glass on One Side of the Bottom)",
+        zona: "fondo",
+        gravedad: "Mayor",
+        descripcion: "Vidrio acumulado en un solo lado del fondo, dejando el flanco opuesto delgado e inestable.",
+        causas: [
+            "Carga de la gota descentrada en el premolde.",
+            "Velocidad de inversión inapropiada que hace oscilar el parison.",
+            "Porta platinas con juego excesivo o torcido."
+        ],
+        acciones: [
+            "Centrar la gota en el embudo de carga.",
+            "Ajustar amortiguación del mecanismo de inversión para evitar oscilación del parison.",
+            "Alinear y eliminar holgura en el porta platinas."
+        ]
+    },
+    {
+        id: "costura_tapa",
+        nombre: "Costura de Tapa (Heavy Blank and Baffle Match or Tear)",
+        zona: "fondo",
+        gravedad: "Mayor",
+        descripcion: "Costura gruesa, escalonada o con desgarro en la unión entre el premolde y la tapa de fondo.",
+        causas: [
+            "Juego incorrecto o desgaste en el encastre tapa-premolde.",
+            "Altura incorrecta del mecanismo de machos.",
+            "Presión excesiva del contrasoplo."
+        ],
+        acciones: [
+            "Verificar y ajustar tolerancia entre la tapa y el premolde.",
+            "Calibrar altura del cilindro de machos.",
+            "Regular presión del contrasoplo."
+        ]
+    },
+    {
+        id: "vidrio_suelto",
+        nombre: "Vidrio Suelto (Loose Glass)",
+        zona: "general",
+        gravedad: "Crítico",
+        descripcion: "Presencia de trozos, astillas o partículas de vidrio sueltas en el interior del envase. Defecto crítico de seguridad alimentaria con tolerancia cero (AQL 0.0%).",
+        causas: [
+            "Roturas en secciones contiguas de la máquina sin protección de cortinas.",
+            "Uso indebido de pistolas de aire comprimido sobre moldes abiertos.",
+            "Caída de envases en la placa muerta o en el transportador."
+        ],
+        acciones: [
+            "Instalar y mantener mallas protectoras sobre el conveyor de rechazo.",
+            "Prohibir la limpieza con aire comprimido en máquina en caliente.",
+            "Inspeccionar funcionamiento del sistema de rechazo automático en caliente."
+        ]
+    },
+    {
+        id: "roto_archa",
+        nombre: "Roto de Archa (Cold Check Lehr Breaks)",
+        zona: "general",
+        gravedad: "Mayor",
+        descripcion: "Envase agrietado o quebrado en pedazos a la salida del archa de recocido debido a tensiones térmicas residuales o enfriamiento no uniforme.",
+        causas: [
+            "Curva de temperatura del túnel de recocido (lehr) descalibrada o inestable.",
+            "Corrientes de aire frío en la boca de entrada del archa.",
+            "Fondo trabajando excesivamente frío o con microfisuras previas."
+        ],
+        acciones: [
+            "Calibrar perfil térmico y termocuplas del archa de recocido.",
+            "Instalar cortinas de protección contra corrientes de aire en la entrada del archa.",
+            "Verificar temperatura de los envases a la salida de máquina."
+        ]
+    },
+    {
+        id: "marcas_agua",
+        nombre: "Marcas de Agua (Water Marks)",
+        zona: "general",
+        gravedad: "Menor",
+        descripcion: "Manchas o marcas blanquecinas en la superficie del vidrio producidas por gotas de agua de pulverizado de tijeras que caen en canaletas.",
+        causas: [
+            "Exceso de agua en el sistema de pulverizado de las tijeras.",
+            "Goteras desde la caja de tijeras hacia las canaletas de entrega."
+        ],
+        acciones: [
+            "Reducir caudal de agua de pulverizado de tijeras.",
+            "Instalar bandejas de goteo y escudos en el equipo de entrega."
+        ]
+    }
 ];

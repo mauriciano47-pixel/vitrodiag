@@ -543,5 +543,267 @@ export const DEFECTOS_BOCA_CUELLO = [
                     "Limpiar y raspar las caras de encastre.",
                     "Alinear el cabezal de inversión."
                 ]
-            }
+            },
+// === DEFECTOS OFICIALES CRISTALERÍAS DE CHILE S.A. (BOCA Y CUELLO) ===
+    {
+        id: "columpio_cuello",
+        nombre: "Columpio Cuello / Boca (Stuck Plunger / Neck Birdswing)",
+        zona: "cuello",
+        gravedad: "Crítico",
+        descripcion: "Presencia de un hilo o filamento de vidrio adherido en sus extremos a las paredes internas del cuello o del inicio de la boca del envase (queda suspendido en el interior). Defecto crítico de seguridad alimentaria (AQL 0.0%) que exige rechazo inmediato en caliente.",
+        causas: [
+            "Macho o punzón trabajando caliente o con recubrimiento de Colmonoy desgastado en la punta.",
+            "Perforaciones del macho para el contrasoplo tapadas o con vidrio incrustado.",
+            "Temporización de contrasoplo incorrecta o tardía.",
+            "Pérdida de vacío en la platina antes de la carga de la gota.",
+            "Equipo de moldería de la boca sucio o con exceso de carbón.",
+            "Macho arriba 'OFF' desfasado respecto a la tapa."
+        ],
+        acciones: [
+            "Aplicar contrasoplo de baja presión (~2 psi) con duración de 3° a 5° tan pronto como el macho baja (trabajar entre 80° y 85°).",
+            "En máquinas sin baja presión, usar 'Puff' con el contrasoplo de alta con 1° a 2° de duración (entre 80° y 81°).",
+            "Macho arriba 'OFF' debe estar 10° después de la tapa 'OFF' (mínimo 5°).",
+            "Vacío de boca 'OFF' debe ser igual o menor que la tapa 'OFF' e inicio 'ON' tan pronto como carga la gota en el parisón.",
+            "Usar modo SWAB al lubricar platinas para rechazar automáticamente de 1 a 3 ciclos.",
+            "Si sale columpio en la sección, rechazar inmediatamente en caliente y avisar urgente a Jefe de Línea / Encargado de Planta."
+        ]
+    },
+    {
+        id: "calcinado_gollete",
+        nombre: "Calcinado Gollete (Check Under the Bead)",
+        zona: "cuello",
+        gravedad: "Crítico",
+        descripcion: "Fractura superficial de longitud variable ubicada en la zona del gollete, con orientación horizontal localizada directamente bajo el encastre de la platina (bajo la moldura o bead). No penetra al interior pero debilita críticamente la corona.",
+        causas: [
+            "Calibración del porta platinas desnivelado o inclinado (lado premolde o molde).",
+            "Enfriamiento excesivo de la platina.",
+            "Movimiento de inversión y amortiguación del porta platinas inadecuado o violento.",
+            "Velocidad excesiva de la tapa abajo o apertura de premolde demasiado rápida.",
+            "Bisagra de premolde, bieletas y pasadores gastados con holgura.",
+            "Altura incorrecta del mecanismo de machos en la entrega."
+        ],
+        acciones: [
+            "Nivelar y alinear el porta platinas sobre la línea central del molde (tolerancia 1/16\").",
+            "Regular la amortiguación del cilindro de inversión para eliminar rebotes.",
+            "Reducir el enfriamiento de la platina si está trabajando excesivamente fría.",
+            "Inspeccionar y reemplazar pasadores y bieletas gastadas de la bisagra de premolde.",
+            "Verificar radio y holgura de encastre parison-platina en el cuello del molde."
+        ]
+    },
+    {
+        id: "calcinado_vertical_boca",
+        nombre: "Calcinado Vertical Boca (Split Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Fractura que atraviesa verticalmente la superficie superior de la boca y se extiende hacia abajo en dirección al cuello. Debilita estructuralmente la boca y compromete totalmente el sellado hermético.",
+        causas: [
+            "Cilindro de machos desalineado o macho suelto.",
+            "Soplado de asentamiento excesivo en tiempo o presión.",
+            "Enfriamiento inapropiado o excesivo del macho y de la platina (trabajan fríos).",
+            "Tiempo de contacto del macho excesivo.",
+            "Presión excesiva de prensado del macho en proceso prensado-soplado (NNPB).",
+            "Punta fría en la gota de vidrio por mal corte de tijeras o pulverizado excesivo."
+        ],
+        acciones: [
+            "Centrar y alinear el cilindro de machos y verificar apriete de fijación.",
+            "Reducir presión y tiempo del soplado de asentamiento.",
+            "Ajustar refrigeración de machos y platinas para evitar enfriamiento térmico violento.",
+            "En NNPB: regular presión de prensado y carrera del punzón.",
+            "Alinear tijeras del alimentador y ajustar pulverizado de cuchillas."
+        ]
+    },
+    {
+        id: "emboquillado",
+        nombre: "Emboquillado (Blow Back)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Pestaña o saliente de vidrio fino en el interior del inicio de la boca que se forma de abajo hacia arriba. En boca tipo corcho impide el ingreso del tapón y en boca rosca destruye el sello hermético.",
+        causas: [
+            "Tiempo o presión insuficiente del soplado de asentamiento.",
+            "Tiempo de contacto del macho insuficiente.",
+            "Contrasoplo demasiado temprano o con presión excesiva.",
+            "Cilindro de machos demasiado alto o demasiado bajo.",
+            "Macho sucio, corto o trabajando sobrecalentado."
+        ],
+        acciones: [
+            "Aumentar tiempo y presión del soplado de asentamiento.",
+            "Retrasar el contrasoplo y regular su caudal neumático.",
+            "Limpiar o cambiar machos sucios o desgastados.",
+            "Calibrar la altura nominal del mecanismo del cilindro de machos."
+        ]
+    },
+    {
+        id: "saltado_boca",
+        nombre: "Saltado Boca (Chipped Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Picadura, melladura o desprendimiento de vidrio en la superficie superior de sellado de la boca del envase. Impide el contacto uniforme del cierre provocando fugas o pérdida de gas.",
+        causas: [
+            "Cabeza sopladora descentrada o con amortiguación defectuosa (baja demasiado rápida y golpea).",
+            "Pinzas de la sacadora (take-out) descalibradas, cerrando demasiado rápido o fuera de centro.",
+            "Abertura del porta platinas con demasiada fuerza durante la reversión.",
+            "Tubo del soplador desviado o vidrio acumulado en la cabeza sopladora."
+        ],
+        acciones: [
+            "Centrar la cabeza sopladora y regular su amortiguación de descenso.",
+            "Calibrar alineación y cierre suave de las pinzas de la sacadora.",
+            "Ajustar la abertura simétrica del porta platinas.",
+            "Inspeccionar y destapar cabezas sopladoras eliminando fragmentos de vidrio."
+        ]
+    },
+    {
+        id: "abertura_vidrio_boca",
+        nombre: "Abertura Vidrio Boca (Line Over The Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Grieta o fisura que atraviesa la superficie de sellado de la boca del envase. Defecto crítico de seguridad y hermeticidad con riesgo inminente de fuga o contaminación.",
+        causas: [
+            "Soplado de asentamiento iniciado tardíamente después de la carga.",
+            "Temporización del macho arriba desfasada (atrapa gases de combustión).",
+            "Platinas y machos trabajando fríos.",
+            "Equipo de entrega con acumulación de grafito o mojado por pulverizado de tijeras."
+        ],
+        acciones: [
+            "Realizar el proceso de formación tan pronto como el vidrio cargue en el premolde.",
+            "Aumentar la presión del soplado de asentamiento para mover el vidrio rápidamente.",
+            "Instalar escudos protectores en canaletas para desviar agua de tijeras.",
+            "Destapar escapes en el macho y anillo guía para purgar gases."
+        ]
+    },
+    {
+        id: "boca_desplazada",
+        nombre: "Boca Desplazada (Offset Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Boca formada fuera de su alineación concéntrica correcta respecto al eje del envase (en sentido vertical u horizontal). Dificulta el asentamiento del cierre provocando fallas de apertura y tapado.",
+        causas: [
+            "Porta platinas lado molde desnivelado, inclinado o con resortes flojos.",
+            "Bisagra del molde desalineada o con pasadores/bieletas gastadas.",
+            "Amortiguación o velocidad incorrecta de la cabeza sopladora.",
+            "Platina caliente que no libera suavemente el parison."
+        ],
+        acciones: [
+            "Nivelar el porta platinas lado molde y cambiar resortes vencidos.",
+            "Reemplazar pasadores y bieletas con holgura en la bisagra de molde.",
+            "Ajustar amortiguación de transferencia e inversión.",
+            "Aumentar ventilación de la platina para evitar sobrecalentamiento."
+        ]
+    },
+    {
+        id: "platina_caida",
+        nombre: "Platina Caída (Cocked Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Desnivel angular pronunciado en la superficie de la boca respecto al plano horizontal del envase. Medido en planta con reloj comparador milimétrico.",
+        causas: [
+            "Calibración incorrecta del porta platinas y altura desajustada del macho.",
+            "Tiempo de soplado de asentamiento o presión de macho insuficiente para fijar la boca sólidamente.",
+            "Transferencia violenta y amortiguación deficiente de la sacadora."
+        ],
+        acciones: [
+            "Calibrar la altura y nivelación del porta platinas sobre el molde (tolerancia estándar 1/16\").",
+            "Aumentar el tiempo de asentamiento para consolidar la estructura del anillo de boca.",
+            "Aplicar boquillas de enfriamiento de boca (finish cooling)."
+        ]
+    },
+    {
+        id: "arruga_boca",
+        nombre: "Arruga Boca (Crizzled Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Múltiples líneas o grietas finas paralelas en la superficie de sellado de la boca. Al no reflejar la luz directamente son complejas de detectar visualmente pero comprometen el cierre hermético.",
+        causas: [
+            "Platinas calientes que no están liberando temperatura adecuadamente.",
+            "Soplado final iniciado demasiado temprano.",
+            "Cabeza sopladora bajando con impacto violento sobre el molde.",
+            "En NNPB: presión de prensado excesiva o arrastre de macho lento."
+        ],
+        acciones: [
+            "Aumentar ventilación en platinas y aplicar lubricación regular.",
+            "Retardar el soplado final y suavizar el descenso de la cabeza sopladora.",
+            "En NNPB: regular presión del cilindro de prensado a valores estándar."
+        ]
+    },
+    {
+        id: "boca_sucia",
+        nombre: "Boca Sucia (Dirty Finish)",
+        zona: "boca",
+        gravedad: "Mayor",
+        descripcion: "Superficie de la boca escamosa con manchas negras o depósitos de carbón procedentes de sobrelubricación de platinas y machos.",
+        causas: [
+            "Lubricación excesiva o hisopo demasiado cargado/sucio.",
+            "Platina trabajando fría.",
+            "Metalización excesiva de la moldería de boca."
+        ],
+        acciones: [
+            "Reducir la frecuencia de hisopeado y usar hisopo de algodón limpio.",
+            "Cumplir con el programa de cambio de moldería según ciclo de horas.",
+            "Ajustar temperatura de la platina."
+        ]
+    },
+    {
+        id: "rebaba_anillo_boca",
+        nombre: "Rebaba Anillo Boca (Flange Finish)",
+        zona: "boca",
+        gravedad: "Mayor",
+        descripcion: "Aleta o rebaba de vidrio en la línea de partición de la platina o junta con el premolde.",
+        causas: [
+            "Porta platinas no ajusta correctamente sobre el lado del molde.",
+            "Holgura excesiva entre platina y anillo guía.",
+            "Bisagras de molde o premolde con pasadores gastados."
+        ],
+        acciones: [
+            "Ajustar encastre de cola de milano de la platina.",
+            "Cambiar piezas de boca gastadas.",
+            "Verificar apriete y juego de bisagras."
+        ]
+    },
+    {
+        id: "angulo_bajo_falda",
+        nombre: "Ángulo Bajo la Falda (Screw Cap Angle)",
+        zona: "boca",
+        gravedad: "Mayor",
+        descripcion: "Ángulo geométrico incorrecto en la zona bajo la falda de la boca roscada. Impide que las trabas de seguridad de la cápsula se corten al girar la tapa.",
+        causas: [
+            "Desgaste dimensional en el anillo de boca del molde formador.",
+            "Soplado de asentamiento deficiente que no copia el ángulo del molde."
+        ],
+        acciones: [
+            "Medir con calibre de perfil de rosca y cambiar platinas desgastadas.",
+            "Asegurar presión nominal en el soplado de asentamiento."
+        ]
+    },
+    {
+        id: "rayas_cuello_hombro",
+        nombre: "Rayas Cuello - Hombro (Load Marks)",
+        zona: "cuello",
+        gravedad: "Mayor",
+        descripcion: "Rayas o marcas superficiales en el cuello o transición al hombro originadas por fricción o choque térmico en la entrega de la gota.",
+        causas: [
+            "Premoldes calientes y secos (falta de lubricación adecuada).",
+            "Desalineación o fricción en el equipo de entrega (scoop y canaletas).",
+            "Carga de gota demasiado temprana."
+        ],
+        acciones: [
+            "Alinear deflectores y canaletas para entrega suave y centrada.",
+            "Lubricar premoldes con hisopo limpio y graduación correcta.",
+            "Ajustar temporización de carga de la gota."
+        ]
+    },
+    {
+        id: "picado_cuello_hombro",
+        nombre: "Picado Cuello - Hombro (Neck Ring Parting Line)",
+        zona: "cuello",
+        gravedad: "Mayor",
+        descripcion: "Saltadura o astillamiento de vidrio en la línea de costura de la platina y el cuello por daño en los bordes del molde.",
+        causas: [
+            "Topes del premolde sueltos.",
+            "Cilindro de machos posicionado demasiado arriba.",
+            "Desprendimiento de metal en la arista de encastre del molde."
+        ],
+        acciones: [
+            "Ajustar topes de premolde y calibrar altura del cilindro de machos.",
+            "Reemplazar molde con aristas dañadas o desportilladas."
+        ]
+    }
 ];

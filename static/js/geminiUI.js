@@ -9,12 +9,12 @@ export function updateGeminiStatusUI(configured) {
     const statusText = document.getElementById('geminiStatusText');
 
     if (indicator) {
-        indicator.className = configured ? 'gemini-indicator gemini-ready' : 'gemini-indicator gemini-off';
+        indicator.className = configured ? 'gemini-indicator gemini-ready' : 'gemini-indicator gemini-local';
     }
     if (statusText) {
         statusText.innerText = configured
-            ? '🧠 Gemini Vision: Conectado'
-            : '⚪ Gemini Vision: Sin Configurar';
+            ? '🟢 Gemini Vision: Conectado (Cloud AI)'
+            : '🟠 Gemini Vision: Modo Local Experto (SOP Cristalerías de Chile)';
     }
 }
 
