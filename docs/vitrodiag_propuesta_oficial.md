@@ -1,11 +1,11 @@
-# VitroDiag NEXUS v2.4.8 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.4.9 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Aplicación Web Progresiva (PWA) de Diagnóstico Óptico Asistido por IA y Control de Moldería para la Fabricación de Envases de Vidrio**  
 *Desarrollado para operadores e inspectores de línea en plantas vidrieras (Procesos Blow-Blow y NNPB en Máquinas I.S. — Cristalerías de Chile S.A. & Bucher Emhart Glass)*
 
 ---
 
-**Versión:** 2.4.8 Always-Live (Catálogo Oficial Cristalerías de Chile de 147 Defectos, Tríada de Columpios, Banco IA con 11 Fotos DSLR y Fortificación Gemini Vision / Modo Local Experto)  
+**Versión:** 2.4.9 Always-Live (Catálogo Oficial Cristalerías de Chile de 147 Defectos, Tríada de Columpios, Banco IA con 11 Fotos DSLR y Fortificación Gemini Vision / Modo Local Experto)  
 **Fecha de Actualización:** 27 de Octubre de 2026  
 **Estado del Proyecto:** Aplicación Oficial Fortificada (Grado AAA Tech Due Diligence 98/100 — V-GUARD Suite)  
 
@@ -36,7 +36,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 
 ---
 
-## 3. Catálogo Completo de Módulos (v2.4.8)
+## 3. Catálogo Completo de Módulos (v2.4.9)
 
 ### Tab 1 — Inspección NEXUS (Motor Principal)
 
@@ -87,7 +87,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 
 | Versión | Descripción |
 | --- | --- |
-| **v2.4.8** | **Defectología Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API:** Incorporación de 36 nuevos defectos (total 147 en 10 familias), integración de Columpio de Cuerpo (Birdswing), Columpio de Cuello (Stuck Plunger) y Calcinado de Gollete. Fortificación total de Gemini Vision con probador de llaves en vivo, erradicación de llaves expiradas y motor autónomo local experto (`generateLocalExpertDiagnosis`). Banco IA ampliado a 11 fotos DSLR con botonera 1-Tap. |
+| **v2.4.9** | **Defectología Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API:** Incorporación de 36 nuevos defectos (total 147 en 10 familias), integración de Columpio de Cuerpo (Birdswing), Columpio de Cuello (Stuck Plunger) y Calcinado de Gollete. Fortificación total de Gemini Vision con probador de llaves en vivo, erradicación de llaves expiradas y motor autónomo local experto (`generateLocalExpertDiagnosis`). Banco IA ampliado a 11 fotos DSLR con botonera 1-Tap. |
 | **v2.4.4** | Migración forzada de IndexedDB (v2) y auto-recarga de 8 fotos DSLR de perfil lateral sin tomas cenitales abstractas. |
 | **v2.4.3** | Reemplazo total de dataset sintético por fotografías industriales DSLR de perfil lateral en mesa de acero inoxidable. |
 | **v2.4.0** | Motor Unificado de Defectos Evidentes & Finos (Plomada Láser + Calcinados locales). |

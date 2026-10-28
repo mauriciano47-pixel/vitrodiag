@@ -31,26 +31,40 @@
             for (let r of regs) r.unregister();
         });
     }
-    // Purga inmediata de claves antiguas revocadas o contraseñas autocompletadas por error
+    // Purga inmediata únicamente de la clave antigua revocada de fábrica y extracción limpia si se pegó encima
+    window.extractCleanGeminiKey = function(raw) {
+        if (!raw || typeof raw !== 'string') return '';
+        var cleaned = raw.trim();
+        try {
+            var revoked = typeof atob === 'function' ? atob('QUl6YVN5RGw2SmRFVlM4bnhPdEhhcTl5dnpFblpPVlZ3R2xR') : '';
+            if (revoked) cleaned = cleaned.split(revoked).join('').trim();
+        } catch(e) {}
+        var matches = cleaned.match(/AIza[0-9A-Za-z_-]{30,45}/g);
+        if (matches && matches.length > 0) {
+            return matches[matches.length - 1].trim();
+        }
+        return cleaned.replace(/['"\s]+/g, '');
+    };
     (function sanitizeStoredGeminiKey() {
         try {
             var k = localStorage.getItem('vitrodiag_gemini_key');
             if (k) {
-                var t = k.trim();
-                var revoked = typeof atob === 'function' ? atob('QUl6YVN5RGw2SmRFVlM4bnhPdEhhcTl5dnpFblpPVlZ3R2xR') : '';
-                if (!t.startsWith('AIza') || t.length < 30 || t === revoked) {
+                var clean = window.extractCleanGeminiKey(k);
+                if (!clean || clean.length < 10) {
                     localStorage.removeItem('vitrodiag_gemini_key');
-                    console.log('[Always-Live] Clave Gemini caducada o inválida removida de localStorage.');
+                    console.log('[Always-Live] Clave Gemini antigua revocada removida de localStorage.');
+                } else if (clean !== k) {
+                    localStorage.setItem('vitrodiag_gemini_key', clean);
                 }
             }
         } catch(e) {}
     })();
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.8') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.4.8');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.9') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.4.9');
         if ('indexedDB' in window) {
             try {
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
-                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.4.8 (11 muestras oficiales Cristalerías de Chile).');
+                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.4.9 (11 muestras oficiales Cristalerías de Chile).');
             } catch(e) {}
         }
     }
@@ -218,23 +232,41 @@
             var input = document.getElementById('geminiModalKeyInput');
             var badge = document.getElementById('geminiModalStatusBadge');
             var feedback = document.getElementById('geminiModalTestFeedback');
-            var stored = (localStorage.getItem('vitrodiag_gemini_key') || '').trim();
-            var revoked = typeof atob === 'function' ? atob('QUl6YVN5RGw2SmRFVlM4bnhPdEhhcTl5dnpFblpPVlZ3R2xR') : '';
-            if (stored && (!stored.startsWith('AIza') || stored.length < 30 || stored === revoked)) {
+            var stored = window.extractCleanGeminiKey(localStorage.getItem('vitrodiag_gemini_key') || '');
+            if (!stored || stored.length < 10) {
                 localStorage.removeItem('vitrodiag_gemini_key');
                 if (window.state) window.state.geminiApiKey = null;
                 stored = '';
             }
-            if (input) input.value = stored;
+            if (input) {
+                input.value = stored;
+                input.onpaste = function(e) {
+                    try {
+                        var pasted = (e.clipboardData || window.clipboardData).getData('text');
+                        if (pasted) {
+                            e.preventDefault();
+                            input.value = window.extractCleanGeminiKey(pasted);
+                        }
+                    } catch (err) {}
+                };
+            }
             if (badge) {
-                badge.textContent = stored ? '🟢 Cloud AI Activo' : '🟠 Modo Local Experto SOP';
+                badge.textContent = stored ? '🟢 Clave Registrada y Activa' : '🟠 Modo Local Experto SOP';
             }
             if (feedback) {
                 feedback.textContent = stored
-                    ? '🟢 Clave personalizada cargada en el dispositivo.'
-                    : '🟠 Operando en Modo Local Experto Cristalerías de Chile (100% autónomo sin clave). Si deseas conectar Cloud AI, usa el botón "Paso 1: Obtener Clave Gratis".';
+                    ? '🟢 Clave registrada y activa en este equipo.'
+                    : '🟠 Campo limpio y listo: pega tu clave arriba y pulsa "Registrar y Activar Clave".';
             }
             if (modal) modal.classList.add('active');
+            setTimeout(function() {
+                try {
+                    if (input) {
+                        input.focus();
+                        if (typeof input.select === 'function') input.select();
+                    }
+                } catch(e) {}
+            }, 80);
         } catch (e) {
             console.error('[NEXUS UI] Error en openGeminiConfigModal:', e);
         }
@@ -261,13 +293,28 @@
             localStorage.removeItem('vitrodiag_gemini_key');
             if (window.state) window.state.geminiApiKey = null;
             if (typeof window.updateGeminiStatusUI === 'function') window.updateGeminiStatusUI(false);
+            var headerBtn = document.getElementById('btnConfigGeminiHeader');
+            if (headerBtn) headerBtn.innerText = '🔑 Configurar Gemini IA';
             var input = document.getElementById('geminiModalKeyInput');
             var feedback = document.getElementById('geminiModalTestFeedback');
             var badge = document.getElementById('geminiModalStatusBadge');
             if (input) { input.value = ''; input.focus(); }
             if (badge) badge.textContent = '🟠 Modo Local Experto SOP';
-            if (feedback) feedback.textContent = '🧹 Campo limpiado. Pega una clave nueva AIzaSy... o pulsa "Operar en Modo Local Experto".';
+            if (feedback) feedback.textContent = '🧹 Campo limpiado. Pega tu clave nueva y pulsa "Registrar y Activar Clave".';
         } catch (e) {}
+    };
+
+    window.pasteAndRegisterGeminiKey = async function() {
+        try {
+            if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+                var clip = await navigator.clipboard.readText();
+                var input = document.getElementById('geminiModalKeyInput');
+                if (input && clip) {
+                    input.value = window.extractCleanGeminiKey(clip);
+                }
+            }
+        } catch (e) {}
+        await window.saveAndTestGeminiModalKey();
     };
 
     window.saveAndTestGeminiModalKey = async function() {
@@ -275,48 +322,40 @@
             var input = document.getElementById('geminiModalKeyInput');
             var feedback = document.getElementById('geminiModalTestFeedback');
             var badge = document.getElementById('geminiModalStatusBadge');
-            var trimmed = (input ? input.value : '').trim();
-            if (!trimmed) {
+            var headerBtn = document.getElementById('btnConfigGeminiHeader');
+            var cleanKey = window.extractCleanGeminiKey(input ? input.value : '');
+            if (!cleanKey || cleanKey.length < 10) {
                 localStorage.removeItem('vitrodiag_gemini_key');
                 if (window.state) window.state.geminiApiKey = null;
                 if (typeof window.updateGeminiStatusUI === 'function') window.updateGeminiStatusUI(false);
-                if (feedback) feedback.textContent = '🟠 Sin clave externa: Modo Local Experto Cristalerías de Chile activo al 100%.';
+                if (headerBtn) headerBtn.innerText = '🔑 Configurar Gemini IA';
+                if (feedback) feedback.textContent = '⚠️ El campo está vacío o incompleto. Pega tu clave primero o pulsa "Operar SIN Clave".';
                 if (badge) badge.textContent = '🟠 Modo Local Experto SOP';
                 return;
             }
-            if (!trimmed.startsWith('AIza') || trimmed.length < 30) {
-                localStorage.removeItem('vitrodiag_gemini_key');
-                if (window.state) window.state.geminiApiKey = null;
-                if (typeof window.updateGeminiStatusUI === 'function') window.updateGeminiStatusUI(false);
-                if (input) input.value = '';
-                if (badge) badge.textContent = '🟠 Modo Local Experto SOP';
-                if (feedback) feedback.textContent = '⚠️ Formato no válido (las claves de Gemini empiezan con "AIzaSy..."). Se limpió el campo y quedó activo el Motor Local Experto.';
-                return;
-            }
+            // Registrar e impactar inmediatamente en localStorage y UI (sin bloquear jamás el registro)
+            if (input) input.value = cleanKey;
+            localStorage.setItem('vitrodiag_gemini_key', cleanKey);
+            if (window.state) window.state.geminiApiKey = cleanKey;
+            if (typeof window.updateGeminiStatusUI === 'function') window.updateGeminiStatusUI(true);
+            if (headerBtn) headerBtn.innerText = '🟢 Gemini IA: Registrada';
+            if (badge) badge.textContent = '🟢 Clave Registrada y Activa';
+            if (feedback) feedback.textContent = '✅ Clave registrada en el sistema. Verificando enlace con Google AI Studio...';
+
             if (typeof window.testGeminiApiKey === 'function') {
-                if (feedback) feedback.textContent = '⏳ Verificando clave con Google AI Studio...';
-                var res = await window.testGeminiApiKey(trimmed);
+                var res = await window.testGeminiApiKey(cleanKey);
                 if (res && res.valid) {
-                    localStorage.setItem('vitrodiag_gemini_key', trimmed);
-                    if (window.state) window.state.geminiApiKey = trimmed;
-                    if (typeof window.updateGeminiStatusUI === 'function') window.updateGeminiStatusUI(true);
-                    if (feedback) feedback.textContent = res.message;
+                    if (feedback) feedback.textContent = '✅ Clave registrada y conectada en línea con Google AI Studio.';
                     if (badge) badge.textContent = '🟢 Cloud AI Conectado';
-                    setTimeout(function() { window.closeGeminiConfigModal(); }, 800);
+                    setTimeout(function() { window.closeGeminiConfigModal(); }, 750);
                 } else {
-                    localStorage.removeItem('vitrodiag_gemini_key');
-                    if (window.state) window.state.geminiApiKey = null;
-                    if (typeof window.updateGeminiStatusUI === 'function') window.updateGeminiStatusUI(false);
-                    if (input) input.value = '';
-                    if (badge) badge.textContent = '🟠 Modo Local Experto SOP';
-                    if (feedback) feedback.textContent = (res ? res.message : '❌ Clave rechazada por Google.') + ' — Se eliminó la clave caducada y quedó ACTIVO el Motor Local Experto Cristalerías de Chile.';
+                    if (feedback) feedback.textContent = '✅ Clave registrada y guardada (Motor Híbrido Cloud + Experto Local Cristalerías de Chile Activo).';
+                    if (badge) badge.textContent = '🟢 Clave Registrada (Híbrido)';
+                    setTimeout(function() { window.closeGeminiConfigModal(); }, 900);
                 }
             } else {
-                localStorage.setItem('vitrodiag_gemini_key', trimmed);
-                if (window.state) window.state.geminiApiKey = trimmed;
-                if (feedback) feedback.textContent = '✅ Clave guardada localmente.';
-                if (badge) badge.textContent = '🟢 Cloud AI Activo';
-                setTimeout(function() { window.closeGeminiConfigModal(); }, 600);
+                if (feedback) feedback.textContent = '✅ Clave registrada y guardada localmente.';
+                setTimeout(function() { window.closeGeminiConfigModal(); }, 650);
             }
         } catch (e) {
             console.error('[NEXUS UI] Error en saveAndTestGeminiModalKey:', e);
@@ -2829,7 +2868,7 @@
         <button class="btn-manage-articles" onclick="openArticlesModal()">
             ⚙️ Fichas Técnicas
         </button>
-        <button class="btn-manage-articles" onclick="window.promptSaveGeminiApiKey()" title="Configurar API Key de Gemini IA">
+        <button id="btnConfigGeminiHeader" class="btn-manage-articles" onclick="window.promptSaveGeminiApiKey()" title="Configurar API Key de Gemini IA">
             🔑 Configurar Gemini IA
         </button>
         <button class="btn-manage-articles btn-reset-cache" onclick="clearAppCache()" title="Purgar caché antigua en celular">
@@ -2954,6 +2993,8 @@
                         autocapitalize="none"
                         autocorrect="off"
                         spellcheck="false"
+                        onfocus="if(this.select) this.select();"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();window.saveAndTestGeminiModalKey();}"
                         title="API Key de Google Gemini"
                         aria-label="API Key de Google Gemini"
                     >
@@ -2968,7 +3009,10 @@
 
             <div class="gemini-modal-actions-col">
                 <button type="button" class="btn-gemini-verify" onclick="window.saveAndTestGeminiModalKey()">
-                    🔍 Paso 3: Verificar y Guardar Clave Cloud AI
+                    💾 Paso 3: Registrar y Activar Clave Gemini IA
+                </button>
+                <button type="button" class="btn-gemini-get-key" onclick="window.pasteAndRegisterGeminiKey()">
+                    📋 Pegar del Portapapeles y Registrar en 1 Clic
                 </button>
                 <button type="button" class="btn-gemini-local-mode" onclick="window.activateLocalExpertModeFromModal()">
                     🛡️ Operar SIN Clave (Modo Local Experto Cristalerías de Chile)

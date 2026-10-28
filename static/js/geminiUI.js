@@ -7,6 +7,7 @@ import { getDefectCatalogSummary } from './db.js';
 export function updateGeminiStatusUI(configured) {
     const indicator = document.getElementById('geminiStatusIndicator');
     const statusText = document.getElementById('geminiStatusText');
+    const headerBtn = document.getElementById('btnConfigGeminiHeader');
 
     if (indicator) {
         indicator.className = configured ? 'gemini-indicator gemini-ready' : 'gemini-indicator gemini-local';
@@ -15,6 +16,9 @@ export function updateGeminiStatusUI(configured) {
         statusText.innerText = configured
             ? '🟢 Gemini Vision: Conectado (Cloud AI)'
             : '🟠 Gemini Vision: Modo Local Experto (SOP Cristalerías de Chile)';
+    }
+    if (headerBtn) {
+        headerBtn.innerText = configured ? '🟢 Gemini IA: Registrada' : '🔑 Configurar Gemini IA';
     }
 }
 

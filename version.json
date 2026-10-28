@@ -1,12 +1,11 @@
 {
-  "version": "2.4.8",
-  "buildTime": 1793209800000,
-  "releaseName": "VitroDiag v2.4.8 — Auto-Purga de Claves Revocadas, Auto-Conmutación a Motor Local Experto y Alto Contraste en Modal Gemini IA",
+  "version": "2.4.9",
+  "buildTime": 1793210950000,
+  "releaseName": "VitroDiag v2.4.9 — Registro Garantizado de API Key, Des-concatenación al Pegar y Botón de 1 Clic desde Portapapeles",
   "features": [
-    "Purga automática de claves históricas revocadas (HTTP 400 API_KEY_INVALID) y contraseñas autocompletadas en localStorage",
-    "Auto-saneamiento inmediato cuando Google AI Studio rechaza una clave: limpia localStorage y conmuta sin interrupción al Motor Local Experto Cristalerías de Chile",
-    "Botón directo '🔑 Paso 1: Crear Clave Gratis en Google AI Studio ↗' y botón de limpieza rápida '🧹' en el modal #geminiConfigModal",
-    "Corrección de contraste Cyber-Obsidian en botones del modal para visibilidad nítida en monitores industriales sin sobreexposición luminosa",
-    "Eliminación de ícono duplicado (❌ ❌) en mensajes de validación del modal"
+    "Extractor inteligente extractCleanGeminiKey() que rescata automáticamente la nueva clave aunque se haya pegado sobre los 39 puntos ocultos previos",
+    "Registro garantizado e inmediato en localStorage y estado global al pulsar '💾 Paso 3: Registrar y Activar Clave Gemini IA' o Enter, sin borrar jamás la clave del usuario",
+    "Nuevo botón '📋 Pegar del Portapapeles y Registrar en 1 Clic' para activar la API Key sin necesidad de limpiar manualmente el input",
+    "Actualización visual en vivo del botón de cabecera a '🟢 Gemini IA: Registrada' al guardar la clave"
   ]
 }
