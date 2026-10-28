@@ -213,10 +213,48 @@ export function detectFineDefects(source, datosPlomada) {
             ];
         }
 
-        // Si el área es muy pequeña pero de alto contraste, clasificar como Pinta Negra de Grafito
+        //Si el área es muy pequeña pero de alto contraste, clasificar como Pinta Negra de Grafito
         if (spotArea < 35 && cl.maxContrast >= 45) {
             defectId = 'pintas_negras_grafito';
             defectName = `Pinta Negra de Grafito en ${zona.toUpperCase()}`;
+        }
+
+        // Clasificación Morfológica Avanzada (v2.5.0 Zero-Key Optical Engine):
+        // 1. Filamento horizontal interno (relación de aspecto ancha >= 2.4x): Columpio (Birdswing) o Pliegue
+        const aspectRatio = spotWidth / Math.max(1, spotHeight);
+        if (aspectRatio >= 2.4 && spotWidth >= 22) {
+            if (zona === 'cuello') {
+                defectId = 'columpio_cuello';
+                defectName = 'Columpio en Cuello (Neck Birdswing)';
+                acciones = [
+                    'Aumentar tiempo de recalentamiento (Reheat) antes del soplo final.',
+                    'Alinear punzón NNPB y verificar temperatura uniforme de la gota.',
+                    'Retirar inmediatamente el lote afectado (Defecto Crítico).'
+                ];
+            } else if (zona === 'fondo') {
+                defectId = 'columpio_fondo';
+                defectName = 'Columpio de Fondo (Baffle Birdswing)';
+                acciones = [
+                    'Ajustar asentamiento de obturador (Baffle) y temperatura de placa de fondo.',
+                    'Controlar viscosidad térmica en la base del parisón.'
+                ];
+            } else {
+                defectId = 'columpio_cuerpo';
+                defectName = 'Columpio en Cuerpo (Body Birdswing)';
+                acciones = [
+                    'Equilibrar temperatura de tijeras y canales de distribución de gota.',
+                    'Ajustar tiempo de inversión y recalentamiento del parisón antes del soplado final.',
+                    'Separar producción de la cavidad afectada (Riesgo crítico de desprendimiento de vidrio).'
+                ];
+            }
+        } else if ((spotHeight / Math.max(1, spotWidth)) >= 2.6 && spotHeight >= 22) {
+            // 2. Fisura o grieta longitudinal vertical (relación alto/ancho >= 2.6x)
+            defectId = zona === 'cuello' ? 'grieta_vertical_cuello' : 'grieta_cuerpo';
+            defectName = zona === 'cuello' ? 'Grieta Vertical en Cuello (Split Neck)' : 'Grieta / Fisura Térmica en Cuerpo';
+            acciones = [
+                'Reducir choque térmico en moldería y verificar enfriamiento de pinzas.',
+                'Inspeccionar contacto metálico en guía de barrido (Sweep-out).'
+            ];
         }
 
         // Bounding box expandido con padding para visualización clara

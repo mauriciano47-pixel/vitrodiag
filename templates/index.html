@@ -59,12 +59,12 @@
             }
         } catch(e) {}
     })();
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.4.9') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.4.9');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.0') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.5.0');
         if ('indexedDB' in window) {
             try {
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
-                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.4.9 (11 muestras oficiales Cristalerías de Chile).');
+                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.0 (11 muestras oficiales Cristalerías de Chile).');
             } catch(e) {}
         }
     }
@@ -2868,8 +2868,8 @@
         <button class="btn-manage-articles" onclick="openArticlesModal()">
             ⚙️ Fichas Técnicas
         </button>
-        <button id="btnConfigGeminiHeader" class="btn-manage-articles" onclick="window.promptSaveGeminiApiKey()" title="Configurar API Key de Gemini IA">
-            🔑 Configurar Gemini IA
+        <button id="btnConfigGeminiHeader" class="btn-manage-articles" onclick="window.promptSaveGeminiApiKey()" title="Motor IA Óptico Local Activo (Configuración opcional)">
+            🟢 Motor IA Local Activo (Sin Clave)
         </button>
         <button class="btn-manage-articles btn-reset-cache" onclick="clearAppCache()" title="Purgar caché antigua en celular">
             🔄 Reset Caché Celular

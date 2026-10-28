@@ -1,11 +1,11 @@
 {
-  "version": "2.4.9",
-  "buildTime": 1793210950000,
-  "releaseName": "VitroDiag v2.4.9 — Registro Garantizado de API Key, Des-concatenación al Pegar y Botón de 1 Clic desde Portapapeles",
+  "version": "2.5.0",
+  "buildTime": 1793217400000,
+  "releaseName": "VitroDiag v2.5.0 — Motor IA Óptico Local Autónomo por Defecto (Cero API Key) y Clasificación Morfológica de Columpios/Grietas",
   "features": [
-    "Extractor inteligente extractCleanGeminiKey() que rescata automáticamente la nueva clave aunque se haya pegado sobre los 39 puntos ocultos previos",
-    "Registro garantizado e inmediato en localStorage y estado global al pulsar '💾 Paso 3: Registrar y Activar Clave Gemini IA' o Enter, sin borrar jamás la clave del usuario",
-    "Nuevo botón '📋 Pegar del Portapapeles y Registrar en 1 Clic' para activar la API Key sin necesidad de limpiar manualmente el input",
-    "Actualización visual en vivo del botón de cabecera a '🟢 Gemini IA: Registrada' al guardar la clave"
+    "Operación 100% autónoma por defecto ('🟢 Motor IA Local Activo (Sin Clave)'): elimina por completo la obligación de copiar o pegar API Keys externas",
+    "Ampliación del motor óptico local fineDefects.js para clasificar por relación de aspecto filamentos horizontales (Columpio en Cuerpo/Cuello/Fondo) y fisuras verticales (Grietas)",
+    "Pipeline de visión en dispositivo (<30ms) integrando Plomada Láser, Simetría Axial, Detección de Calcinados y Morfología de Filamentos",
+    "11/11 pruebas automatizadas en verde verificando geometría, defectos finos y catálogo de 147 defectos"
   ]
 }

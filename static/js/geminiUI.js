@@ -14,11 +14,11 @@ export function updateGeminiStatusUI(configured) {
     }
     if (statusText) {
         statusText.innerText = configured
-            ? '🟢 Gemini Vision: Conectado (Cloud AI)'
-            : '🟠 Gemini Vision: Modo Local Experto (SOP Cristalerías de Chile)';
+            ? '🟢 Motor IA Híbrido: Cloud + Óptico Local Activo'
+            : '🟢 Motor IA Óptico Local: 100% Activo (Sin necesidad de API Key)';
     }
     if (headerBtn) {
-        headerBtn.innerText = configured ? '🟢 Gemini IA: Registrada' : '🔑 Configurar Gemini IA';
+        headerBtn.innerText = configured ? '🟢 IA Cloud + Local Activa' : '🟢 Motor IA Local Activo (Sin Clave)';
     }
 }
 
