@@ -22,7 +22,7 @@
 
     // 2. Obtener versión viva desde el servidor
     let currentBuildTime = Date.now();
-    let currentVersion = '2.4.6';
+    let currentVersion = '2.4.7';
 
     try {
         const res = await fetch('version.json?_t=' + Date.now(), { cache: 'no-store' });

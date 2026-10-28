@@ -4,11 +4,23 @@ import assert from 'node:assert/strict';
 import {
     ARTICULOS_DEFAULT,
     DEFECTOS_DB,
+    generateDefectIllustration,
     getDefectsByZone,
     getDefectById,
     getDefectCatalogSummary,
     findDefectByIdOrFuzzy
 } from '../static/js/db.js';
+
+import {
+    saveGeminiApiKey,
+    loadGeminiApiKey,
+    clearGeminiApiKey,
+    promptSaveGeminiApiKey,
+    openGeminiConfigModal,
+    closeGeminiConfigModal,
+    testGeminiApiKey,
+    generateLocalExpertDiagnosis
+} from '../static/js/geminiVision.js';
 
 test('1. Catálogo de Artículos Industriales: Modelos de envases de vidrio cargados correctamente', () => {
     assert.ok(Array.isArray(ARTICULOS_DEFAULT), 'ARTICULOS_DEFAULT debe ser un array');
@@ -22,7 +34,7 @@ test('1. Catálogo de Artículos Industriales: Modelos de envases de vidrio carg
 
 test('2. Catálogo Multimodal de Defectos: Ensamble completo sin pérdida de datos', () => {
     assert.ok(Array.isArray(DEFECTOS_DB), 'DEFECTOS_DB debe ser un array');
-    assert.ok(DEFECTOS_DB.length >= 100, `Debe contener al menos 100 defectos industriales (actual: ${DEFECTOS_DB.length})`);
+    assert.ok(DEFECTOS_DB.length >= 140, `Debe contener al menos 140 defectos industriales (actual: ${DEFECTOS_DB.length})`);
     
     // Validar que cada defecto tenga campos requeridos
     for (const d of DEFECTOS_DB) {
@@ -68,4 +80,23 @@ test('6. Generación de Prompt Resumen para Visión por Computadora', () => {
     assert.ok(typeof summary === 'string', 'El resumen debe ser una cadena');
     assert.ok(summary.includes('calcinado_boca'), 'El resumen debe incluir calcinado_boca');
     assert.ok(summary.length > 1000, 'El resumen debe abarcar el catálogo completo');
+});
+
+test('7. Motor de Planos Técnicos CAD Vectoriales: Generación SVG para los 147 defectos', () => {
+    for (const d of DEFECTOS_DB) {
+        const svg = generateDefectIllustration(d);
+        assert.ok(svg.includes('<svg viewBox="0 0 150 202"'), `Defecto ${d.id} debe generar plano CAD 150x202`);
+        assert.ok(svg.includes('CAD MOLDERÍA I.S.'), `Defecto ${d.id} debe incluir cabezal CAD`);
+    }
+});
+
+test('8. Módulo Gemini Vision y Controladores del Modal de Configuración IA', () => {
+    assert.equal(typeof saveGeminiApiKey, 'function');
+    assert.equal(typeof loadGeminiApiKey, 'function');
+    assert.equal(typeof clearGeminiApiKey, 'function');
+    assert.equal(typeof promptSaveGeminiApiKey, 'function');
+    assert.equal(typeof openGeminiConfigModal, 'function');
+    assert.equal(typeof closeGeminiConfigModal, 'function');
+    assert.equal(typeof testGeminiApiKey, 'function');
+    assert.equal(typeof generateLocalExpertDiagnosis, 'function');
 });

@@ -1,12 +1,12 @@
 {
-  "version": "2.4.6",
-  "buildTime": 1793147270506,
-  "releaseName": "VitroDiag v2.4.6 — Motor de Planos Técnicos CAD Vectoriales para los 147 Defectos de Moldería I.S.",
+  "version": "2.4.7",
+  "buildTime": 1793198574716,
+  "releaseName": "VitroDiag v2.4.7 — Reparación de Sintaxis ESM en geminiVision.js y Nuevo Modal Interactivo de Configuración Gemini IA",
   "features": [
-    "Reemplazo total de los iconos básicos por Planos Técnicos CAD de Corte Longitudinal (Cross-Section Blueprints) para los 147 defectos del catálogo",
-    "Silueta realista de botella con espesor de pared vítrea, corona de tapado, gollete, cuello, hombro parabólico, cuerpo y bóveda de fondo (push-up)",
-    "16 arquetipos visuales morfológicos: Columpio de Cuerpo (Birdswing), Columpio de Cuello (Stuck Plunger con punzón mecánico), Picos de Fondo, Calcinado de Gollete con Lupa Zoom 2.5x, Desviación Axial Δθ con silueta fantasma, Emboquillado con calibre bloqueado, Pared Delgada con cotas en mm, Rebabas, Hundimientos, Burbujas, Piedras y Calcinados",
-    "Regla lateral de cotas anatómicas (BOCA, CUELLO, HOMBRO, CUERPO, FONDO) con línea indicadora (Callout Leader Line) e iluminación activa de zona",
-    "Nuevo filtro directo por zona 'Hombro' en el Directorio de Defectos y diseño responsivo ampliado para smartphones y tablets en planta"
+    "Corrección de llave de cierre huérfana (SyntaxError línea 57) en static/js/geminiVision.js que impedía la carga del módulo en navegador",
+    "Nuevo Modal Interactivo de Configuración Gemini IA (#geminiConfigModal) bajo el estándar Form Shield (Zero Modal Jail), reemplazando el bloqueante window.prompt()",
+    "Verificador de API Key en vivo integrado dentro del modal con reporte de latencia y botón de 1 clic para operar en Modo Local Experto Cristalerías de Chile",
+    "Controladores defensivos inline en index.html garantizando respuesta instantánea del botón Configurar Gemini IA en cualquier milisegundo de carga",
+    "Suite de pruebas ampliada con validación directa de importación ESM de geminiVision.js y geminiUI.js"
   ]
 }
