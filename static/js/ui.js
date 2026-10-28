@@ -255,14 +255,18 @@ function setFilter(zone, buttonElement) {
         }
 
 function filterDefects() {
-            const searchVal = document.getElementById('searchInput')?.value.toLowerCase();
+            const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
             
             const filtered = DEFECTOS_DB.filter(defect => {
-                const matchesSearch = defect.nombre.toLowerCase().includes(searchVal) || 
+                const matchesSearch = !searchVal ||
+                                     defect.nombre.toLowerCase().includes(searchVal) || 
                                      defect.descripcion.toLowerCase().includes(searchVal) ||
                                      defect.gravedad.toLowerCase().includes(searchVal);
                 
-                const matchesZone = state.currentFilterZone === "todo" || defect.zona === state.currentFilterZone;
+                const effectiveZone = (defect.nombre && defect.nombre.toLowerCase().includes('hombro') && defect.zona === 'cuerpo')
+                    ? 'hombro'
+                    : defect.zona;
+                const matchesZone = state.currentFilterZone === "todo" || effectiveZone === state.currentFilterZone || defect.zona === state.currentFilterZone;
                 
                 return matchesSearch && matchesZone;
             });
