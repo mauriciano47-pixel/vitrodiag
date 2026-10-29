@@ -806,4 +806,138 @@ export const DEFECTOS_BOCA_CUELLO = [
             "Reemplazar molde con aristas dañadas o desportilladas."
         ]
     }
+,
+    {
+        id: "calcinado_hilos",
+        nombre: "Calcinado en los Hilos / Rosca (Thread Check)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Fractura térmica o mecánica localizada en los filetes o hilos de la rosca de la boca. Defecto crítico (Manual Cristalerías de Chile S.A. §e / Bucher Emhart Glass): provoca rotura o desprendimiento de vidrio al aplicar el torque de tapado en línea de embotellado.",
+        causas: [
+            "Platinas trabajando excesivamente frías o sin precalentamiento uniforme.",
+            "Apertura violenta o desnivelada del porta-platinas que engancha el hilo de rosca.",
+            "Perfil de rosca de la platina con rebabas, daño mecánico o carbón acumulado.",
+            "Gota de vidrio con punta fría al ingresar al premolde."
+        ],
+        acciones: [
+            "Reducir el enfriamiento sobre las platinas o precalentar antes de cargar moldería.",
+            "Regular la amortiguación de apertura del mecanismo porta-platinas.",
+            "Limpiar o reemplazar platinas con filetes de rosca dañados.",
+            "Rechazar inmediatamente las cavidades afectadas y verificar con polariscopio."
+        ]
+    },
+    {
+        id: "calcinado_platina",
+        nombre: "Calcinado de Platina / Costura de Anillo (Ring Seam Check)",
+        zona: "cuello",
+        gravedad: "Crítico",
+        descripcion: "Fisura horizontal o circunferencial ubicada en la unión entre la platina (molde de boca) y el premolde/molde. Debilita críticamente el cuello bajo la corona con riesgo de degollamiento bajo presión interna.",
+        causas: [
+            "Porta-platinas desnivelado o inclinado respecto al eje central del premolde o molde.",
+            "Platina trabajando fría respecto a la temperatura del premolde.",
+            "Golpe mecánico durante el cierre del premolde o en la inversión del parison.",
+            "Holgura excesiva en pasadores y bieletas del mecanismo de inversión."
+        ],
+        acciones: [
+            "Nivelar y alinear el porta-platinas a 1/16\" respecto a la línea central del molde.",
+            "Ajustar la amortiguación del mecanismo de inversión (Invert Cushion).",
+            "Atemperar las platinas y revisar el encastre de cola de milano.",
+            "Reemplazar bujes y pasadores desgastados en brazos porta-platinas."
+        ]
+    },
+    {
+        id: "boca_estrellada",
+        nombre: "Boca Estrellada (Starred / Split Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Red de fisuras múltiples estrelladas en el borde o labio superior de la boca del envase. Compromete totalmente la resistencia axial en la coronadora y la hermeticidad del cierre.",
+        causas: [
+            "Cabeza sopladora (Blowhead) bajando con impacto violento o sin amortiguación sobre la corona.",
+            "Tubo de aire de la cabeza sopladora demasiado largo o descentrado golpeando el labio.",
+            "Macho excesivamente frío o con presión de prensado desmedida.",
+            "Pinzas de sacadora (Takeout) golpeando la superficie superior de la boca."
+        ],
+        acciones: [
+            "Regular la amortiguación neumática de descenso de la cabeza sopladora.",
+            "Verificar altura y concentricidad de las boquillas y tubos de soplado final.",
+            "Calibrar la altura de las pinzas de sacadora (Takeout) respecto a la platina.",
+            "Controlar el caudal de enfriamiento interno del macho."
+        ]
+    },
+    {
+        id: "aleta_doblez_boca",
+        nombre: "Marca de Doblez o Aleta en la Boca (Fold / Fin on Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Pliegue agudo o aleta cortante de vidrio doblada sobre la superficie superior de sellado de la boca. Impide el cierre hermético y genera desprendimiento de fragmentos al tapar.",
+        causas: [
+            "Carga de gota descentrada o atrasada que se pliega al entrar al anillo de boca.",
+            "Soplado de asentamiento (Settle Blow) tardío o con presión insuficiente.",
+            "Holgura excesiva entre el macho y el anillo guía (Thimble).",
+            "Exceso de pasta lubricante en la platina."
+        ],
+        acciones: [
+            "Adelantar el soplado de asentamiento tan pronto la gota ingresa al premolde.",
+            "Alinear el equipo de entrega (scoop, canaleta y deflector) con el premolde.",
+            "Reemplazar anillos guía y machos con desgaste dimensional.",
+            "Utilizar lubricación moderada con hisopo limpio y activar rechazo automático (SWAB)."
+        ]
+    },
+    {
+        id: "vidrio_pegado_macho",
+        nombre: "Vidrio Pegado en el Macho (Glass Stuck on Plunger)",
+        zona: "cuello",
+        gravedad: "Crítico",
+        descripcion: "Adherencia y arrastre de vidrio incandescente en la punta del macho durante el ciclo de prensado o contrasoplo, desgarrando el interior del cuello y generando filamentos, púas o columpios internos.",
+        causas: [
+            "Macho sobrecalentado por obstrucción o baja presión en el tubo de enfriamiento interno.",
+            "Recubrimiento de Colmonoy en la punta del macho desgastado, poroso o fisurado.",
+            "Tiempo de contacto del macho excesivamente largo.",
+            "Falta de lubricación o carbonización de lubricante en la punta del punzón."
+        ],
+        acciones: [
+            "Sustituir inmediatamente el macho afectado y verificar su recubrimiento de Colmonoy.",
+            "Purgar y comprobar la presión de aire de enfriamiento interno del macho.",
+            "Ajustar el tiempo de contacto del macho arriba OFF respecto a la tapa OFF.",
+            "Rechazar en caliente el lote de la cavidad e inspeccionar ausencia de columpios."
+        ]
+    },
+    {
+        id: "mala_distribucion_cuello",
+        nombre: "Mala Distribución de Vidrio en Cuello / Estrangulamiento (Choked / Slug Neck)",
+        zona: "cuello",
+        gravedad: "Crítico",
+        descripcion: "Acumulación asimétrica interna de vidrio o estrangulamiento severo en el interior del cuello. Impide la introducción de los tubos de llenado de alta velocidad y provoca rotura de boquillas en la embotelladora.",
+        causas: [
+            "Recalentamiento insuficiente o asimétrico del parison antes de la inversión.",
+            "Gota de vidrio demasiado fría o con gradiente térmico marcado.",
+            "Contrasoplo (Counter Blow) débil, corto o con orificios de macho parcialmente obstruidos.",
+            "Macho corto o con carrera insuficiente."
+        ],
+        acciones: [
+            "Verificar calibre pasa/no-pasa (brochado interno) al 100% en línea.",
+            "Destapar perforaciones del macho y ajustar presión/duración del contrasoplo.",
+            "Aumentar el tiempo de recalentamiento (Reheat) antes del soplado final.",
+            "Homogeneizar la temperatura de la gota en el canal acondicionador."
+        ]
+    },
+    {
+        id: "bullon_boca",
+        nombre: "Bullón en la Boca (Blister on Finish)",
+        zona: "boca",
+        gravedad: "Crítico",
+        descripcion: "Burbuja de aire o gas de pared sumamente delgada alojada en el borde o superficie de sellado de la boca. Se rompe con facilidad durante el transporte o bajo la presión del cabezal de tapado, liberando astillas de vidrio.",
+        causas: [
+            "Exceso de lubricación (swabbing) en platinas o machos sin descarte posterior.",
+            "Aire atrapado durante el corte de tijeras por cuchillas descentradas o exceso de agua.",
+            "Soplado de asentamiento tardío que atrapa gases de combustión en el anillo.",
+            "Nivel de vidrio bajo o fluctuante en el tazón del alimentador (Spout)."
+        ],
+        acciones: [
+            "Descartar obligatoriamente de 2 a 3 ciclos tras lubricar platinas y machos.",
+            "Revisar el traslape y enfriamiento de las cuchillas de tijera en el alimentador.",
+            "Adelantar el soplado de asentamiento para evacuar gases de la platina.",
+            "Controlar la estabilidad de temperatura y nivel en el tazón del alimentador."
+        ]
+    }
 ];

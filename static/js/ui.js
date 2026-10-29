@@ -746,7 +746,11 @@ function filterDefects() {
         const effectiveZone = (defect.nombre && defect.nombre.toLowerCase().includes('hombro') && defect.zona === 'cuerpo')
             ? 'hombro'
             : defect.zona;
-        const matchesZone = state.currentFilterZone === "todo" || effectiveZone === state.currentFilterZone || defect.zona === state.currentFilterZone;
+        const isCriticoFilter = state.currentFilterZone === 'critico';
+        const matchesZone = state.currentFilterZone === "todo" ||
+            (isCriticoFilter && (defect.gravedad.toLowerCase().includes('crítico') || defect.gravedad.toLowerCase().includes('critico'))) ||
+            effectiveZone === state.currentFilterZone ||
+            defect.zona === state.currentFilterZone;
 
         return matchesSearch && matchesZone;
     });

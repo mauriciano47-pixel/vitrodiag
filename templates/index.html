@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.5.3 — Inspección IA & Moldería Always-Live</title>
+    <title>VitroDiag NEXUS v2.5.4 — Inspección IA & Moldería Always-Live</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -59,12 +59,12 @@
             }
         } catch(e) {}
     })();
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.3') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.5.3');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.4') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.5.4');
         if ('indexedDB' in window) {
             try {
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
-                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.3 (11 muestras oficiales Cristalerías de Chile).');
+                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.4 (11 muestras oficiales Cristalerías de Chile).');
             } catch(e) {}
         }
     }
@@ -198,7 +198,8 @@
                 var item = items[j];
                 var itemZone = (item.getAttribute('data-zone') || '').toLowerCase();
                 var itemText = item.textContent.toLowerCase();
-                var matchesZone = (zone === 'todo' || itemZone === zone);
+                var isCrit = itemText.indexOf('crítico') !== -1 || itemText.indexOf('critico') !== -1;
+                var matchesZone = (zone === 'todo' || (zone === 'critico' && isCrit) || itemZone === zone);
                 var matchesSearch = (!searchVal || itemText.indexOf(searchVal) !== -1);
                 if (matchesZone && matchesSearch) {
                     item.style.display = 'block';
@@ -2865,7 +2866,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag NEXUS <span class="version-badge">v2.5.3</span></h1>
+        <h1>VitroDiag NEXUS <span class="version-badge">v2.5.4</span></h1>
         <div class="subtitle">Inspección Asistida por IA — Moldería I.S.</div>
     </header>
 
@@ -3089,7 +3090,7 @@
             </div>
 
             <div id="geminiModalTestFeedback" class="gemini-modal-feedback">
-                🟠 Operando en Modo Local Experto Cristalerías de Chile (Plomada Láser + Calcinados + Catálogo 147 Defectos).
+                🟠 Operando en Modo Local Experto Cristalerías de Chile (Plomada Láser + Calcinados + Catálogo 165 Defectos).
             </div>
 
             <div class="gemini-modal-actions-col">
@@ -3761,6 +3762,7 @@
 
         <div class="filter-bar">
             <button class="filter-btn active" onclick="setFilter('todo', this)">Todo</button>
+            <button class="filter-btn" onclick="setFilter('critico', this)">🚨 Críticos (58)</button>
             <button class="filter-btn" onclick="setFilter('boca', this)">Boca</button>
             <button class="filter-btn" onclick="setFilter('cuello', this)">Cuello</button>
             <button class="filter-btn" onclick="setFilter('hombro', this)">Hombro</button>

@@ -1,11 +1,11 @@
 {
-  "version": "2.5.3",
-  "buildTime": 1793282400000,
-  "releaseName": "VitroDiag v2.5.3 — Purga Arquitectónica de Módulos Legacy Redundantes y Optimización de Peso",
+  "version": "2.5.4",
+  "buildTime": 1793286000000,
+  "releaseName": "VitroDiag v2.5.4 — Revisión Exhaustiva e Integración de 58 Defectos Críticos Oficiales (Cristalerías de Chile S.A. & Bucher Emhart Glass)",
   "features": [
-    "Eliminación de 3 módulos legacy pre-NEXUS redundantes en static/js/ (ai.js, aiModelLoader.js y vision.js — ahorro directo de 68.5 KB de código obsoleto y 0 ciclos ociosos de CPU en segundo plano)",
-    "Depuración de 184 líneas de funciones v1 obsoletas (detectGeometricDefects, mostrarResultadoDefecto, setupSilhouetteToggleListener) en geometry.js, ui.js y state.js",
-    "Eliminación de scripts y archivos duplicados/huérfanos en raíz (build_catalog.py, server_logger.py, browser_logs.txt, manifest.webmanifest, model/, icons/) y saneamiento de >20 MB de archivos temporales en scratch/",
-    "12/12 pruebas automatizadas certificadas al 100% sobre la arquitectura modular limpia"
+    "Auditoría e integración completa de los 18 defectos críticos adicionales de los manuales oficiales de Cristalerías de Chile S.A. y Bucher Emhart Glass (165 defectos totales, 58 defectos Críticos con AQL 0.0%)",
+    "Nuevos defectos críticos de Boca y Cuello: Calcinado en Hilos/Rosca, Calcinado de Platina, Boca Estrellada, Aleta/Doblez en Boca, Vidrio Pegado en el Macho, Mala Distribución de Cuello y Bullón en Boca",
+    "Nuevos defectos críticos de Cuerpo y Fondo: Calcinado de Hombro, Calcinado en Costura de Molde, Calcinado Caliente/Presión, Bullón >3 mm, Cuerpo Fino, Columpio en Fondo, Calcinado de Fondo, Calcinado en Talón, Calcinado en Crecent, Calcinado en Costura de Fondo, Fondo Fino y Roto de Archa",
+    "Conexión universal del Asistente Experto BDF (showDefectRemedy) con los 165 defectos de DEFECTOS_DB y filtro rápido '🚨 Críticos (58)' en el Catálogo"
   ]
 }

@@ -793,7 +793,7 @@ export const DEFECTOS_FONDO_GENERAL = [
         id: "roto_archa",
         nombre: "Roto de Archa (Cold Check Lehr Breaks)",
         zona: "general",
-        gravedad: "Mayor",
+        gravedad: "Crítico",
         descripcion: "Envase agrietado o quebrado en pedazos a la salida del archa de recocido debido a tensiones térmicas residuales o enfriamiento no uniforme.",
         causas: [
             "Curva de temperatura del túnel de recocido (lehr) descalibrada o inestable.",
@@ -819,6 +819,122 @@ export const DEFECTOS_FONDO_GENERAL = [
         acciones: [
             "Reducir caudal de agua de pulverizado de tijeras.",
             "Instalar bandejas de goteo y escudos en el equipo de entrega."
+        ]
+    }
+,
+    {
+        id: "columpio_fondo",
+        nombre: "Columpio en Fondo / Hilo de Base (Bottom Birdswing)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Hilo o filamento de vidrio tensado de extremo a extremo en la concavidad interna de la base del envase. Defecto crítico absoluto de inocuidad (AQL 0.0%): se fractura al contacto con el líquido quedando vidrio libre en el producto.",
+        causas: [
+            "Punta del macho o tapa de fondo (Baffle) trabajando excesivamente caliente que adhiere y estira un filamento de vidrio.",
+            "Exceso de pasta de grafito en la tapa del premolde que genera gases y colapsa la base del parison.",
+            "Enfriamiento interno del macho insuficiente o con aire contaminado con aceite.",
+            "Retiro brusco de la tapa de fondo sin alivio neumático."
+        ],
+        acciones: [
+            "Cambiar de inmediato el macho y la tapa de fondo (Baffle) de la cavidad afectada.",
+            "Aumentar la refrigeración interna del macho y reducir la lubricación en la tapa.",
+            "Ajustar la temporización de subida de tapa (Baffle Up) respecto al fin del contrasoplo.",
+            "Ejecutar bloqueo y cuarentena inmediata de la producción de la sección."
+        ]
+    },
+    {
+        id: "calcinado_talon",
+        nombre: "Calcinado en el Talón (Heel Check)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Fractura térmica situada en la curvatura inferior del talón (transición entre cuerpo y base). Zona de máximo esfuerzo mecánico e impacto; un calcinado en el talón produce rotura catastrófica en línea.",
+        causas: [
+            "Contacto del talón caliente con dedos del barredor (Push-out) fríos o sin aislante.",
+            "Viento de placa muerta incidiendo directamente sobre un costado del talón.",
+            "Gota demasiado fría en la base o fondo del molde final trabajando frío.",
+            "Exceso de tensión por espesor disparejo en el talón (Heel Tap)."
+        ],
+        acciones: [
+            "Recubrir o reemplazar las almohadillas de carbono/Kevlar de los dedos del barredor.",
+            "Distribuir uniformemente el aire de la placa muerta para evitar chorros fríos en el talón.",
+            "Corregir la distribución de vidrio en el fondo (eliminar talón fino/grueso).",
+            "Ajustar detectores ópticos (Check Detectors) en línea fría apuntando al radio del talón."
+        ]
+    },
+    {
+        id: "calcinado_crecent",
+        nombre: "Calcinado en el Crecent / Moleteado de Apoyo (Crescent Check)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Fisura térmica en forma de media luna localizada sobre el anillo moleteado (crecent / superficie de apoyo) de la base del envase (Manual Cristalerías de Chile S.A. §e & p. 11). Compromete la resistencia a la carga vertical y presión interna.",
+        causas: [
+            "Choque térmico del anillo de apoyo incandescente contra una placa muerta o cinta metálica fría.",
+            "Diseño o desgaste del moleteado (knurling) de la placa de fondo con aristas agudas.",
+            "Fricción de arrastre durante el barrido desde la placa muerta hacia el transportador.",
+            "Humedad o grasa sobre la placa muerta o cadena del transportador."
+        ],
+        acciones: [
+            "Atemperar la placa muerta y el transportador de máquina con quemadores de línea caliente.",
+            "Sincronizar el perfil de barrido del Push-out para evitar arrastre brusco sobre el moleteado.",
+            "Inspeccionar el estado del moleteado en las placas de fondo (Bottom Plates).",
+            "Eliminar cualquier rastro de agua o aceite en el camino hacia el archa de recocido."
+        ]
+    },
+    {
+        id: "calcinado_costura_fondo",
+        nombre: "Calcinado en la Costura de Fondo / Unión Tapa (Baffle Seam Check)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Grieta localizada exactamente sobre la línea circular de partición entre el molde y la placa de fondo o en la cicatriz de la tapa (Baffle).",
+        causas: [
+            "Desajuste o escalón mecánico en el encastre entre la tapa (Baffle) y el premolde.",
+            "Tapa de fondo bajando con impacto excesivo o desalineada.",
+            "Holgura inapropiada entre el molde final y la placa de fondo que pellizca el vidrio.",
+            "Exceso de lubricación en la junta de la tapa de premolde."
+        ],
+        acciones: [
+            "Calibrar la presión y amortiguación del mecanismo de tapa (Baffle).",
+            "Verificar las tolerancias de encastre entre premolde-tapa y molde-placa de fondo.",
+            "Limpiar los bordes de asiento de la tapa para evitar acumulación de carbón.",
+            "Reducir la frecuencia y carga de hisopeado en las tapas."
+        ]
+    },
+    {
+        id: "fondo_fino",
+        nombre: "Fondo Fino / Delgado Crítico (Light / Thin Bottom)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Base del envase con espesor inferior al mínimo de seguridad estructural. Provoca el desfondamiento por golpe de ariete hidráulico durante el llenado o al apilar pallets.",
+        causas: [
+            "Estiramiento excesivo del parison (vela demasiado larga) antes de cerrar el molde final.",
+            "Gota de vidrio excesivamente caliente que escurre hacia la zona inferior.",
+            "Soplado final iniciado demasiado tarde o contrasoplo excesivamente prolongado.",
+            "Falta de vacío o succión en la placa de fondo."
+        ],
+        acciones: [
+            "Adelantar el inicio del soplado final (Final Blow ON) y acortar el tiempo de recalentamiento.",
+            "Aumentar el enfriamiento en la parte superior del premolde para sostener la masa en el fondo.",
+            "Reducir el tiempo o presión del contrasoplo.",
+            "Verificar el funcionamiento del vacío en la placa de fondo (Bottom Vacuum)."
+        ]
+    }
+,
+    {
+        id: "calcinado_fisura_fondo",
+        nombre: "Calcinado de Fondo / Fisura en Base (Checked Bottom)",
+        zona: "fondo",
+        gravedad: "Crítico",
+        descripcion: "Fisura térmica localizada en el centro o radio de la base del envase. Provoca el desfondamiento súbito de la botella durante el llenado o pasteurización.",
+        causas: [
+            "Placa de fondo (Bottom Plate) o placa muerta (Dead Plate) excesivamente fría.",
+            "Soplado de enfriamiento en placa muerta demasiado alto o con humedad.",
+            "Tapa de premolde (Baffle) fría o desnivelada durante la formación del parison.",
+            "Impacto mecánico al depositar el envase sobre la placa muerta."
+        ],
+        acciones: [
+            "Regular el viento de enfriamiento en la placa de fondo y en la placa muerta.",
+            "Purgar condensados de agua en las líneas de aire de placa muerta.",
+            "Suavizar el descenso y liberación de las pinzas de sacadora (Takeout) sobre la placa muerta.",
+            "Verificar ajuste y temperatura de la tapa de premolde (Baffle)."
         ]
     }
 ];

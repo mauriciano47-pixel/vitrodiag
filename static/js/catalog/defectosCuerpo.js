@@ -719,4 +719,101 @@ export const DEFECTOS_CUERPO = [
             "Verificar homogeneidad térmica de la gota en el alimentador."
         ]
     }
+,
+    {
+        id: "calcinado_costura",
+        nombre: "Calcinado en Costura de Molde (Split Mould Seam Check)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Fisura vertical abierta a lo largo de la línea de partición (costura) del molde final. Punto crítico de concentración de tensiones que ocasiona el estallido del envase en llenadoras isobáricas.",
+        causas: [
+            "Mitades del molde cerrando con holgura o desalineadas por desgaste de pasadores y bisagras.",
+            "Caras de cierre del molde sucias con acumulación de carbón o pasta de hisopeado.",
+            "Enfriamiento excesivo sobre las aristas de unión del molde final.",
+            "Presión de soplado final excesiva que fuerza el vidrio dentro de la junta."
+        ],
+        acciones: [
+            "Limpiar las caras de unión del molde y verificar ajuste hermético de cierre.",
+            "Cambiar bujes, pasadores y bieletas desgastadas del mecanismo de cierre de molde.",
+            "Moderar la presión del soplado final y balancear el viento de enfriamiento.",
+            "Retirar y reparar moldes con aristas de costura golpeadas."
+        ]
+    },
+    {
+        id: "calcinado_caliente_presion",
+        nombre: "Calcinado Caliente o de Presión (Pressure or Hot Check)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Grieta profunda y abierta originada en caliente cuando el vidrio es forzado contra relieves, costuras o aristas del molde bajo sobrepresión neumática o atrapamiento mecánico.",
+        causas: [
+            "Presión de soplado final excesiva o entrada brusca de aire de alta presión.",
+            "Obstrucción de los orificios de venteo (Vents) del molde que atrapa aire y acuña el vidrio.",
+            "Apertura tardía o arrastre mecánico al abrir las mitades del molde.",
+            "Temperatura del molde desbalanceada en zonas de cambio de sección."
+        ],
+        acciones: [
+            "Reducir la presión de soplado final o regular la rampa de presurización.",
+            "Destapar y limpiar todos los conductos de venteo del molde.",
+            "Ajustar el paralelismo y velocidad de apertura de los brazos porta-moldes.",
+            "Rechazar en caliente y verificar resistencia a la presión interna en laboratorio."
+        ]
+    },
+    {
+        id: "bullon_cuerpo",
+        nombre: "Bullón en Cuerpo >3 mm (Soft Blister)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Burbuja alargada de aire o gas mayor a 3 mm recubierta por una membrana de vidrio extremadamente fina y quebradiza. Estalla al menor roce mecánico en la línea de empaque o llenado, exponiendo bordes cortantes.",
+        causas: [
+            "Sobrelubricación (swabbing excesivo) del premolde o de las cuchillas de tijera.",
+            "Gota de vidrio cortada con traslape incorrecto que pliega aire superficial.",
+            "Choque de la gota contra el deflector o embudo sucio durante la carga.",
+            "Burbujas grandes originadas en el canal acondicionador o tubo giratorio."
+        ],
+        acciones: [
+            "Usar el botón SWAB para descartar envases tras cada lubricación de premolde.",
+            "Alinear la caída de la gota y limpiar deflectores y canaletas.",
+            "Regular el corte y traslape de tijeras para eliminar pliegues de aire.",
+            "Rechazar todo bullón blando o superficial mayor a 3 mm según pauta de calidad."
+        ]
+    },
+    {
+        id: "cuerpo_fino",
+        nombre: "Cuerpo Fino / Pared Delgada (Thin Ware / Thin Side)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Zona del cuerpo con espesor de pared por debajo del límite estructural crítico (<1.2 mm en envases estándar). Incapaz de resistir la presión interna de carbonatación o el impacto en transporte, provocando explosión del envase.",
+        causas: [
+            "Distribución térmica asimétrica en el parison por carga de gota descentrada.",
+            "Enfriamiento desbalanceado entre las mitades del premolde (el vidrio más caliente se adelgaza más).",
+            "Tiempo de recalentamiento (Reheat) o inversión desajustado.",
+            "Bajo peso de gota o desgaste de moldería."
+        ],
+        acciones: [
+            "Aumentar el viento de enfriamiento en el lado del premolde correspondiente a la pared fina (enfriar el lado fino para retener espesor).",
+            "Centrar la entrega de la gota sobre el eje del premolde.",
+            "Controlar el espesor mínimo continuo en el medidor automático de línea fría (Cold End).",
+            "Ajustar temporización de contrasoplo y recalentamiento."
+        ]
+    }
+,
+    {
+        id: "calcinado_fisura_hombro",
+        nombre: "Calcinado de Hombro / Fisura Térmica (Shoulder Check)",
+        zona: "cuerpo",
+        gravedad: "Crítico",
+        descripcion: "Fisura térmica localizada en la curvatura del hombro del envase. Defecto crítico (Manual Cristalerías de Chile S.A. §e & PPTX S23-25): bajo presión interna o choque térmico en pasteurización provoca la fractura completa del cono superior.",
+        causas: [
+            "Enfriamiento excesivo o focalizado de las toberas en la zona superior del molde de soplado.",
+            "Fricción o roce con las guías y barandas metálicas frías del transportador de línea caliente.",
+            "Exceso de estiramiento del parison antes del cierre del molde final.",
+            "Pinzas de sacadora o empujador (Pusher) haciendo contacto alto en el hombro."
+        ],
+        acciones: [
+            "Redireccionar o disminuir el caudal de aire de enfriamiento en el hombro del molde.",
+            "Revestir con material aislante (Kevlar/grafito) y atemperar las guías del transportador.",
+            "Adelantar el soplado final para evitar alargamiento excesivo de la vela.",
+            "Inspeccionar altura y sincronismo de los dedos del empujador (Pusher)."
+        ]
+    }
 ];

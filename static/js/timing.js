@@ -376,12 +376,34 @@ function showDefectRemedy() {
     if (!selector || !card) return;
 
     const defectId = selector.value;
-    if (!defectId || !DEFECT_REMEDY_MAP[defectId]) {
+    if (!defectId) {
         card.style.display = 'none';
         return;
     }
 
-    const remedy = DEFECT_REMEDY_MAP[defectId];
+    let remedy = DEFECT_REMEDY_MAP[defectId];
+    if (!remedy && Array.isArray(DEFECTOS_DB)) {
+        const dbDefect = DEFECTOS_DB.find(d => d.id === defectId);
+        if (dbDefect) {
+            const icon = (dbDefect.gravedad || '').toLowerCase().includes('crít') ? '🔴' : ((dbDefect.gravedad || '').toLowerCase().includes('mayor') ? '🟠' : '🟡');
+            const causasStr = Array.isArray(dbDefect.causas) && dbDefect.causas.length > 0
+                ? ' Causas principales: ' + dbDefect.causas.slice(0, 2).join(' ')
+                : '';
+            const accionesStr = Array.isArray(dbDefect.acciones) && dbDefect.acciones.length > 0
+                ? dbDefect.acciones.join(' ')
+                : 'Verificar parámetros térmicos y neumáticos en la consola de la sección I.S.';
+            remedy = {
+                titulo: `${icon} ${dbDefect.nombre} [${dbDefect.gravedad}]`,
+                descripcion: `${dbDefect.descripcion || ''}${causasStr}`,
+                accion: accionesStr
+            };
+        }
+    }
+
+    if (!remedy) {
+        card.style.display = 'none';
+        return;
+    }
 
     if (titleEl)  titleEl.innerText  = remedy.titulo;
     if (descEl)   descEl.innerText   = remedy.descripcion;

@@ -1,11 +1,11 @@
-# VitroDiag NEXUS v2.5.3 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.5.4 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Aplicación Web Progresiva (PWA) de Diagnóstico Óptico Asistido por IA y Control de Moldería para la Fabricación de Envases de Vidrio**  
 *Desarrollado para operadores e inspectores de línea en plantas vidrieras (Procesos Blow-Blow y NNPB en Máquinas I.S. — Cristalerías de Chile S.A. & Bucher Emhart Glass)*
 
 ---
 
-**Versión:** 2.5.1 Always-Live (Catálogo Oficial Cristalerías de Chile de 147 Defectos, Tríada de Columpios, Banco IA con 11 Fotos DSLR y Fortificación Gemini Vision / Modo Local Experto)  
+**Versión:** 2.5.4 Always-Live (Catálogo Oficial Cristalerías de Chile de 165 Defectos, Tríada de Columpios, Banco IA con 11 Fotos DSLR y Fortificación Gemini Vision / Modo Local Experto)  
 **Fecha de Actualización:** 27 de Octubre de 2026  
 **Estado del Proyecto:** Aplicación Oficial Fortificada (Grado AAA Tech Due Diligence 98/100 — V-GUARD Suite)  
 
@@ -27,7 +27,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
        → Detección Local de Calcinados: Algoritmo de contraste adaptativo y clústering para manchas de grasa quemada y piedras.
        → Overlay Táctico: Línea de eje nominal vs real + miras circulares/cruz sobre calcinados.
 2. ⚡  Diagnóstico Profundo Dual (Cloud AI Gemini 2.0 Flash / Motor Local Experto SOP)
-       → Inferencia multimodal contra el catálogo ampliado de 147 defectos industriales oficiales.
+       → Inferencia multimodal contra el catálogo ampliado de 165 defectos industriales oficiales.
        → Conmutación automática: Si existe API Key válida ejecuta Gemini Cloud AI; si no existe o hay degradación de red, ejecuta de forma autónoma e instantánea el Motor Local Experto con el SOP de Cristalerías de Chile.
        → Few-Shot RAG: Inyección dinámica de fotos reales de planta registradas en el Banco IA.
 3. 🏷️  Alimentación Asistida del Banco IA (1-Tap Feed) & Botonera de Muestras Rápidas
@@ -36,7 +36,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 
 ---
 
-## 3. Catálogo Completo de Módulos (v2.5.1)
+## 3. Catálogo Completo de Módulos (v2.5.4)
 
 ### Tab 1 — Inspección NEXUS (Motor Principal)
 
@@ -45,7 +45,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 2. **Motor de Defectos Finos y Calcinados (`fineDefects.js`):**  
    Escaneo continuo en el interior de la silueta del envase que detecta partículas de grasa de swabbing quemada (calcinados) y piedras refractarias, clasificándolos automáticamente según su zona anatómica (Boca, Cuello, Hombro, Cuerpo, Fondo).
 3. **Diagnóstico IA Dual con Gemini Vision y Motor Local Experto (`geminiVision.js`):**  
-   Evaluación profunda de la refracción y textura contra el catálogo oficial de 147 defectos con sugerencias de ajuste en máquina I.S. Probador de API Key en vivo y fallback local determinista con SOP oficial de Cristalerías de Chile.
+   Evaluación profunda de la refracción y textura contra el catálogo oficial de 165 defectos con sugerencias de ajuste en máquina I.S. Probador de API Key en vivo y fallback local determinista con SOP oficial de Cristalerías de Chile.
 4. **Botonera 1-Tap de Muestras Rápidas de Fábrica:**  
    Prueba instantánea de sensores con 10 botones de defectos críticos, incluyendo la nueva tríada de columpios y calcinados.
 
@@ -69,7 +69,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 
 ### Tab 4 — Directorio de Defectos Industriales
 
-1. **Catálogo Oficial de 147 Defectos:**  
+1. **Catálogo Oficial de 165 Defectos:**  
    Fichas técnicas con causas comunes, puntos de control en máquina I.S., tiempos de controsoplo/soplado final y filtros por zona anatómica y gravedad.
 
 ---
@@ -77,7 +77,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 ## 4. Arquitectura del Sistema
 
 - **Frontend Core:** HTML5, CSS3 vanilla de alto rendimiento con animaciones fluidas y glassmorphism industrial, JavaScript ES6+ estructurado modularmente en 15 módulos:
-  - `main.js` (Orquestador NEXUS), `geometry.js` (Motor de Plomada Láser), `fineDefects.js` (Detector Local de Calcinados), `geminiVision.js` (Gemini Vision API + Local Expert Fallback), `datasetManager.js` (Banco IA en IndexedDB v2), `db.js` (Catálogo 147 defectos en 10 familias), `ui.js` (Navegación y vistas), `camera.js` (Cámara nativa y WebRTC), `timing.js` (Calculadora SOP), `log.js` (Bitácora), `ocr.js` (Tesseract.js), `swab.js` (Temporizador Swabbing), `state.js` (Estado reactivo global).
+  - `main.js` (Orquestador NEXUS), `geometry.js` (Motor de Plomada Láser), `fineDefects.js` (Detector Local de Calcinados), `geminiVision.js` (Gemini Vision API + Local Expert Fallback), `datasetManager.js` (Banco IA en IndexedDB v2), `db.js` (Catálogo 165 defectos en 10 familias), `ui.js` (Navegación y vistas), `camera.js` (Cámara nativa y WebRTC), `timing.js` (Calculadora SOP), `log.js` (Bitácora), `ocr.js` (Tesseract.js), `swab.js` (Temporizador Swabbing), `state.js` (Estado reactivo global).
 - **Persistencia Local:** `IndexedDB` y `LocalStorage` para operación 100% sin conexión.
 - **Modo de Despliegue:** GitHub Pages Always-Live (<https://mauriciano47-pixel.github.io/vitrodiag/>).
 
@@ -87,7 +87,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 
 | Versión | Descripción |
 | --- | --- |
-| **v2.5.1** | **Defectología Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API:** Incorporación de 36 nuevos defectos (total 147 en 10 familias), integración de Columpio de Cuerpo (Birdswing), Columpio de Cuello (Stuck Plunger) y Calcinado de Gollete. Fortificación total de Gemini Vision con probador de llaves en vivo, erradicación de llaves expiradas y motor autónomo local experto (`generateLocalExpertDiagnosis`). Banco IA ampliado a 11 fotos DSLR con botonera 1-Tap. |
+| **v2.5.4** | **Defectología Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API:** Incorporación de 36 nuevos defectos (total 147 en 10 familias), integración de Columpio de Cuerpo (Birdswing), Columpio de Cuello (Stuck Plunger) y Calcinado de Gollete. Fortificación total de Gemini Vision con probador de llaves en vivo, erradicación de llaves expiradas y motor autónomo local experto (`generateLocalExpertDiagnosis`). Banco IA ampliado a 11 fotos DSLR con botonera 1-Tap. |
 | **v2.4.4** | Migración forzada de IndexedDB (v2) y auto-recarga de 8 fotos DSLR de perfil lateral sin tomas cenitales abstractas. |
 | **v2.4.3** | Reemplazo total de dataset sintético por fotografías industriales DSLR de perfil lateral en mesa de acero inoxidable. |
 | **v2.4.0** | Motor Unificado de Defectos Evidentes & Finos (Plomada Láser + Calcinados locales). |
@@ -101,7 +101,7 @@ El concepto **NEXUS** representa el punto de conexión inteligente entre el oper
 Auditoría oficial efectuada por V-GUARD Due Diligence Suite:
 - **Ciberseguridad & Zero-Leakage (100/100):** Cero vulnerabilidades XSS mediante sanitización W3C DOMParser (`domUtils.js`), aislamiento de claves, Bandit SAST con 0 alertas e inmutabilidad en memoria.
 - **Propiedad Intelectual & Licencias (100/100):** Titularidad privada inmutable y exclusiva de Mauricio Uribe Maldonado. Cero dependencias restrictivas.
-- **Arquitectura & Deuda Técnica (92/100 - EXCELLENT):** Modularización desacoplada ESM, 147 defectos indexados, cero God Files y suite formal de 9 pruebas unitarias automáticas pasando en <1.6s.
+- **Arquitectura & Deuda Técnica (92/100 - EXCELLENT):** Modularización desacoplada ESM, 165 defectos indexados, cero God Files y suite formal de 9 pruebas unitarias automáticas pasando en <1.6s.
 - **Resiliencia & Producción (100/100):** Protocolo Gemini Anti-Timeout Shield (timeout 8000ms con AbortController), fallback autónomo y PWA Offline-First.
 - **Gobernanza & Data Room (100/100):** Data Room estructurado y sincronización continua con SSOT Obsidian.
 

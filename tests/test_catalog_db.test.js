@@ -185,3 +185,39 @@ test('9. Memoria Permanente de Fichas Técnicas y Futuras Campañas de Envases',
     assert.equal(state.activeArticle.id, 'camp_vino_gran_reserva_999');
     assert.equal(state.activeArticle.nombre, 'Botella Vino Gran Reserva 750ml');
 });
+
+test('10. Auditoría Exhaustiva de Defectos Críticos Oficiales (Cristalerías de Chile S.A. & Bucher Emhart Glass v2.5.4)', () => {
+    assert.equal(DEFECTOS_DB.length, 165, 'El catálogo consolidado debe contar con los 165 defectos industriales');
+    const criticos = DEFECTOS_DB.filter(d => d.gravedad === 'Crítico');
+    assert.equal(criticos.length, 58, 'Debe haber exactamente 58 defectos clasificados como Crítico (AQL 0.0%)');
+
+    const officialCriticalIds = [
+        'calcinado_hilos',
+        'calcinado_platina',
+        'boca_estrellada',
+        'aleta_doblez_boca',
+        'vidrio_pegado_macho',
+        'mala_distribucion_cuello',
+        'bullon_boca',
+        'calcinado_fisura_hombro',
+        'calcinado_costura',
+        'calcinado_caliente_presion',
+        'bullon_cuerpo',
+        'cuerpo_fino',
+        'columpio_fondo',
+        'calcinado_fisura_fondo',
+        'calcinado_talon',
+        'calcinado_crecent',
+        'calcinado_costura_fondo',
+        'fondo_fino',
+        'roto_archa'
+    ];
+
+    for (const id of officialCriticalIds) {
+        const def = getDefectById(id);
+        assert.ok(def, `El defecto crítico oficial "${id}" debe existir en DEFECTOS_DB`);
+        assert.equal(def.gravedad, 'Crítico', `El defecto "${id}" debe tener gravedad Crítico`);
+        assert.ok(Array.isArray(def.causas) && def.causas.length >= 2, `El defecto "${id}" debe documentar causas de máquina I.S.`);
+        assert.ok(Array.isArray(def.acciones) && def.acciones.length >= 2, `El defecto "${id}" debe documentar acciones correctivas SOP`);
+    }
+});
