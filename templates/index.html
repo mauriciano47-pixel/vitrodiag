@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.4.2 — Inspección IA & Moldería Always-Live</title>
+    <title>VitroDiag NEXUS v2.5.2 — Inspección IA & Moldería Always-Live</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -59,12 +59,12 @@
             }
         } catch(e) {}
     })();
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.1') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.5.1');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.2') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.5.2');
         if ('indexedDB' in window) {
             try {
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
-                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.1 (11 muestras oficiales Cristalerías de Chile).');
+                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.2 (11 muestras oficiales Cristalerías de Chile).');
             } catch(e) {}
         }
     }
@@ -82,9 +82,15 @@
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
             } catch(e) {}
         }
+        var savedArts = localStorage.getItem('vitrodiag_articulos');
+        var savedVault = localStorage.getItem('vitrodiag_custom_campaigns_v1');
+        var savedActive = localStorage.getItem('vitrodiag_active_article_id');
         localStorage.clear();
+        if (savedArts) localStorage.setItem('vitrodiag_articulos', savedArts);
+        if (savedVault) localStorage.setItem('vitrodiag_custom_campaigns_v1', savedVault);
+        if (savedActive) localStorage.setItem('vitrodiag_active_article_id', savedActive);
         sessionStorage.clear();
-        alert('Caché eliminada con éxito. La app se recargará en modo Always-Live v2.4.7.');
+        alert('Caché eliminada con éxito (tus Fichas Técnicas y Campañas guardadas se conservaron intactas).');
         window.location.reload(true);
     };
 
@@ -2231,9 +2237,16 @@
         .form-group-sm { margin-bottom: 10px; }
         .input-text-left { text-align: left; padding: 8px; }
         .mt-10 { margin-top: 10px; }
-        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-save { flex: 2; padding: 10px; background: var(--primary); border-color: var(--primary); color: #fff; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-save { flex: 2; padding: 10px; background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
         .btn-restore { flex: 1; padding: 10px; background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: var(--danger); }
+        .campaign-memory-banner { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 0.78rem; font-weight: 600; margin-bottom: 12px; }
+        .campaign-toolbar-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .btn-new-campaign { flex: 2; padding: 9px 12px; border-radius: 8px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 700; font-size: 0.8rem; border: none; cursor: pointer; }
+        .btn-campaign-io { flex: 1; padding: 8px 10px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.35); color: #93c5fd; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-align: center; }
+        .campaign-bdf-box { margin-top: 12px; padding: 10px; border-radius: 8px; background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .campaign-bdf-title { font-size: 0.78rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px; display: block; }
+        .btn-save-campaign-sop { width: 100%; margin-top: 12px; padding: 11px 14px; border-radius: 10px; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: #fff; font-weight: 700; font-size: 0.84rem; border: 1px solid rgba(56, 189, 248, 0.4); cursor: pointer; }
         .toggle-extra { margin-top: 10px; margin-bottom: 15px; }
         .btn-reanudar { display: none; background: var(--success); border-color: var(--success); margin-top: 10px; font-weight: bold; }
         .ia-panel { margin-top: 15px; background: rgba(30, 41, 59, 0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; font-size: 0.8rem; text-align: left; }
@@ -2852,7 +2865,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag NEXUS <span class="version-badge">v2.4.2</span></h1>
+        <h1>VitroDiag NEXUS <span class="version-badge">v2.5.2</span></h1>
         <div class="subtitle">Inspección Asistida por IA — Moldería I.S.</div>
     </header>
 
@@ -2876,16 +2889,33 @@
         </button>
     </div>
 
-    <!-- MODAL DE GESTIÓN DE ARTÍCULOS (FICHAS TÉCNICAS) -->
+    <!-- MODAL DE GESTIÓN DE ARTÍCULOS (FICHAS TÉCNICAS Y MEMORIA DE CAMPAÑAS) -->
     <div id="articlesModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Fichas Técnicas de Producción</h2>
-                <button class="modal-close" onclick="closeArticlesModal()">&times;</button>
+                <h2>Fichas Técnicas y Memoria de Campañas</h2>
+                <button class="modal-close" onclick="closeArticlesModal()" title="Cerrar ventana" aria-label="Cerrar ventana">&times;</button>
+            </div>
+
+            <div class="campaign-memory-banner">
+                <span id="articlesMemoryBadge">🟢 Memoria Permanente de Campañas Activa</span>
+            </div>
+
+            <div class="campaign-toolbar-row">
+                <button type="button" class="btn-new-campaign" onclick="if(window.prepareNewArticleInModal) window.prepareNewArticleInModal();">
+                    ➕ Agregar Nuevo Envase / Nueva Campaña
+                </button>
+                <button type="button" class="btn-campaign-io" onclick="if(window.exportArticlesMemoryJson) window.exportArticlesMemoryJson();" title="Descargar respaldo de todas tus fichas técnicas">
+                    📥 Exportar
+                </button>
+                <label for="importArticlesJsonInput" class="btn-campaign-io" title="Cargar archivo JSON de fichas técnicas">
+                    📤 Importar
+                </label>
+                <input type="file" id="importArticlesJsonInput" accept=".json,application/json" class="scanner-file-hidden" aria-label="Importar archivo JSON de fichas técnicas" onchange="if(window.importArticlesMemoryJson) window.importArticlesMemoryJson(this);">
             </div>
             
             <div class="mb-15">
-                <label for="modalSelectArticle" class="modal-select-label">Seleccionar Artículo para Editar/Ver</label>
+                <label for="modalSelectArticle" class="modal-select-label">Seleccionar Envase Guardado o Crear Nuevo</label>
                 <select id="modalSelectArticle" class="select-input" aria-label="Seleccionar artículo para cargar" onchange="loadArticleInModal(this.value)">
                     <!-- Se cargará dinámicamente -->
                 </select>
@@ -2896,12 +2926,37 @@
                 
                 <input type="hidden" id="artId" aria-label="ID del artículo">
                 
-                <div class="form-group form-group-sm">
-                    <label for="artNombre">Nombre del Artículo</label>
-                    <input type="text" id="artNombre" class="input-number input-text-left" placeholder="Ej: Botella Cerveza 330ml" aria-label="Nombre del artículo">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="artNombre">Nombre del Envase / Artículo</label>
+                        <input type="text" id="artNombre" class="input-number input-text-left" placeholder="Ej: Botella Vino Reserva 750ml" aria-label="Nombre del artículo">
+                    </div>
+                    <div class="form-group">
+                        <label for="artCodigoMolde">Código Molde / Campaña</label>
+                        <input type="text" id="artCodigoMolde" class="input-number input-text-left" placeholder="Ej: M-405 / JOB-12" aria-label="Código de molde o campaña">
+                    </div>
                 </div>
 
-                <div class="form-row">
+                <div class="form-row mt-10">
+                    <div class="form-group">
+                        <label for="artCapacidad">Capacidad (ml/cc)</label>
+                        <input type="number" id="artCapacidad" class="input-number" min="10" max="5000" placeholder="330" title="Capacidad nominal en ml" aria-label="Capacidad nominal en ml">
+                    </div>
+                    <div class="form-group">
+                        <label for="artPeso">Peso Gota (g)</label>
+                        <input type="number" id="artPeso" class="input-number" min="10" max="3000" placeholder="200" title="Peso del envase en gramos" aria-label="Peso del envase en gramos">
+                    </div>
+                    <div class="form-group">
+                        <label for="artProceso">Proceso I.S.</label>
+                        <select id="artProceso" class="select-input" title="Proceso I.S." aria-label="Proceso I.S.">
+                            <option value="NNPB">NNPB (Prensado)</option>
+                            <option value="Blow-Blow">Soplo-Soplo</option>
+                            <option value="Press-Blow">Prensado-Soplo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="artBpm">Velocidad (BPM)</label>
                         <input type="number" id="artBpm" class="input-number" min="1" max="600" aria-label="Botellas por minuto (BPM)">
@@ -2919,41 +2974,71 @@
                             <option value="4">4 (Cuádruple)</option>
                         </select>
                     </div>
-                </div>
-
-                <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="artSwab">Swabbing (min)</label>
                         <input type="number" id="artSwab" class="input-number" min="5" max="120" title="Frecuencia Swabbing" aria-label="Frecuencia Swabbing">
-                    </div>
-                    <div class="form-group">
-                        <label for="artProceso">Proceso</label>
-                        <select id="artProceso" class="select-input" title="Proceso I.S." aria-label="Proceso I.S.">
-                            <option value="NNPB">NNPB (Prensado)</option>
-                            <option value="Blow-Blow">Soplo-Soplo</option>
-                            <option value="Press-Blow">Prensado-Soplo</option>
-                        </select>
                     </div>
                 </div>
 
                 <div class="form-row mt-10">
                     <div class="form-group">
                         <label for="artAltura">Altura (mm)</label>
-                        <input type="number" id="artAltura" class="input-number" min="20" max="600" title="Altura envase" aria-label="Altura envase">
+                        <input type="number" id="artAltura" class="input-number" min="20" max="600" step="0.1" title="Altura envase" aria-label="Altura envase">
                     </div>
                     <div class="form-group">
                         <label for="artCuerpo">Ø Cuerpo (mm)</label>
-                        <input type="number" id="artCuerpo" class="input-number" min="10" max="300" title="Diámetro cuerpo" aria-label="Diámetro cuerpo">
+                        <input type="number" id="artCuerpo" class="input-number" min="10" max="300" step="0.1" title="Diámetro cuerpo" aria-label="Diámetro cuerpo">
                     </div>
                     <div class="form-group">
                         <label for="artBoca">Ø Boca (mm)</label>
-                        <input type="number" id="artBoca" class="input-number" min="5" max="150" title="Diámetro boca" aria-label="Diámetro boca">
+                        <input type="number" id="artBoca" class="input-number" min="5" max="150" step="0.1" title="Diámetro boca" aria-label="Diámetro boca">
+                    </div>
+                </div>
+
+                <div class="campaign-bdf-box">
+                    <span class="campaign-bdf-title">⚙️ Consigna de Ciclo BDF Guardada para este Envase (0° - 360°):</span>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="artPlungerUp">Macho Up (°)</label>
+                            <input type="number" id="artPlungerUp" class="input-number" min="0" max="360" value="80" title="Grados Macho Arriba" aria-label="Grados Macho Arriba">
+                        </div>
+                        <div class="form-group">
+                            <label for="artPlungerDown">Macho Down (°)</label>
+                            <input type="number" id="artPlungerDown" class="input-number" min="0" max="360" value="150" title="Grados Macho Abajo" aria-label="Grados Macho Abajo">
+                        </div>
+                        <div class="form-group">
+                            <label for="artBlankOpen">Abre Preforma (°)</label>
+                            <input type="number" id="artBlankOpen" class="input-number" min="0" max="360" value="190" title="Grados Apertura Preforma" aria-label="Grados Apertura Preforma">
+                        </div>
+                        <div class="form-group">
+                            <label for="artInvertStart">Inversión (°)</label>
+                            <input type="number" id="artInvertStart" class="input-number" min="0" max="360" value="195" title="Grados Inicio Inversión" aria-label="Grados Inicio Inversión">
+                        </div>
+                    </div>
+                    <div class="form-row mt-10">
+                        <div class="form-group">
+                            <label for="artBlowClose">Cierre Molde (°)</label>
+                            <input type="number" id="artBlowClose" class="input-number" min="0" max="360" value="240" title="Grados Cierre Molde Final" aria-label="Grados Cierre Molde Final">
+                        </div>
+                        <div class="form-group">
+                            <label for="artNeckRingOpen">Abre Anillo (°)</label>
+                            <input type="number" id="artNeckRingOpen" class="input-number" min="0" max="360" value="245" title="Grados Apertura Anillo" aria-label="Grados Apertura Anillo">
+                        </div>
+                        <div class="form-group">
+                            <label for="artBlowOn">Soplado ON (°)</label>
+                            <input type="number" id="artBlowOn" class="input-number" min="0" max="360" value="270" title="Grados Soplado Final ON" aria-label="Grados Soplado Final ON">
+                        </div>
+                        <div class="form-group">
+                            <label for="artBlowOff">Soplado OFF (°)</label>
+                            <input type="number" id="artBlowOff" class="input-number" min="0" max="360" value="325" title="Grados Soplado Final OFF" aria-label="Grados Soplado Final OFF">
+                        </div>
                     </div>
                 </div>
 
                 <div class="modal-actions">
-                    <button class="filter-btn btn-save" onclick="saveActiveArticleForm()">Guardar Cambios</button>
-                    <button class="filter-btn btn-restore" onclick="resetArticlesDefault()">Restaurar</button>
+                    <button type="button" class="filter-btn btn-save" onclick="saveActiveArticleForm()">💾 Guardar Ficha en Memoria</button>
+                    <button type="button" id="btnDeleteCustomArticle" class="filter-btn btn-restore d-none" onclick="if(window.deleteCustomArticleFromModal) window.deleteCustomArticleFromModal();">🗑️ Eliminar</button>
+                    <button type="button" class="filter-btn btn-restore" onclick="resetArticlesDefault()">Restaurar</button>
                 </div>
             </div>
         </div>
@@ -3202,11 +3287,11 @@
                 </div>
                 <div class="form-group">
                     <label for="calcSections">Secciones</label>
-                    <input type="number" id="calcSections" class="input-number" min="4" max="20" value="11" readonly title="Número de secciones" aria-label="Número de secciones">
+                    <input type="number" id="calcSections" class="input-number" min="4" max="20" value="11" oninput="validateBdfTiming()" title="Número de secciones" aria-label="Número de secciones">
                 </div>
                 <div class="form-group">
                     <label for="calcCavities">Gota (Cavidad)</label>
-                    <input type="number" id="calcCavities" class="input-number" min="1" max="4" value="3" readonly title="Número de cavidades" aria-label="Número de cavidades">
+                    <input type="number" id="calcCavities" class="input-number" min="1" max="4" value="3" oninput="validateBdfTiming()" title="Número de cavidades" aria-label="Número de cavidades">
                 </div>
             </div>
 
@@ -3257,6 +3342,9 @@
                         <input type="number" id="valBlowOff" class="input-number" min="0" max="360" value="325" oninput="validateBdfTiming()" title="Soplado final off grados" aria-label="Soplado final off grados">
                     </div>
                 </div>
+                <button type="button" class="btn-save-campaign-sop" onclick="if(window.saveCurrentCalculatorToArticleMemory) window.saveCurrentCalculatorToArticleMemory();">
+                    💾 Grabar Velocidad y Ciclo en la Ficha de este Envase (Futuras Campañas)
+                </button>
             </div>
 
             <!-- Panel de Alertas de Colisión y Temporización -->
@@ -3543,6 +3631,7 @@
 
                 <div class="scanner-result-actions">
                     <button class="filter-btn btn-load-to-calc" onclick="applyScannerValuesToCalculator()">Cargar en Calculadora</button>
+                    <button class="filter-btn btn-load-to-calc" onclick="if(window.applyScannerValuesToCalculator) window.applyScannerValuesToCalculator(); if(window.saveCurrentCalculatorToArticleMemory) window.saveCurrentCalculatorToArticleMemory();">💾 Grabar en Memoria del Envase</button>
                     <button class="filter-btn btn-clear-scanner" onclick="resetScannerReport()">Limpiar Todo</button>
                 </div>
             </div>

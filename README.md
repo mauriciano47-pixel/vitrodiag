@@ -1,4 +1,4 @@
-# VitroDiag NEXUS v2.5.1 — Catálogo Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API
+# VitroDiag NEXUS v2.5.2 — Memoria Permanente de Fichas Técnicas y Campañas Futuras de Envases
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristalerías de Chile S.A. y Bucher Emhart Glass.
 

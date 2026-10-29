@@ -25,6 +25,14 @@ import {
     generateLocalExpertDiagnosis
 } from '../static/js/geminiVision.js';
 
+import {
+    initArticles,
+    normalizeArticleRecord,
+    persistCampaignMemory,
+    changeActiveArticle
+} from '../static/js/ui.js';
+import { state } from '../static/js/state.js';
+
 test('1. Catálogo de Artículos Industriales: Modelos de envases de vidrio cargados correctamente', () => {
     assert.ok(Array.isArray(ARTICULOS_DEFAULT), 'ARTICULOS_DEFAULT debe ser un array');
     assert.ok(ARTICULOS_DEFAULT.length >= 8, 'Debe haber al menos 8 modelos industriales configurados');
@@ -115,4 +123,65 @@ test('8. Módulo Gemini Vision y Controladores del Modal de Configuración IA', 
     const newValidKey = 'AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q';
     assert.equal(extractCleanGeminiKey(revokedLegacy + newValidKey), newValidKey, 'Debe extraer la nueva clave limpia cuando se pega sobre la anterior');
     assert.equal(extractCleanGeminiKey(revokedLegacy), '', 'Debe limpiar por completo la clave antigua revocada');
+});
+
+test('9. Memoria Permanente de Fichas Técnicas y Futuras Campañas de Envases', () => {
+    const store = {};
+    globalThis.localStorage = {
+        getItem: (k) => (k in store ? store[k] : null),
+        setItem: (k, v) => { store[k] = String(v); },
+        removeItem: (k) => { delete store[k]; },
+        clear: () => { Object.keys(store).forEach(k => delete store[k]); }
+    };
+
+    initArticles();
+    assert.ok(state.articulosList.length >= 14, 'Debe inicializar los 14 artículos base');
+
+    // Simular agregado de una nueva ficha técnica personalizada para futuras campañas
+    const nuevoEnvase = normalizeArticleRecord({
+        id: 'camp_vino_gran_reserva_999',
+        nombre: 'Botella Vino Gran Reserva 750ml',
+        codigoMolde: 'M-GR-750-C26',
+        capacidadMl: 750,
+        pesoGramos: 580,
+        bpm: 95,
+        secciones: 10,
+        cavidades: 2,
+        swabInterval: 15,
+        altura: 315.5,
+        diametroCuerpo: 81.2,
+        diametroBoca: 29.5,
+        proceso: 'Blow-Blow',
+        isCustom: true,
+        isModified: true,
+        defaultParams: {
+            plungerUp: 76,
+            plungerDown: 144,
+            blankOpen: 186,
+            invertStart: 194,
+            blowClose: 239,
+            neckRingOpen: 247,
+            blowOn: 269,
+            blowOff: 327
+        }
+    });
+
+    state.articulosList.push(nuevoEnvase);
+    persistCampaignMemory(state.articulosList, nuevoEnvase.id);
+
+    // Simular cierre de app y reinicio en futura campaña (incluso si vitrodiag_articulos se resetea pero el cofre persiste)
+    delete store['vitrodiag_articulos'];
+    initArticles();
+
+    const recuperado = state.articulosList.find(a => a.id === 'camp_vino_gran_reserva_999');
+    assert.ok(recuperado, 'El envase personalizado debe recuperarse intacto desde el cofre de campañas futuras');
+    assert.equal(recuperado.codigoMolde, 'M-GR-750-C26');
+    assert.equal(recuperado.pesoGramos, 580);
+    assert.equal(recuperado.altura, 315.5);
+    assert.equal(recuperado.defaultParams.plungerDown, 144);
+    assert.equal(recuperado.defaultParams.blowOff, 327);
+
+    changeActiveArticle('camp_vino_gran_reserva_999');
+    assert.equal(state.activeArticle.id, 'camp_vino_gran_reserva_999');
+    assert.equal(state.activeArticle.nombre, 'Botella Vino Gran Reserva 750ml');
 });
