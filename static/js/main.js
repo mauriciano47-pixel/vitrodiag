@@ -70,6 +70,7 @@ import {
     clearGeminiApiKey, 
     promptSaveGeminiApiKey,
     runDeepDiagnosis, 
+    generateLocalExpertDiagnosis,
     initConnectivityMonitor,
     captureAndAnalyzeWithAI,
     triggerDeepAnalysisFileUpload,
@@ -458,34 +459,10 @@ export function setupDragAndDropAndClipboard() {
 }
 
 /**
- * Renderiza una tarjeta de inspección preliminar cuando no hay clave de Gemini disponible.
+ * Renderiza el diagnóstico autónomo local directamente sin solicitar llaves externas.
  */
 function renderPreliminaryInspectionCard() {
-    const resultCard = document.getElementById('resultadoCard') || document.getElementById('nexusResultCard');
-    const diagTitulo = document.getElementById('diagTitulo');
-    const diagGravedad = document.getElementById('diagGravedad');
-    const diagEstado = document.getElementById('diagEstado');
-    const diagAcciones = document.getElementById('diagAcciones');
-    const articleName = state.activeArticle ? state.activeArticle.nombre : "SSP 296";
-
-    if (diagTitulo) diagTitulo.innerText = `📸 Inspección Registrada (${articleName})`;
-    if (diagGravedad) {
-        diagGravedad.className = "status-alert status-success";
-        diagGravedad.style.display = "inline-block";
-        diagGravedad.innerText = "Foto Acopiada";
-    }
-    if (diagEstado) {
-        setSafeHTML(diagEstado, `<strong>Inspección Óptica Realizada:</strong> La fotografía ha sido registrada con éxito en el visor y acopio local del turno.<br><br>
-        <em>Para activar el diagnóstico neuronal profundo automático con Gemini 2.0 Flash Vision, presiona '🔑 Configurar Gemini IA'.</em>`);
-    }
-    if (diagAcciones) {
-        setSafeHTML(diagAcciones, `
-            <li><button class="btn-action" style="font-size:0.85rem; padding:8px 14px; background:linear-gradient(135deg,#ff6f00,#ea580c); margin-bottom:8px;" onclick="if(window.promptSaveGeminiApiKey) window.promptSaveGeminiApiKey();">🔑 Configurar API Key de Gemini IA</button></li>
-            <li>La fotografía fue guardada de forma segura en la <strong>Galería Receptora / Acopio</strong> abajo.</li>
-            <li>Puedes etiquetarla manualmente y enviarla al <strong>Banco IA</strong> en 1 toque.</li>
-        `);
-    }
-    if (resultCard) resultCard.style.display = 'block';
+    generateLocalExpertDiagnosis(null, null, nexusCurrentImageBase64);
 }
 
 /**

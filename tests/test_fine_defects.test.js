@@ -82,6 +82,32 @@ async function testFineDefects() {
         console.log(`    [#${idx+1}] ${d.nombre} (${d.zona.toUpperCase()}) - Gravedad: ${d.gravedad}`);
     });
 
+    // Caso D: Filamento horizontal interno en cuerpo (Columpio en Cuerpo / Body Birdswing)
+    console.log('\nTest D: Botella con filamento horizontal interno (Columpio en Cuerpo, Y=420, ancho=36px, alto=4px)...');
+    for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -18; dx <= 18; dx++) {
+            const idx = ((420 + dy) * w + (200 + dx)) * 4;
+            data[idx] = 28; data[idx+1] = 28; data[idx+2] = 28; data[idx+3] = 255;
+        }
+    }
+    const resD = detectFineDefects({ width: w, height: h, data }, datosPlomada);
+    const hasBirdswing = resD.defects.some(d => d.id === 'columpio_cuerpo');
+    console.log(`  Resultado D: Columpio en Cuerpo detectado=${hasBirdswing} -> ${hasBirdswing ? '✅ Pasa' : '❌ Fallo'}`);
+    if (!hasBirdswing) throw new Error('No se clasificó morfológicamente columpio_cuerpo');
+
+    // Caso E: Fisura vertical en cuerpo (Grieta / Fisura Térmica, X=170, Y=260..294)
+    console.log('\nTest E: Botella con fisura longitudinal vertical (Grieta en Cuerpo, X=170, alto=34px, ancho=4px)...');
+    for (let dy = -17; dy <= 17; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+            const idx = ((280 + dy) * w + (170 + dx)) * 4;
+            data[idx] = 26; data[idx+1] = 26; data[idx+2] = 26; data[idx+3] = 255;
+        }
+    }
+    const resE = detectFineDefects({ width: w, height: h, data }, datosPlomada);
+    const hasCrack = resE.defects.some(d => d.id === 'grieta_cuerpo');
+    console.log(`  Resultado E: Grieta en Cuerpo detectada=${hasCrack} -> ${hasCrack ? '✅ Pasa' : '❌ Fallo'}`);
+    if (!hasCrack) throw new Error('No se clasificó morfológicamente grieta_cuerpo');
+
     console.log('\n🏁 Pruebas de fineDefects.js completadas.');
 }
 
