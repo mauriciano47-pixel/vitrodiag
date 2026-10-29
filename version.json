@@ -1,11 +1,10 @@
 {
-  "version": "2.5.4",
-  "buildTime": 1793286000000,
-  "releaseName": "VitroDiag v2.5.4 — Revisión Exhaustiva e Integración de 58 Defectos Críticos Oficiales (Cristalerías de Chile S.A. & Bucher Emhart Glass)",
+  "version": "2.5.5",
+  "buildTime": 1793290800000,
+  "releaseName": "VitroDiag v2.5.5 — Corrección Anatómica de Calcinado Corona y Hombro Hundido en Planos CAD y Sensor Geométrico",
   "features": [
-    "Auditoría e integración completa de los 18 defectos críticos adicionales de los manuales oficiales de Cristalerías de Chile S.A. y Bucher Emhart Glass (165 defectos totales, 58 defectos Críticos con AQL 0.0%)",
-    "Nuevos defectos críticos de Boca y Cuello: Calcinado en Hilos/Rosca, Calcinado de Platina, Boca Estrellada, Aleta/Doblez en Boca, Vidrio Pegado en el Macho, Mala Distribución de Cuello y Bullón en Boca",
-    "Nuevos defectos críticos de Cuerpo y Fondo: Calcinado de Hombro, Calcinado en Costura de Molde, Calcinado Caliente/Presión, Bullón >3 mm, Cuerpo Fino, Columpio en Fondo, Calcinado de Fondo, Calcinado en Talón, Calcinado en Crecent, Calcinado en Costura de Fondo, Fondo Fino y Roto de Archa",
-    "Conexión universal del Asistente Experto BDF (showDefectRemedy) con los 165 defectos de DEFECTOS_DB y filtro rápido '🚨 Críticos (58)' en el Catálogo"
+    "Corrección morfológica de los planos CAD vectoriales para Calcinado en Boca / Grasa de Corona (anclado real sobre el labio de sellado) y Hombro Hundido (deformación cóncava continua a lo largo de la cota anatómica Y=68..96)",
+    "Calibración de alta resolución del sensor de asimetría en geometry.js aislando el colapso de hombro (maxShoulderAsymmetry > 18%) sin interferencia de cuellos o cuerpos cilíndricos",
+    "Sincronización de 25 planos técnicos SVG pre-renderizados en index.html y templates/index.html eliminando formas flotantes fuera de silueta"
   ]
 }

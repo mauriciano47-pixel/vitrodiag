@@ -1,8 +1,17 @@
-# VitroDiag NEXUS v2.5.4 — Arquitectura Modular Depurada y Memoria Permanente de Campañas
+# VitroDiag NEXUS v2.5.5 — Corrección Anatómica de Defectos y Sincronización CAD
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristalerías de Chile S.A. y Bucher Emhart Glass.
 
-## 🚀 Novedades v2.5.4: Defectología Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación Total de la API
+## 🚀 Novedades v2.5.5: Corrección Anatómica de Calcinado Corona y Hombro Hundido
+
+- **Corrección Vectorial en Planos CAD Industriales (defectUtils.js):**
+  - **Calcinado en Boca / Grasa de Corona (`calcinado_boca`):** Anclado exacto sobre el plano de la cara de sellado e hilos de la rosca (`y = 18..26`), eliminando deformaciones previas que se superponían sobre el diámetro interno o garganta de la botella.
+  - **Hombro Hundido (`hombro_hundido`):** Corrección geométrica integral de la silueta exterior del corte transversal (`M 49 66 C 52 75 46 88 32 98`), reflejando el colapso hacia adentro de la curvatura del hombro respecto a la silueta nominal punteada en cian (`ghostOverlay`), erradicando vectores desplazados hacia afuera.
+- **Calibración del Sensor de Asimetría Zonal (`geometry.js`):**
+  - Incorporación de `maxShoulderAsymmetry` que audita estrictamente el intervalo anatómico del hombro (`relY >= 0.28 && relY < 0.50`), garantizando detección inequívoca de hombros asimétricos (>18%) sin verse eclipsado por la variabilidad del cuello o cuerpo cilíndrico.
+- **Sincronización Total de 25 Planos Técnicos SVG Pre-Renderizados:**
+  - Actualización automática de `index.html` y `templates/index.html` garantizando correspondencia pixel-perfect con el motor SVG dinámico.
+- **Suite de Pruebas Unitarias al 100%:** 14/14 tests aprobados en Node.js y suite de integración QA sin regresiones.
 
 - **Integración de 36 Nuevos Defectos Oficiales de Cristalerías de Chile & Emhart Glass:** El catálogo industrial multimodal creció de 111 a **165 defectos técnicos oficiales** distribuidos en 10 familias canónicas (Boca, Cuello, Hombro, Cuerpo, Fondo, Varios, Vidrio, Recocido, Tratamiento y Superficie), sincronizados con los manuales de planta de Padre Hurtado y Llay-Llay.
 - **Tríada Crítica de Columpios Incorporada al 100%:**
