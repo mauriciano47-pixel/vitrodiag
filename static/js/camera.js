@@ -6,7 +6,6 @@
 
 import { state } from './state.js';
 import { showToast } from './ui.js';
-import { startProcessing, stopProcessing } from './vision.js';
 
 let currentFacingMode = "environment"; // "environment" (trasera) o "user" (frontal)
 let currentVisionEngineMode = "native"; // "native" (por defecto) o "webrtc"
@@ -280,12 +279,12 @@ export async function startDiagnosticCamera(isUserGesture = false) {
 
             try {
                 await video.play();
-                startProcessing();
+                state.streamActive = true;
             } catch (e) {
                 console.warn("[Camera] Play diferido:", e);
                 video.muted = true;
                 await video.play().catch(() => {});
-                startProcessing();
+                state.streamActive = true;
             }
         }
 
@@ -310,7 +309,7 @@ export async function startDiagnosticCamera(isUserGesture = false) {
  * Detiene la cámara de diagnóstico y libera el hardware.
  */
 export function stopDiagnosticCamera() {
-    stopProcessing();
+    state.streamActive = false;
     if (state.diagnosticStream) {
         try {
             state.diagnosticStream.getTracks().forEach(track => {

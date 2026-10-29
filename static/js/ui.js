@@ -1,11 +1,9 @@
 // Interfaz de Usuario, Gestión de Estados DOM y Memoria Permanente de Campañas de Envases (VitroDiag UI Engine)
 // Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline.
 import { state } from './state.js';
-import { ARTICULOS_DEFAULT, DEFECTOS_DB, renderDefectsList, generateDefectIllustration } from './db.js';
-import { startDiagnosticCamera, stopDiagnosticCamera, startScannerCamera, stopScannerCamera } from './camera.js';
-import { startProcessing, stopProcessing } from './vision.js';
+import { ARTICULOS_DEFAULT, DEFECTOS_DB, renderDefectsList } from './db.js';
+import { startDiagnosticCamera } from './camera.js';
 import { calculateSopMs } from './timing.js';
-import { terminateTesseractWorker } from './ocr.js';
 import { renderDatasetGallery, populateDatasetSelect } from './datasetManager.js';
 import { setSafeHTML } from './domUtils.js';
 
@@ -796,32 +794,6 @@ async function switchView(viewName) {
         }
     } catch (err) {
         console.error("[NEXUS] Error en transición de vista:", err);
-    }
-}
-
-export function setupSilhouetteToggleListener() {
-    const toggle = document.getElementById('silhouetteToggle');
-    const webcamVideo = document.getElementById('webcam');
-    const canvasOutput = document.getElementById('canvasOutput');
-    const calibrationPanel = document.getElementById('calibrationPanel');
-
-    if (toggle && webcamVideo && canvasOutput) {
-        const applyToggleState = () => {
-            if (toggle.checked) {
-                canvasOutput.classList.remove('d-none');
-                webcamVideo.style.opacity = '0';
-                webcamVideo.style.pointerEvents = 'none';
-                if (calibrationPanel) calibrationPanel.classList.add('visible');
-            } else {
-                canvasOutput.classList.add('d-none');
-                webcamVideo.style.opacity = '1';
-                webcamVideo.style.pointerEvents = 'auto';
-                if (calibrationPanel) calibrationPanel.classList.remove('visible');
-            }
-        };
-
-        applyToggleState();
-        toggle.addEventListener('change', applyToggleState);
     }
 }
 

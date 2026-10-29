@@ -1,4 +1,4 @@
-# VitroDiag NEXUS v2.5.2 — Memoria Permanente de Fichas Técnicas y Campañas Futuras de Envases
+# VitroDiag NEXUS v2.5.3 — Arquitectura Modular Depurada y Memoria Permanente de Campañas
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristalerías de Chile S.A. y Bucher Emhart Glass.
 

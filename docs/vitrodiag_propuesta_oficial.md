@@ -1,4 +1,4 @@
-# VitroDiag NEXUS v2.5.2 — Propuesta Técnica Oficial y Documentación del Proyecto
+# VitroDiag NEXUS v2.5.3 — Propuesta Técnica Oficial y Documentación del Proyecto
 
 **Aplicación Web Progresiva (PWA) de Diagnóstico Óptico Asistido por IA y Control de Moldería para la Fabricación de Envases de Vidrio**  
 *Desarrollado para operadores e inspectores de línea en plantas vidrieras (Procesos Blow-Blow y NNPB en Máquinas I.S. — Cristalerías de Chile S.A. & Bucher Emhart Glass)*

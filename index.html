@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VitroDiag NEXUS v2.5.2 — Inspección IA & Moldería Always-Live</title>
+    <title>VitroDiag NEXUS v2.5.3 — Inspección IA & Moldería Always-Live</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" sizes="192x192" href="static/icons/icon-192.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -59,12 +59,12 @@
             }
         } catch(e) {}
     })();
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.2') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.5.2');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.3') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.5.3');
         if ('indexedDB' in window) {
             try {
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
-                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.2 (11 muestras oficiales Cristalerías de Chile).');
+                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.3 (11 muestras oficiales Cristalerías de Chile).');
             } catch(e) {}
         }
     }
@@ -2865,7 +2865,7 @@
     </div>
 
     <header>
-        <h1>VitroDiag NEXUS <span class="version-badge">v2.5.2</span></h1>
+        <h1>VitroDiag NEXUS <span class="version-badge">v2.5.3</span></h1>
         <div class="subtitle">Inspección Asistida por IA — Moldería I.S.</div>
     </header>
 
@@ -4628,16 +4628,6 @@
         <div class="footer-subtext">PLANO DE CONTROL ÓPTICO - MÁQUINA I.S. CALIENTE</div>
     </footer>
 
-    <script>
-    function switchToolTab(tab) {
-        document.querySelectorAll('.tool-content').forEach(el => { el.style.display = 'none'; el.classList.remove('active'); });
-        document.querySelectorAll('.tool-subtab').forEach(el => el.classList.remove('active'));
-        const target = document.getElementById('tool' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Content');
-        if (target) { target.style.display = 'block'; target.classList.add('active'); }
-        if (typeof event !== 'undefined' && event && event.target) { event.target.classList.add('active'); }
-    }
-    window.switchToolTab = switchToolTab;
-    </script>
     <script src="static/js/bootstrapper.js"></script>
 </body>
 </html>

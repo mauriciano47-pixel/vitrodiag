@@ -8,23 +8,15 @@ export const state = {
     diagnosticStream: null,
     scannerStream: null,
     streamActive: false,
-    animationFrameId: null,
-    tfModel: null,
-    confidenceThreshold: 75,
-    currentVisionMode: 'fine', // 'fine', 'sobel', 'thermal'
     isCameraTransitioning: false,
-    lastProcessedBorders: null,
-    lastBordersWidth: 0,
-    lastBordersHeight: 0,
     currentFilterZone: "todo",
-    
+
     // Temporizador de Swabbing
     swabTimerId: null,
     swabTimeLeft: 0,
     audioCtx: null,
 
-    // Motor Híbrido de Detección (Gemini Vision + Algorítmico)
-    // Protocolo Gemini Anti-Timeout Shield: timeout 8000ms con AbortController y fallback offline
+    // Motor Híbrido de Detección (Motor Local Experto + Gemini Vision opcional)
     geminiApiKey: null,
     isOnline: (typeof navigator !== 'undefined' && navigator.onLine) ? true : false,
     lastGeminiResult: null,
@@ -61,4 +53,3 @@ if (typeof window !== 'undefined') {
     window.subscribeState = subscribe;
     window.updateAppState = updateState;
 }
-
