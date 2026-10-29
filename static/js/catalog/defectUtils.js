@@ -271,16 +271,42 @@ export function generateDefectIllustration(defect) {
         }
     } else if (type === "DEFORMACION_PARED") {
         // Hundimiento / Abombamiento comparado con la silueta nominal punteada
-        ghostOverlay = `<path d="${outerBottlePath}" fill="none" stroke="${colorCyan}" stroke-width="1" stroke-dasharray="3,2" opacity="0.55" />`;
-        const dy = hy;
-        defectVectors = `
-            <!-- Curva de hundimiento lateral -->
-            <path d="M 32 ${dy - 18} C 45 ${dy - 6}, 45 ${dy + 6}, 32 ${dy + 18}" fill="#090d16" stroke="${colorSeverity}" stroke-width="2" />
-            <!-- Flechas de colapso hacia el interior -->
-            <line x1="18" y1="${dy}" x2="36" y2="${dy}" stroke="${colorSeverity}" stroke-width="1.6" />
-            <polygon points="38,${dy} 33,${dy - 3.5} 33,${dy + 3.5}" fill="${colorSeverity}" />
-            <circle cx="38" cy="${dy}" r="11" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
-        `;
+        ghostOverlay = `<path d="${outerBottlePath}" fill="none" stroke="${colorCyan}" stroke-width="1.1" stroke-dasharray="3,2" opacity="0.65" />`;
+        if (zona === "hombro") {
+            // Deformar realmente la pared del hombro izquierdo hacia adentro respecto al perfil nominal punteado
+            outerBottlePath = `
+                M 53 18 Q 51 18 51 20 L 51 24 Q 51 25 53 25 L 50 28 Q 49 30 52 32 L 53 35
+                Q 53 52 49 66
+                C 52 75 46 88 32 98
+                L 32 164 Q 32 178 44 178 L 84 178 Q 96 178 96 164 L 96 98
+                C 96 84 83 76 79 66
+                Q 75 52 75 35 L 76 32 Q 79 30 78 28 L 75 25 Q 77 25 77 24 L 77 20 Q 77 18 75 18 Z
+            `;
+            innerCavityPath = `
+                M 57 20 L 57 36 Q 57 53 53 67
+                C 56 76 50 88 37 99
+                L 37 162 Q 37 172 46 172 Q 64 163 82 172 Q 91 172 91 162 L 91 99
+                C 91 85 79 77 75 67 Q 71 53 71 36 L 71 20 Z
+            `;
+            defectVectors = `
+                <!-- Resaltado de la pared de hombro hundida -->
+                <path d="M 49 66 C 52 75 46 88 32 98" fill="none" stroke="${colorSeverity}" stroke-width="2.2" stroke-linecap="round" />
+                <!-- Flecha de colapso perpendicular al hombro -->
+                <line x1="25" y1="74" x2="43" y2="80" stroke="${colorSeverity}" stroke-width="1.6" />
+                <polygon points="45,81 39,76.5 40.5,82.5" fill="${colorSeverity}" />
+                <circle cx="44" cy="81" r="10" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
+            `;
+        } else {
+            const dy = hy;
+            defectVectors = `
+                <!-- Curva de hundimiento lateral en cuerpo -->
+                <path d="M 32 ${dy - 18} C 45 ${dy - 6}, 45 ${dy + 6}, 32 ${dy + 18}" fill="#090d16" stroke="${colorSeverity}" stroke-width="2" />
+                <!-- Flechas de colapso hacia el interior -->
+                <line x1="18" y1="${dy}" x2="36" y2="${dy}" stroke="${colorSeverity}" stroke-width="1.6" />
+                <polygon points="38,${dy} 33,${dy - 3.5} 33,${dy + 3.5}" fill="${colorSeverity}" />
+                <circle cx="38" cy="${dy}" r="11" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
+            `;
+        }
     } else if (type === "ESPESOR_PARED") {
         // Pared izquierda crítica adelgazada vs pared derecha sobre-engrosada con cotas
         innerCavityPath = `
@@ -321,24 +347,44 @@ export function generateDefectIllustration(defect) {
         `;
     } else if (type === "MANCHA_GRAFITO") {
         // Costra oscura de grafito/carbón por hisopeado (swabbing)
-        defectVectors = `
-            <path d="M ${hx - 11} ${hy - 4} Q ${hx - 5} ${hy - 10} ${hx + 4} ${hy - 6} Q ${hx + 12} ${hy - 2} ${hx + 7} ${hy + 5} Q ${hx - 2} ${hy + 10} ${hx - 9} ${hy + 4} Z" fill="#0f172a" stroke="${colorSeverity}" stroke-width="1.3" />
-            <circle cx="${hx - 4}" cy="${hy - 2}" r="2.2" fill="#334155" />
-            <circle cx="${hx + 3}" cy="${hy + 1}" r="1.8" fill="#475569" />
-            <circle cx="${hx + 9}" cy="${hy - 7}" r="1.5" fill="#0f172a" stroke="#f59e0b" stroke-width="0.7" />
-            <circle cx="${hx - 11}" cy="${hy + 6}" r="1.3" fill="#0f172a" stroke="#f59e0b" stroke-width="0.7" />
-            <circle cx="${hx}" cy="${hy}" r="13" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
-        `;
+        if (zona === "boca") {
+            defectVectors = `
+                <!-- Costra de carbón/calcinado asentada sobre el anillo de la corona -->
+                <path d="M 52 19 Q 58 17 65 19 Q 71 21 67 24 Q 59 26 53 23 Z" fill="#0f172a" stroke="${colorSeverity}" stroke-width="1.2" />
+                <circle cx="57" cy="21" r="1.5" fill="#334155" />
+                <circle cx="63" cy="22" r="1.4" fill="#475569" />
+                <circle cx="60" cy="22" r="9" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
+            `;
+        } else {
+            defectVectors = `
+                <path d="M ${hx - 11} ${hy - 4} Q ${hx - 5} ${hy - 10} ${hx + 4} ${hy - 6} Q ${hx + 12} ${hy - 2} ${hx + 7} ${hy + 5} Q ${hx - 2} ${hy + 10} ${hx - 9} ${hy + 4} Z" fill="#0f172a" stroke="${colorSeverity}" stroke-width="1.3" />
+                <circle cx="${hx - 4}" cy="${hy - 2}" r="2.2" fill="#334155" />
+                <circle cx="${hx + 3}" cy="${hy + 1}" r="1.8" fill="#475569" />
+                <circle cx="${hx + 9}" cy="${hy - 7}" r="1.5" fill="#0f172a" stroke="#f59e0b" stroke-width="0.7" />
+                <circle cx="${hx - 11}" cy="${hy + 6}" r="1.3" fill="#0f172a" stroke="#f59e0b" stroke-width="0.7" />
+                <circle cx="${hx}" cy="${hy}" r="13" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
+            `;
+        }
     } else if (type === "FISURA_CALCINADO") {
         // Fractura ramificada de choque térmico (Check / Grieta / Pelo)
-        defectVectors = `
-            <path d="M ${hx - 10} ${hy - 8} L ${hx - 2} ${hy - 2} L ${hx + 3} ${hy + 4} L ${hx + 11} ${hy + 9}" fill="none" stroke="${colorSeverity}" stroke-width="2.4" stroke-linecap="round" />
-            <path d="M ${hx - 10} ${hy - 8} L ${hx - 2} ${hy - 2} L ${hx + 3} ${hy + 4} L ${hx + 11} ${hy + 9}" fill="none" stroke="#fef08a" stroke-width="1" stroke-linecap="round" />
-            <!-- Ramificación secundaria -->
-            <path d="M ${hx - 2} ${hy - 2} L ${hx + 7} ${hy - 6}" fill="none" stroke="${colorSeverity}" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M ${hx + 3} ${hy + 4} L ${hx - 5} ${hy + 8}" fill="none" stroke="${colorSeverity}" stroke-width="1.4" stroke-linecap="round" />
-            <circle cx="${hx}" cy="${hy}" r="13" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
-        `;
+        if (zona === "boca") {
+            defectVectors = `
+                <!-- Calcinado / Fisura térmica sobre el anillo de la corona (Boca) -->
+                <path d="M 54 18 L 58 22 L 56 26 L 61 30" fill="none" stroke="${colorSeverity}" stroke-width="2.2" stroke-linecap="round" />
+                <path d="M 54 18 L 58 22 L 56 26 L 61 30" fill="none" stroke="#fef08a" stroke-width="0.9" stroke-linecap="round" />
+                <path d="M 58 22 L 64 20" fill="none" stroke="${colorSeverity}" stroke-width="1.4" stroke-linecap="round" />
+                <circle cx="58" cy="23" r="9" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
+            `;
+        } else {
+            defectVectors = `
+                <path d="M ${hx - 10} ${hy - 8} L ${hx - 2} ${hy - 2} L ${hx + 3} ${hy + 4} L ${hx + 11} ${hy + 9}" fill="none" stroke="${colorSeverity}" stroke-width="2.4" stroke-linecap="round" />
+                <path d="M ${hx - 10} ${hy - 8} L ${hx - 2} ${hy - 2} L ${hx + 3} ${hy + 4} L ${hx + 11} ${hy + 9}" fill="none" stroke="#fef08a" stroke-width="1" stroke-linecap="round" />
+                <!-- Ramificación secundaria -->
+                <path d="M ${hx - 2} ${hy - 2} L ${hx + 7} ${hy - 6}" fill="none" stroke="${colorSeverity}" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M ${hx + 3} ${hy + 4} L ${hx - 5} ${hy + 8}" fill="none" stroke="${colorSeverity}" stroke-width="1.4" stroke-linecap="round" />
+                <circle cx="${hx}" cy="${hy}" r="13" fill="none" stroke="${colorSeverity}" stroke-width="1" stroke-dasharray="2,2" class="pulse-ring" />
+            `;
+        }
     } else if (type === "GOTA_MASA") {
         // Gota de alimentación (Gob) ingresando al molde + nivel de masa
         defectVectors = `

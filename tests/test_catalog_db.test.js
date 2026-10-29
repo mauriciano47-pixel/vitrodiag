@@ -29,7 +29,8 @@ import {
     initArticles,
     normalizeArticleRecord,
     persistCampaignMemory,
-    changeActiveArticle
+    changeActiveArticle,
+    closeAllModals
 } from '../static/js/ui.js';
 import { state } from '../static/js/state.js';
 
@@ -220,4 +221,11 @@ test('10. Auditoría Exhaustiva de Defectos Críticos Oficiales (Cristalerías d
         assert.ok(Array.isArray(def.causas) && def.causas.length >= 2, `El defecto "${id}" debe documentar causas de máquina I.S.`);
         assert.ok(Array.isArray(def.acciones) && def.acciones.length >= 2, `El defecto "${id}" debe documentar acciones correctivas SOP`);
     }
+});
+
+test('11. Ergonomía Form Shield y Anti-Modal Jail: Cierre universal de modales (Escape / Backdrop)', () => {
+    assert.equal(typeof closeAllModals, 'function', 'closeAllModals debe ser una función exportada');
+    assert.doesNotThrow(() => {
+        closeAllModals();
+    }, 'closeAllModals debe ejecutarse de forma segura y defensiva');
 });

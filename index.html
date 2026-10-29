@@ -3040,6 +3040,7 @@
                     <button type="button" class="filter-btn btn-save" onclick="saveActiveArticleForm()">💾 Guardar Ficha en Memoria</button>
                     <button type="button" id="btnDeleteCustomArticle" class="filter-btn btn-restore d-none" onclick="if(window.deleteCustomArticleFromModal) window.deleteCustomArticleFromModal();">🗑️ Eliminar</button>
                     <button type="button" class="filter-btn btn-restore" onclick="resetArticlesDefault()">Restaurar</button>
+                    <button type="button" class="filter-btn btn-restore" onclick="closeArticlesModal()">✕ Cerrar</button>
                 </div>
             </div>
         </div>
@@ -4570,11 +4571,12 @@
                 </div>
 
                 <div class="sample-modal-actions">
-                                        <button class="btn-action btn-action-alt btn-dataset-flex" onclick="window.downloadCurrentSamplePhoto()" title="Descarga la foto de esta muestra a tu dispositivo">💾 Descargar Foto</button>
+                    <button class="btn-action btn-action-alt btn-dataset-flex" onclick="window.downloadCurrentSamplePhoto()" title="Descarga la foto de esta muestra a tu dispositivo">💾 Descargar Foto</button>
                     <button class="btn-action btn-action-primary btn-dataset-flex" onclick="window.loadSampleToInspectionVisor(window.currentActiveSampleId)">🔬 Cargar en Visor (Probar Sensor)</button>
                     <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.updateSampleNotesFromModal()">💾 Guardar Notas</button>
                     <button class="btn-action btn-modal-diagnose" onclick="window.analyzeSampleWithGeminiFromModal()">🧠 Diagnosticar con Gemini IA</button>
                     <button class="btn-action btn-action-danger btn-dataset-flex" onclick="window.deleteSampleFromModal()">🗑️ Eliminar</button>
+                    <button type="button" class="btn-action btn-action-alt btn-dataset-flex" onclick="window.closeSampleModal()">✕ Cerrar</button>
                 </div>
             </div>
         </div>
@@ -4598,6 +4600,7 @@
                     <button class="btn-action btn-modal-diagnose" onclick="window.analyzeActiveLightboxWithGemini()">⚡ Diagnosticar con Gemini IA (1-Tap)</button>
                     <button class="btn-action btn-action-success btn-dataset-flex" onclick="window.transferActiveLightboxToDataset()">🏷️ Guardar en Banco IA</button>
                     <button class="btn-action btn-action-danger btn-dataset-flex" onclick="window.deleteAcopioPhoto(activeLightboxPhotoId)">🗑️ Eliminar</button>
+                    <button type="button" class="btn-action btn-action-alt btn-dataset-flex" onclick="window.closeAcopioLightboxModal()">✕ Cerrar</button>
                 </div>
             </div>
         </div>

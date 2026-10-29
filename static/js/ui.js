@@ -827,6 +827,19 @@ export function switchToolTab(tabName) {
     }
 }
 
+function closeAllModals() {
+    if (typeof document === 'undefined') return;
+    const activeModals = document.querySelectorAll('.modal.active, .modal-overlay.active, .nexus-modal.active, [role="dialog"].active');
+    activeModals.forEach(m => m.classList.remove('active'));
+
+    if (typeof window !== 'undefined') {
+        if (typeof window.closeSampleModal === 'function') window.closeSampleModal();
+        if (typeof window.closeAcopioLightboxModal === 'function') window.closeAcopioLightboxModal();
+        if (typeof window.closeGeminiConfigModal === 'function') window.closeGeminiConfigModal();
+    }
+    closeArticlesModal();
+}
+
 if (typeof window !== 'undefined') {
     window.switchView = switchView;
     window.switchToolTab = switchToolTab;
@@ -837,6 +850,7 @@ if (typeof window !== 'undefined') {
     window.filterDefects = filterDefects;
     window.openArticlesModal = openArticlesModal;
     window.closeArticlesModal = closeArticlesModal;
+    window.closeAllModals = closeAllModals;
     window.openModal = function(modalId) {
         if (typeof modalId === 'string' && modalId) {
             const m = document.getElementById(modalId);
@@ -865,6 +879,20 @@ if (typeof window !== 'undefined') {
     window.populateArticleSelects = populateArticleSelects;
     window.applyActiveArticleParams = applyActiveArticleParams;
     window.showToast = showToast;
+
+    // Control Universal de Teclado (Garantía Anti-Modal Jail - Form Shield Standard)
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
+            closeAllModals();
+        }
+    });
+
+    // Control Universal de Cierre por Clic en Fondo Oscurecido (Backdrop Dismiss)
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.classList && (e.target.classList.contains('modal') || e.target.classList.contains('modal-overlay'))) {
+            closeAllModals();
+        }
+    });
 }
 
 export {
@@ -877,6 +905,7 @@ export {
     changeActiveArticle,
     openArticlesModal,
     closeArticlesModal,
+    closeAllModals,
     prepareNewArticleInModal,
     loadArticleInModal,
     saveActiveArticleForm,

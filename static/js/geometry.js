@@ -257,8 +257,9 @@ export async function analyzeImageGeometricDefects(imageSource) {
     const desviacionCuelloVsCuerpo = Math.abs(anguloEjeCuello - anguloEjeCuerpo);
     const absInclinacionEje = Math.abs(anguloEjeCuerpo);
 
-    // 5. Análisis de Simetría Bilateral
+    // 5. Análisis de Simetría Bilateral (General y Específica de Hombro)
     let maxAsymmetry = 0;
+    let maxShoulderAsymmetry = 0;
     let worstAsymZone = 'cuerpo';
     let totalAsymSum = 0;
     let asymSamples = 0;
@@ -274,15 +275,23 @@ export async function analyzeImageGeometricDefects(imageSource) {
             totalAsymSum += diffRatio;
             asymSamples++;
 
+            const relY = (r.y - minBottleY) / bottleHeight;
+            if (relY >= 0.26 && relY <= 0.52 && diffRatio > maxShoulderAsymmetry) {
+                maxShoulderAsymmetry = diffRatio;
+            }
+
             if (diffRatio > maxAsymmetry) {
                 maxAsymmetry = diffRatio;
-                const relY = (r.y - minBottleY) / bottleHeight;
-                if (relY < 0.28) worstAsymZone = 'cuello';
-                else if (relY < 0.50) worstAsymZone = 'hombro';
+                if (relY < 0.26) worstAsymZone = 'cuello';
+                else if (relY <= 0.52) worstAsymZone = 'hombro';
                 else if (relY < 0.88) worstAsymZone = 'cuerpo';
                 else worstAsymZone = 'fondo';
             }
         }
+    }
+    if (maxShoulderAsymmetry > 0.18) {
+        worstAsymZone = 'hombro';
+        maxAsymmetry = Math.max(maxAsymmetry, maxShoulderAsymmetry);
     }
 
     const simetriaPromedio = asymSamples > 0 ? Math.max(0, Math.round((1 - (totalAsymSum / asymSamples)) * 100)) : 100;
@@ -384,8 +393,8 @@ export async function analyzeImageGeometricDefects(imageSource) {
     }
 
     // Defecto D: Hombro Hundido / Asimetría de Silueta
-    if (maxAsymmetry > 0.30 && worstAsymZone === 'hombro') {
-        const pctAsym = Math.round(maxAsymmetry * 100);
+    if ((maxAsymmetry > 0.30 && worstAsymZone === 'hombro') || maxShoulderAsymmetry > 0.18) {
+        const pctAsym = Math.round(Math.max(maxShoulderAsymmetry, maxAsymmetry) * 100);
         defectos.push({
             id: 'hombro_hundido',
             nombre: 'Hombro Hundido / Asimétrico',
