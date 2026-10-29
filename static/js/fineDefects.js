@@ -86,15 +86,30 @@ export function detectFineDefects(source, datosPlomada) {
         };
     };
 
-    // 2. Detección de Parches Oscuros con Filtro Óptico Anti-Brillo Especular (v2.5.1)
-    // En lugar de promediar 4 vecinos (donde un reflejo blanco brillante de lum=245 infla el promedio y hace que el vidrio sano de al lado parezca un calcinado),
-    // se evalúa un anillo de 8 direcciones (radio 7px) usando estadístico de orden (3er percentil más bajo) y veto de gradiente especular.
+    // 2. Calcular Luminancia Mediana del Interior del Envase (bottleMedianLum)
+    // Esto permite distinguir físicamente entre:
+    // - La luminancia base normal del vidrio del envase (bottleMedianLum)
+    // - Un pico de brillo especular / reflejo de luz blanca (lum > bottleMedianLum + 45)
+    // - Una inclusión opaca real (calcinado / columpio / grieta: lum <= bottleMedianLum - 42 y lum < 90)
+    const sampleLums = [];
+    const startY = Math.max(8, minBottleY + 8);
+    const endY = Math.min(h - 8, maxBottleY - 8);
+
+    for (let y = startY; y < endY; y += 6) {
+        const b = getInnerBounds(y);
+        for (let x = b.left + 4; x < b.right - 4; x += 6) {
+            sampleLums.push(gray[y * w + x]);
+        }
+    }
+    sampleLums.sort((a, b) => a - b);
+    const bottleMedianLum = sampleLums.length > 0 ? sampleLums[Math.floor(sampleLums.length * 0.5)] : 140;
+    const glareSpikeThreshold = Math.min(250, bottleMedianLum + 45);
+    const maxDefectLum = Math.min(90, bottleMedianLum - 42);
+
+    // 3. Escaneo con Filtro Anular de 8 Direcciones y Supresión de Brillo Especular (v2.5.1)
     const stepY = 3;
     const stepX = 2;
     const candidateSpots = [];
-
-    const startY = Math.max(8, minBottleY + 8);
-    const endY = Math.min(h - 8, maxBottleY - 8);
     const r = 7; // Radio del anillo de comparación (7px)
     const d = 5; // Diagonal del anillo (~7px)
 
@@ -106,9 +121,8 @@ export function detectFineDefects(source, datosPlomada) {
             const centerIdx = y * w + x;
             const centerLum = gray[centerIdx];
 
-            // Regla 1: Techo de Oscuridad Física Real — Un calcinado real (grasa/grafito quemado) es opaco y oscuro (lum < 95).
-            // El vidrio sano o translúcido (lum >= 95) junto a un brillo jamás debe clasificarse como carbón quemado.
-            if (centerLum >= 95) continue;
+            // Regla 1: El píxel debe ser significativamente más oscuro que la mediana del propio envase (al menos 42 pts más oscuro) y opaco (< 90)
+            if (centerLum > maxDefectLum) continue;
 
             // Muestreo anular de 8 direcciones a radio 7px
             const nLum  = gray[(y - r) * w + x] ?? centerLum;
@@ -123,25 +137,23 @@ export function detectFineDefects(source, datosPlomada) {
             const ring = [nLum, sLum, wLum, eLum, nwLum, neLum, swLum, seLum];
             ring.sort((a, b) => a - b);
 
-            const minRingLum = ring[0];
-            const thirdLowestLum = ring[2]; // Al menos 6 de las 8 direcciones deben ser vidrio iluminado uniforme
+            const thirdLowestLum = ring[2]; // Al menos 6 de las 8 direcciones deben ser vidrio sano circundante
             const maxRingLum = ring[7];
 
             // Regla 2: Veto de Halo de Brillo Especular (Glare Suppression)
-            // Si en el entorno inmediato hay un reflejo de luz blanca (lum >= 205) con fuerte asimetría direccional (max - min >= 55),
-            // se trata del borde de un reflejo especular del envase y NO de un calcinado.
+            // Si en el vecindario inmediato (radio 7px..12px) hay un pico de reflejo especular (> bottleMedianLum + 45),
+            // cualquier sombra adyacente es refracción del brillo del envase y NO un calcinado.
             const nearGlareLeft  = gray[y * w + Math.max(0, x - 12)] ?? centerLum;
             const nearGlareRight = gray[y * w + Math.min(w - 1, x + 12)] ?? centerLum;
             const maxLocalGlare  = Math.max(maxRingLum, nearGlareLeft, nearGlareRight);
-            if (maxLocalGlare >= 205 && (maxLocalGlare - minRingLum) >= 55) {
+            if (maxLocalGlare > glareSpikeThreshold) {
                 continue;
             }
 
-            // Regla 3: Contraste Omnidireccional Conservador (Top-Hat Morfológico)
-            // La mancha debe ser al menos 38 puntos más oscura que el lado NO brillante del vidrio circundante (thirdLowestLum)
+            // Regla 3: Contraste Omnidireccional Conservador
             const contrastDiff = thirdLowestLum - centerLum;
 
-            if (contrastDiff >= 38) {
+            if (contrastDiff >= 35) {
                 candidateSpots.push({ x, y, contrast: contrastDiff, lum: centerLum });
             }
         }
