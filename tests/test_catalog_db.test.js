@@ -190,7 +190,7 @@ test('9. Memoria Permanente de Fichas Técnicas y Futuras Campañas de Envases',
 test('10. Auditoría Exhaustiva de Defectos Críticos Oficiales (Cristalerías de Chile S.A. & Bucher Emhart Glass v2.5.4)', () => {
     assert.equal(DEFECTOS_DB.length, 165, 'El catálogo consolidado debe contar con los 165 defectos industriales');
     const criticos = DEFECTOS_DB.filter(d => d.gravedad === 'Crítico');
-    assert.equal(criticos.length, 58, 'Debe haber exactamente 58 defectos clasificados como Crítico (AQL 0.0%)');
+    assert.equal(criticos.length, 57, 'Debe haber exactamente 57 defectos clasificados como Crítico (AQL 0.0%)');
 
     const officialCriticalIds = [
         'calcinado_hilos',

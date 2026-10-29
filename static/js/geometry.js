@@ -399,7 +399,7 @@ export async function analyzeImageGeometricDefects(imageSource) {
             id: 'hombro_hundido',
             nombre: 'Hombro Hundido / Asimétrico',
             zona: 'hombro',
-            gravedad: pctAsym > 45 ? 'Crítico' : 'Mayor',
+            gravedad: 'Mayor', // Según manual oficial Cristalerías de Chile: Defecto dimensional/funcional (Mayor)
             confianza: Math.min(95, Math.round(70 + pctAsym * 0.5)),
             descripcion: `Hundimiento o asimetría del ${pctAsym}% en la curva del hombro.`,
             bbox: [Math.round(minBottleY + bottleHeight * 0.28), Math.round(w * 0.15), Math.round(minBottleY + bottleHeight * 0.50), Math.round(w * 0.85)],

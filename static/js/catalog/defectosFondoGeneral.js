@@ -186,7 +186,7 @@ export const DEFECTOS_FONDO_GENERAL = [
                 id: "desgaste_talon",
                 nombre: "Desgaste en Talón del Fondo (Chipped Heel)",
                 zona: "fondo",
-                gravedad: "Crítico",
+                gravedad: "Mayor",
                 descripcion: "Falta un fragmento de vidrio en la arista de la base de la botella, debilitando el apoyo.",
                 causas: [
                     "Golpes en los transportadores debido a mala transferencia.",
