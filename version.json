@@ -1,11 +1,11 @@
 {
-  "version": "2.5.0",
-  "buildTime": 1793217400000,
-  "releaseName": "VitroDiag v2.5.0 — Motor IA Óptico Local Autónomo por Defecto (Cero API Key) y Clasificación Morfológica de Columpios/Grietas",
+  "version": "2.5.1",
+  "buildTime": 1793279400000,
+  "releaseName": "VitroDiag v2.5.1 — Filtro Óptico Anti-Brillo Especular (Specular Glare Veto) y Supresión de Falsos Calcinados",
   "features": [
-    "Operación 100% autónoma por defecto ('🟢 Motor IA Local Activo (Sin Clave)'): elimina por completo la obligación de copiar o pegar API Keys externas",
-    "Ampliación del motor óptico local fineDefects.js para clasificar por relación de aspecto filamentos horizontales (Columpio en Cuerpo/Cuello/Fondo) y fisuras verticales (Grietas)",
-    "Pipeline de visión en dispositivo (<30ms) integrando Plomada Láser, Simetría Axial, Detección de Calcinados y Morfología de Filamentos",
-    "11/11 pruebas automatizadas en verde verificando geometría, defectos finos y catálogo de 147 defectos"
+    "Nuevo Filtro Anular de 8 Direcciones (radio 7px) con estadístico de orden (3er percentil inferior) en fineDefects.js, reemplazando el promedio aritmético que se contaminaba con el brillo del envase",
+    "Veto de Halo de Brillo Especular (Glare Suppression): descarta automáticamente bordes de reflejos luminosos (lum >= 205) y sombras cilíndricas verticales de las paredes del envase",
+    "Techo físico de opacidad (lum < 95) y deduplicación por zona/defecto para erradicar falsos positivos de múltiples calcinados en fotografías con reflejos",
+    "Nuevo Test F en tests/test_fine_defects.test.js certificando 0 falsos positivos frente a franjas de brillo especular (lum=250) y halos de refracción"
   ]
 }

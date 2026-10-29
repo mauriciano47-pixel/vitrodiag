@@ -1,8 +1,8 @@
-# VitroDiag NEXUS v2.5.0 — Catálogo Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API
+# VitroDiag NEXUS v2.5.1 — Catálogo Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación API
 
 Inspección Asistida por IA & Moldería I.S. para Operador de Cristalerías de Chile S.A. y Bucher Emhart Glass.
 
-## 🚀 Novedades v2.5.0: Defectología Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación Total de la API
+## 🚀 Novedades v2.5.1: Defectología Oficial Cristalerías de Chile, Tríada de Columpios y Fortificación Total de la API
 
 - **Integración de 36 Nuevos Defectos Oficiales de Cristalerías de Chile & Emhart Glass:** El catálogo industrial multimodal creció de 111 a **147 defectos técnicos oficiales** distribuidos en 10 familias canónicas (Boca, Cuello, Hombro, Cuerpo, Fondo, Varios, Vidrio, Recocido, Tratamiento y Superficie), sincronizados con los manuales de planta de Padre Hurtado y Llay-Llay.
 - **Tríada Crítica de Columpios Incorporada al 100%:**

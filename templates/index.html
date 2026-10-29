@@ -59,12 +59,12 @@
             }
         } catch(e) {}
     })();
-    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.0') {
-        localStorage.setItem('vitrodiag_sys_ver', '2.5.0');
+    if (localStorage.getItem('vitrodiag_sys_ver') !== '2.5.1') {
+        localStorage.setItem('vitrodiag_sys_ver', '2.5.1');
         if ('indexedDB' in window) {
             try {
                 window.indexedDB.deleteDatabase('VitroDiag_DatasetDB');
-                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.0 (11 muestras oficiales Cristalerías de Chile).');
+                console.log('[Always-Live] BD IndexedDB purgada por actualización v2.5.1 (11 muestras oficiales Cristalerías de Chile).');
             } catch(e) {}
         }
     }

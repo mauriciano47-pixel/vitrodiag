@@ -77,7 +77,8 @@ export function detectFineDefects(source, datosPlomada) {
                 bestRow = rows[idx];
             }
         }
-        const marginX = Math.max(3, Math.round(bestRow.width * 0.12));
+        // Margen cilíndrico anti-refracción Fresnel (20% del ancho) para ignorar sombras y brillos del borde curvo del envase
+        const marginX = Math.max(4, Math.round(bestRow.width * 0.20));
         return {
             left: bestRow.leftX + marginX,
             right: bestRow.rightX - marginX,
@@ -85,14 +86,17 @@ export function detectFineDefects(source, datosPlomada) {
         };
     };
 
-    // 2. Detección de Parches Oscuros (Calcinados / Puntos de Grafito)
-    // Se escanea continuamente en Y con paso de 3px y en X con paso de 2px
+    // 2. Detección de Parches Oscuros con Filtro Óptico Anti-Brillo Especular (v2.5.1)
+    // En lugar de promediar 4 vecinos (donde un reflejo blanco brillante de lum=245 infla el promedio y hace que el vidrio sano de al lado parezca un calcinado),
+    // se evalúa un anillo de 8 direcciones (radio 7px) usando estadístico de orden (3er percentil más bajo) y veto de gradiente especular.
     const stepY = 3;
     const stepX = 2;
     const candidateSpots = [];
 
-    const startY = Math.max(6, minBottleY + 6);
-    const endY = Math.min(h - 6, maxBottleY - 6);
+    const startY = Math.max(8, minBottleY + 8);
+    const endY = Math.min(h - 8, maxBottleY - 8);
+    const r = 7; // Radio del anillo de comparación (7px)
+    const d = 5; // Diagonal del anillo (~7px)
 
     for (let y = startY; y < endY; y += stepY) {
         const bounds = getInnerBounds(y);
@@ -102,18 +106,42 @@ export function detectFineDefects(source, datosPlomada) {
             const centerIdx = y * w + x;
             const centerLum = gray[centerIdx];
 
-            // Promedio en cruz a distancia de 5px (fondo circundante)
-            const topLum = gray[(y - 5) * w + x] ?? 128;
-            const bottomLum = gray[(y + 5) * w + x] ?? 128;
-            const leftLum = gray[y * w + (x - 5)] ?? 128;
-            const rightLum = gray[y * w + (x + 5)] ?? 128;
-            const surroundAvg = (topLum + bottomLum + leftLum + rightLum) / 4;
+            // Regla 1: Techo de Oscuridad Física Real — Un calcinado real (grasa/grafito quemado) es opaco y oscuro (lum < 95).
+            // El vidrio sano o translúcido (lum >= 95) junto a un brillo jamás debe clasificarse como carbón quemado.
+            if (centerLum >= 95) continue;
 
-            // Caída de luminosidad (mancha más oscura que su entorno inmediato)
-            const contrastDiff = surroundAvg - centerLum;
+            // Muestreo anular de 8 direcciones a radio 7px
+            const nLum  = gray[(y - r) * w + x] ?? centerLum;
+            const sLum  = gray[(y + r) * w + x] ?? centerLum;
+            const wLum  = gray[y * w + (x - r)] ?? centerLum;
+            const eLum  = gray[y * w + (x + r)] ?? centerLum;
+            const nwLum = gray[(y - d) * w + (x - d)] ?? centerLum;
+            const neLum = gray[(y - d) * w + (x + d)] ?? centerLum;
+            const swLum = gray[(y + d) * w + (x - d)] ?? centerLum;
+            const seLum = gray[(y + d) * w + (x + d)] ?? centerLum;
 
-            // Umbral de calcinado: contraste oscuro >= 35 puntos y luminancia absoluta no excesivamente alta
-            if (contrastDiff >= 35 && centerLum < 165) {
+            const ring = [nLum, sLum, wLum, eLum, nwLum, neLum, swLum, seLum];
+            ring.sort((a, b) => a - b);
+
+            const minRingLum = ring[0];
+            const thirdLowestLum = ring[2]; // Al menos 6 de las 8 direcciones deben ser vidrio iluminado uniforme
+            const maxRingLum = ring[7];
+
+            // Regla 2: Veto de Halo de Brillo Especular (Glare Suppression)
+            // Si en el entorno inmediato hay un reflejo de luz blanca (lum >= 205) con fuerte asimetría direccional (max - min >= 55),
+            // se trata del borde de un reflejo especular del envase y NO de un calcinado.
+            const nearGlareLeft  = gray[y * w + Math.max(0, x - 12)] ?? centerLum;
+            const nearGlareRight = gray[y * w + Math.min(w - 1, x + 12)] ?? centerLum;
+            const maxLocalGlare  = Math.max(maxRingLum, nearGlareLeft, nearGlareRight);
+            if (maxLocalGlare >= 205 && (maxLocalGlare - minRingLum) >= 55) {
+                continue;
+            }
+
+            // Regla 3: Contraste Omnidireccional Conservador (Top-Hat Morfológico)
+            // La mancha debe ser al menos 38 puntos más oscura que el lado NO brillante del vidrio circundante (thirdLowestLum)
+            const contrastDiff = thirdLowestLum - centerLum;
+
+            if (contrastDiff >= 38) {
                 candidateSpots.push({ x, y, contrast: contrastDiff, lum: centerLum });
             }
         }
@@ -155,11 +183,21 @@ export function detectFineDefects(source, datosPlomada) {
         }
     });
 
-    // 4. Filtrar y clasificar los clústeres reales (ignorar ruido de 1 píxel)
+    // 4. Filtrar y clasificar los clústeres reales (ignorar ruido de 1 píxel y bandas verticales de sombra cilíndrica)
     const defects = [];
-    const validClusters = clusters.filter(c => c.points.length >= 2 || c.maxContrast >= 55);
+    const seenZoneTypes = new Set();
+    const validClusters = clusters
+        .filter(c => {
+            const cHeight = (c.maxY - c.minY) + 6;
+            const cWidth = (c.maxX - c.minX) + 6;
+            // Descartar bandas verticales largas (>22% de la altura del envase) que corresponden a sombras de curvatura cilíndrica
+            if (cHeight > bottleHeight * 0.22 && cHeight > cWidth * 2.0) return false;
+            return c.points.length >= 2 || c.maxContrast >= 58;
+        })
+        .sort((a, b) => b.maxContrast - a.maxContrast);
 
     validClusters.forEach(cl => {
+        if (defects.length >= 4) return; // Non-Maximum Suppression: máximo 1 hallazgo único por zona/tipo (top 4)
         const spotWidth = Math.max(8, (cl.maxX - cl.minX) + 6);
         const spotHeight = Math.max(8, (cl.maxY - cl.minY) + 6);
         const spotArea = spotWidth * spotHeight;
@@ -265,6 +303,11 @@ export function detectFineDefects(source, datosPlomada) {
             Math.min(h, Math.round(cl.maxY + pad)),
             Math.min(w, Math.round(cl.maxX + pad))
         ];
+
+        // Deduplicar por tipo de defecto y zona para no reportar múltiples calcinados redundantes por reflejos
+        const dedupKey = `${defectId}_${zona}`;
+        if (seenZoneTypes.has(dedupKey)) return;
+        seenZoneTypes.add(dedupKey);
 
         defects.push({
             id: defectId,

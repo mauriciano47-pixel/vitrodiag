@@ -108,6 +108,28 @@ async function testFineDefects() {
     console.log(`  Resultado E: Grieta en Cuerpo detectada=${hasCrack} -> ${hasCrack ? '✅ Pasa' : '❌ Fallo'}`);
     if (!hasCrack) throw new Error('No se clasificó morfológicamente grieta_cuerpo');
 
+    // Caso F: Inmunidad a Brillos Especulares del Envase (Reflejo de luz blanca lum=250 junto a sombra de refracción lum=80 y vidrio sano lum=130)
+    console.log('\nTest F: Botella limpia con franja de brillo especular intenso (lum=250) y halo de refracción (lum=80)...');
+    const glareData = new Uint8ClampedArray(w * h * 4);
+    glareData.fill(240);
+    for (let row = 50; row < 550; row++) {
+        let halfW = row < 150 ? 25 : (row < 230 ? Math.round(25 + (row - 150) * (35 / 80)) : 60);
+        for (let col = 200 - halfW; col <= 200 + halfW; col++) {
+            const idx = (row * w + col) * 4;
+            // Vidrio ámbar sano lum=130
+            let lum = 130;
+            // Franja vertical de reflejo especular brillante (X=210..216, lum=250) y borde adyacente (X=206..209, lum=80)
+            if (row > 180 && row < 480) {
+                if (col >= 210 && col <= 216) lum = 250;
+                else if (col >= 206 && col <= 209) lum = 80;
+            }
+            glareData[idx] = lum; glareData[idx+1] = lum; glareData[idx+2] = lum; glareData[idx+3] = 255;
+        }
+    }
+    const resF = detectFineDefects({ width: w, height: h, data: glareData }, datosPlomada);
+    console.log(`  Resultado F (Anti-Brillo): Falsos positivos=${resF.count} (esperado 0) -> ${resF.count === 0 ? '✅ Pasa' : '❌ Fallo'}`);
+    if (resF.count !== 0) throw new Error(`Falso positivo por brillo especular detectado: ${resF.count}`);
+
     console.log('\n🏁 Pruebas de fineDefects.js completadas.');
 }
 
