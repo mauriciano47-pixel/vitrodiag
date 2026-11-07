@@ -229,3 +229,16 @@ test('11. Ergonomía Form Shield y Anti-Modal Jail: Cierre universal de modales 
         closeAllModals();
     }, 'closeAllModals debe ejecutarse de forma segura y defensiva');
 });
+
+test('12. Telemetría RUM y Pipeline CI/CD Tier-1: Baliza no intrusiva y verificación CI', async () => {
+    const fs = await import('node:fs');
+    assert.equal(fs.existsSync('./static/js/rumBeacon.js'), true, 'La baliza RUM debe existir en static/js/');
+    const ciExists = fs.existsSync('./ci/verify.yml') || fs.existsSync('./.github/workflows/verify.yml');
+    assert.equal(ciExists, true, 'El workflow de verificación de CI debe existir');
+
+    const html = fs.readFileSync('./index.html', 'utf8');
+    assert.match(html, /static\/js\/rumBeacon\.js/, 'index.html debe cargar la baliza RUM');
+
+    const rumCode = fs.readFileSync('./static/js/rumBeacon.js', 'utf8');
+    assert.match(rumCode, /window\.__VGUARD_RUM__/, 'Debe exponer API soberana __VGUARD_RUM__');
+});
