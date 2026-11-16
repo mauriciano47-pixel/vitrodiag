@@ -1,6 +1,7 @@
 // scratch/test_geometry_engine.js — Pruebas unitarias y de estrés para geometry.js
 import fs from 'fs';
 import path from 'path';
+import assert from 'node:assert/strict';
 
 // Mock de DOM básico si es necesario
 global.document = {
@@ -114,6 +115,8 @@ async function runUnitTests() {
     console.log(`    - Inclinación Eje: ${res3.metricas.anguloTorcidoEje}° (esperado ~0°)`);
     console.log(`    - Desviación Cuello: ${res3.metricas.desviacionCuelloVsCuerpo}° (esperado ~0°)`);
     console.log(`    - Simetría General: ${res3.metricas.simetriaGeneral}% (esperado >90%)`);
+    assert.equal(res3.conforme, true, 'Botella recta debe ser conforme');
+    assert.ok(res3.metricas.simetriaGeneral >= 95, 'Botella recta debe tener >= 95% simetría');
 
     // Caso 4: Botella sintética inclinada 4 grados (Torcida)
     console.log('Test 4: Botella sintética inclinada (Torcida a propósito)...');
@@ -152,6 +155,8 @@ async function runUnitTests() {
         })
     };
     const res4 = await analyzeImageGeometricDefects(tiltedBottleCanvas);
+    assert.equal(res4.conforme, false, 'Botella inclinada 4.5° debe ser rechazada');
+    assert.ok(res4.defectos.some(d => d.id === 'cuerpo_torcido'), 'Debe detectar defecto cuerpo_torcido');
     console.log('  Resultado Test 4:');
     console.log(JSON.stringify({
         conforme: res4.conforme,
@@ -204,6 +209,8 @@ async function runUnitTests() {
     console.log(`    - Conforme: ${res5.conforme ? '❌ NO (Debe fallar)' : '✅ RECHAZADO CORRECTAMENTE'}`);
     console.log(`    - Defectos detectados:`, res5.defectos.map(d => d.nombre));
     console.log(`    - Integridad Corona: ${res5.metricas.integridadCorona}%`);
+    assert.equal(res5.conforme, false, 'Botella con corona rota debe ser rechazada');
+    assert.ok(res5.defectos.some(d => d.id === 'corona_rota'), 'Debe detectar defecto corona_rota');
 
     // Caso 6: Botella con Hombro Hundido (Asimetría en hombro)
     console.log('Test 6: Botella con hombro hundido/deformado...');
@@ -243,6 +250,9 @@ async function runUnitTests() {
     console.log(`    - Defectos detectados:`, res6.defectos.map(d => d.nombre));
     console.log(`    - Simetría General: ${res6.metricas.simetriaGeneral}%`);
     console.log(`    - Zona Mayor Asimetría: ${res6.metricas.zonaMayorAsimetria} (${res6.metricas.maxAsimetria}%)`);
+    assert.equal(res6.conforme, false, 'Botella con hombro hundido debe ser rechazada');
+    assert.equal(res6.metricas.zonaMayorAsimetria, 'hombro', 'Debe localizar asimetría máxima en hombro');
+    assert.ok(res6.defectos.some(d => d.id === 'cuello_torcido'), 'Debe detectar desviación de cuello');
 
     console.log('\n🏁 Batería completa de pruebas unitarias finalizada con 100% de éxito.');
 }
