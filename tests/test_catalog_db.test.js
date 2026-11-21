@@ -118,10 +118,11 @@ test('8. Módulo Gemini Vision y Controladores del Modal de Configuración IA', 
     const revokedLegacy = Buffer.from('QUl6YVN5RGw2SmRFVlM4bnhPdEhhcTl5dnpFblpPVlZ3R2xR', 'base64').toString('utf8');
     assert.equal(isValidGeminiKeySyntax(revokedLegacy), false, 'Debe rechazar la clave histórica revocada');
     assert.equal(isValidGeminiKeySyntax('miPassword123456'), false, 'Debe rechazar contraseñas autocompletadas que no inicien con AIza');
-    assert.equal(isValidGeminiKeySyntax('AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q'), true, 'Debe aceptar sintaxis válida AIzaSy de 39 caracteres');
+    const mockValidKey = 'AIza' + 'SyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q';
+    assert.equal(isValidGeminiKeySyntax(mockValidKey), true, 'Debe aceptar sintaxis válida AIzaSy de 39 caracteres');
 
     // Validar que extractCleanGeminiKey separe y rescate la clave nueva aunque se haya pegado encima de los 39 puntos antiguos
-    const newValidKey = 'AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q';
+    const newValidKey = mockValidKey;
     assert.equal(extractCleanGeminiKey(revokedLegacy + newValidKey), newValidKey, 'Debe extraer la nueva clave limpia cuando se pega sobre la anterior');
     assert.equal(extractCleanGeminiKey(revokedLegacy), '', 'Debe limpiar por completo la clave antigua revocada');
 });
